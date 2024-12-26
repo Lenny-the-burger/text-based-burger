@@ -13,10 +13,72 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Third party">
+      <UniqueIdentifier>{74da5d11-26d1-4439-8bfb-87cb42aed8da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Third party\Imgui">
+      <UniqueIdentifier>{499ff2a8-210b-48fe-88f3-d7b3ef170c16}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="text-based-burger.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>Third party</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party\imgui\imgui.cpp">
+      <Filter>Third party\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party\imgui\imgui_demo.cpp">
+      <Filter>Third party\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party\imgui\imgui_draw.cpp">
+      <Filter>Third party\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party\imgui\imgui_impl_glfw.cpp">
+      <Filter>Third party\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party\imgui\imgui_impl_opengl3.cpp">
+      <Filter>Third party\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party\imgui\imgui_tables.cpp">
+      <Filter>Third party\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party\imgui\imgui_widgets.cpp">
+      <Filter>Third party\Imgui</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="third-party\imgui\imconfig.h">
+      <Filter>Third party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\imgui.h">
+      <Filter>Third party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\imgui_impl_glfw.h">
+      <Filter>Third party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\imgui_impl_opengl3.h">
+      <Filter>Third party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\imgui_impl_opengl3_loader.h">
+      <Filter>Third party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\imgui_internal.h">
+      <Filter>Third party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\imstb_rectpack.h">
+      <Filter>Third party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\imstb_textedit.h">
+      <Filter>Third party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\imgui\imstb_truetype.h">
+      <Filter>Third party\Imgui</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
