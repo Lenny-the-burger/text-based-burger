@@ -130,6 +130,7 @@
   <ItemGroup>
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="shader.cpp" />
     <ClCompile Include="third-party\imgui\imgui.cpp" />
     <ClCompile Include="third-party\imgui\imgui_demo.cpp" />
     <ClCompile Include="third-party\imgui\imgui_draw.cpp" />
@@ -139,9 +140,13 @@
     <ClCompile Include="third-party\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="fragment.glsl" />
+    <None Include="fragment_pass.glsl" />
     <None Include="packages.config" />
+    <None Include="vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="shader.h" />
     <ClInclude Include="third-party\imgui\imconfig.h" />
     <ClInclude Include="third-party\imgui\imgui.h" />
     <ClInclude Include="third-party\imgui\imgui_impl_glfw.h" />

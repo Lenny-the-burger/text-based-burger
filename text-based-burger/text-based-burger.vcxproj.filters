@@ -48,9 +48,21 @@
     <ClCompile Include="third-party\imgui\imgui_widgets.cpp">
       <Filter>Third party\Imgui</Filter>
     </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="vertex.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="fragment.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="fragment_pass.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imconfig.h">
@@ -79,6 +91,9 @@
     </ClInclude>
     <ClInclude Include="third-party\imgui\imstb_truetype.h">
       <Filter>Third party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
