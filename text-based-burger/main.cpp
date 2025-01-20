@@ -15,8 +15,17 @@
 int WINDOW_WIDTH = 1482;
 int WINDOW_HEIGHT = 777;
 
-int SMALL_WINDOW_WIDTH = 591;
-int SMALL_WINDOW_HEIGHT = 374;
+// Character dimensions
+int CHAR_WIDTH = 8;
+int CHAR_HEIGHT = 16;
+int CHAR_RATIO = CHAR_HEIGHT / CHAR_WIDTH;
+
+// Character columns on screen
+int CHAR_COLS = 80;
+int CHAR_ROWS = (CHAR_COLS / 4) * 3; // 4:3 aspect ratio
+
+int SMALL_WINDOW_WIDTH = CHAR_WIDTH * CHAR_COLS;
+int SMALL_WINDOW_HEIGHT = (CHAR_ROWS * CHAR_HEIGHT) / CHAR_RATIO;
 
 float target_scale = (float)SMALL_WINDOW_HEIGHT / (float)WINDOW_HEIGHT;
 
