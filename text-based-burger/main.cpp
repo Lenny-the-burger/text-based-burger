@@ -12,16 +12,18 @@
 
 #include "shader.h"
 
-int WINDOW_WIDTH = 1200;
-int WINDOW_HEIGHT = 900;
+int WINDOW_WIDTH = 1482;
+int WINDOW_HEIGHT = 777;
 
-int SMALL_WINDOW_WIDTH = 480;
-int SMALL_WINDOW_HEIGHT = 320;
+int SMALL_WINDOW_WIDTH = 591;
+int SMALL_WINDOW_HEIGHT = 374;
+
+float target_scale = (float)SMALL_WINDOW_HEIGHT / (float)WINDOW_HEIGHT;
 
 const char* WINDOW_TITLE = "Text based burger";
 
 float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
-float aspect_ratio_small = (float)SMALL_WINDOW_WIDTH / (float)SMALL_WINDOW_HEIGHT;
+float aspect_ratio_small = (float)SMALL_WINDOW_HEIGHT / (float)SMALL_WINDOW_WIDTH;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -30,6 +32,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	WINDOW_HEIGHT = height;
 
 	aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
+	target_scale = (float)SMALL_WINDOW_HEIGHT / (float)height;
 }
 
 void processInput(GLFWwindow* window) {
@@ -116,6 +119,7 @@ int main() {
 	Shader raster_shader = Shader("vertex.glsl", "fragment.glsl", std::vector<std::string>(), 330);
 	Shader pass_shader = Shader("vertex.glsl", "fragment_pass.glsl", std::vector<std::string>(), 330);
 
+
 	// Vertex is simple we only render a screen quad
 
 	// Full-screen quad vertices and indices
@@ -199,7 +203,7 @@ int main() {
 
 		pass_shader.setFloat("aspectRatio", aspect_ratio);
 		pass_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
-		pass_shader.setFloat("scale", scale);
+		pass_shader.setFloat("target_scale", target_scale);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glViewport(0, 0, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT); // Match the framebuffer size
