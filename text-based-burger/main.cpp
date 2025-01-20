@@ -20,14 +20,16 @@ int SMALL_WINDOW_HEIGHT = 320;
 
 const char* WINDOW_TITLE = "Text based burger";
 
-//float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
-float aspect_ratio = 1.0;
+float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
+float aspect_ratio_small = (float)SMALL_WINDOW_WIDTH / (float)SMALL_WINDOW_HEIGHT;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 
 	WINDOW_WIDTH = width;
 	WINDOW_HEIGHT = height;
+
+	aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
 }
 
 void processInput(GLFWwindow* window) {
@@ -196,6 +198,8 @@ int main() {
 		set_uniforms();
 
 		pass_shader.setFloat("aspectRatio", aspect_ratio);
+		pass_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
+		pass_shader.setFloat("scale", scale);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glViewport(0, 0, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT); // Match the framebuffer size
