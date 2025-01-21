@@ -12,8 +12,8 @@
 
 #include "shader.h"
 
-int WINDOW_WIDTH = 1482;
-int WINDOW_HEIGHT = 777;
+int WINDOW_WIDTH = 1280;
+int WINDOW_HEIGHT = 960;
 
 // Character dimensions
 int CHAR_WIDTH = 8;
