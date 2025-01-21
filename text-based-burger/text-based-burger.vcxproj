@@ -140,8 +140,10 @@
     <ClCompile Include="third-party\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\README.MD" />
     <None Include="fragment.glsl" />
     <None Include="fragment_pass.glsl" />
+    <None Include="LISCENCE" />
     <None Include="packages.config" />
     <None Include="vertex.glsl" />
   </ItemGroup>
@@ -156,6 +158,9 @@
     <ClInclude Include="third-party\imgui\imstb_rectpack.h" />
     <ClInclude Include="third-party\imgui\imstb_textedit.h" />
     <ClInclude Include="third-party\imgui\imstb_truetype.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="assets\glyph.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
