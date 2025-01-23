@@ -11,6 +11,9 @@
 #include <iostream>
 
 #include "shader.h"
+#include "font_loader.h"
+
+using namespace std;
 
 int WINDOW_WIDTH = 1280;
 int WINDOW_HEIGHT = 960;
