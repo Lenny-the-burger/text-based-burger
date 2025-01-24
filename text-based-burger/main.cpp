@@ -125,12 +125,31 @@ int main() {
 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-
-
 	// Compile shaders
-	Shader raster_shader = Shader("vertex.glsl", "fragment.glsl", std::vector<std::string>(), 330);
-	Shader pass_shader = Shader("vertex.glsl", "fragment_pass.glsl", std::vector<std::string>(), 330);
+	Shader raster_shader = Shader("vertex.glsl", "fragment.glsl", std::vector<std::string>(), 460);
+	Shader pass_shader = Shader("vertex.glsl", "fragment_pass.glsl", std::vector<std::string>(), 460);
 
+#pragma region General loading
+
+	// Load font, this had to be done first and on the main thread
+	vector<uint32_t> font_data = load_font("C:\\Users\\Galina\\source\\repos\\text-based-burger\\text-based-burger\\assets\\glyph.txt"); // Enter your font path here
+
+	// Bind the main shader and set uniform
+	raster_shader.use();
+
+	// Uniform array of uint32_t
+	uint32_t* font_data_array = new uint32_t[1024];
+
+	// Copy font data to the array
+	for (int i = 0; i < font_data.size(); i++) {
+		font_data_array[i] = font_data[i];
+	}
+
+	// Set the uniform
+	glUniform4uiv(glGetUniformLocation(raster_shader.ID, "glyphs"), 256, font_data_array);
+
+
+#pragma endregion
 
 	// Vertex is simple we only render a screen quad
 
