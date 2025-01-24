@@ -132,7 +132,7 @@ int main() {
 #pragma region General loading
 
 	// Load font, this had to be done first and on the main thread
-	vector<uint32_t> font_data = load_font("C:\\Users\\Galina\\source\\repos\\text-based-burger\\text-based-burger\\assets\\glyph.txt"); // Enter your font path here
+	vector<uint32_t> font_data = load_font("assets\\font.txt"); // Enter your font path here
 
 	// Bind the main shader and set uniform
 	raster_shader.use();

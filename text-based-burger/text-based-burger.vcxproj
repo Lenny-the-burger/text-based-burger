@@ -162,6 +162,7 @@
     <ClInclude Include="third-party\imgui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="assets\font.txt" />
     <Text Include="assets\glyph.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

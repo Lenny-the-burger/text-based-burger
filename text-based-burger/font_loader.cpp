@@ -22,7 +22,7 @@ vector<uint32_t> load_font(const string& font_path) {
     string line;
     while (getline(font_file, line)) {
         // Skip header lines
-        if (line.length() > 8) {
+        if (line.length() > 9) {
             continue;
         }
 
@@ -36,8 +36,10 @@ vector<uint32_t> load_font(const string& font_path) {
                 }
                 getline(font_file, line);
             }
+            font_data.push_back(out);
+			out = 0;
         }
-        font_data.push_back(out);
+        
     }
 
     font_file.close();
