@@ -1,4 +1,5 @@
 //! #version 460
+// This is for the glsl addon the compiler adds the version
 
 out float FragColor;
 
@@ -6,11 +7,12 @@ in vec2 TexCoords;
 
 uniform uvec4 glyphs[256];
 
-void main() {
+// Character grid ssbo
+layout(std430, binding = 0) buffer CharacterGrid {
+	uint character_grid[];
+};
 
-    // color based on fragment position
-    //FragColor =  0.5 * ( mod(gl_FragCoord.x + 4.0, 8.0 ) / 8.0 );
-    //FragColor += 0.5 * ( mod(gl_FragCoord.y, 16.0) / 16.0);
+void main() {
 
     vec2 frag_coord = vec2(gl_FragCoord.x, 480.0 - gl_FragCoord.y);
 
@@ -32,7 +34,16 @@ void main() {
     // Where are we inside of the 32 bit block?
     uint block_position = (texel_position.y % 4) * 8 + texel_position.x;
 
-    uint charnum = (character_position.y * 80 + character_position.x) % 256;
+    // Get the character data 32 bit uint word from the character grid
+    uint char_word = character_grid[character_position.y * 80 + character_position.x];
+
+    // Unpack
+    uint charnum = (char_word & 0xFFu);
+    uint fg = (char_word >> 8u ) & 0xFFu;
+    uint bg = (char_word >> 16u) & 0xFFu;
+
+    float fg_float = float(fg) / 255.0;
+    float bg_float = float(bg) / 255.0;
 
     // Get the glyph
     uvec4 character = glyphs[charnum];
@@ -42,7 +53,8 @@ void main() {
     // Get the bit
     uint bit = (block >> block_position) & 1u;
 
-    FragColor = float(bit);
+    // Either we draw the foreground or background color
+    FragColor = (float(bit)  * fg_float) + ((1.0 - float(bit)) * bg_float);
 
     // if we are a border pixel, make it 0
     if (gl_FragCoord.x < 1.0 || gl_FragCoord.x > 639.0 || gl_FragCoord.y < 1.0 || gl_FragCoord.y > 479.0) {

@@ -37,6 +37,9 @@ const char* WINDOW_TITLE = "Text based burger";
 float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
 float aspect_ratio_small = (float)SMALL_WINDOW_HEIGHT / (float)SMALL_WINDOW_WIDTH;
 
+// How many z layers exist
+int Z_LAYERS = 4;
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 
@@ -132,7 +135,7 @@ int main() {
 #pragma region General loading
 
 	// Load font, this had to be done first and on the main thread
-	vector<uint32_t> font_data = load_font("assets\\font.txt"); // Enter your font path here
+	vector<uint32_t> font_data = load_font("assets\\font2.txt"); // Enter your font path here
 
 	// Bind the main shader and set uniform
 	raster_shader.use();
@@ -222,6 +225,38 @@ int main() {
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind framebuffer
 
+	// Character grid buffer
+	// Holds CHAR_COLS by CHAR_ROWS characters
+	// Stores uints for character and color
+	// First 8 bits are character, next 8 are color, next 8 are background color, and 8 unused
+	// ordering is done on the cpu to avoid branching.
+
+	int NUM_CHARS = CHAR_COLS * CHAR_ROWS;
+
+	uint32_t* char_grid = new uint32_t[NUM_CHARS];
+
+	// Run through the grid and set a test pattern
+	for (int i = 0; i < NUM_CHARS; i++) {
+		uint32_t c = 0;
+		// Set characters mod 255
+		c |= (i % 255);
+
+		// Set fg to random color
+		c |= (rand() % 255) << 8;
+
+		// Set bg to random color
+		c |= (rand() % 255) << 16;
+
+		char_grid[i] = c;
+	}
+
+	unsigned int char_grid_buffer;
+
+	glGenBuffers(1, &char_grid_buffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, char_grid_buffer);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, NUM_CHARS * sizeof(uint32_t), char_grid, GL_DYNAMIC_COPY);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, char_grid_buffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 
 
@@ -235,6 +270,10 @@ int main() {
 		pass_shader.setFloat("aspectRatio", aspect_ratio);
 		pass_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
 		pass_shader.setFloat("target_scale", target_scale);
+
+		pass_shader.setFloat("scale", scale);
+		pass_shader.setFloat("translationX", translation[0]);
+		pass_shader.setFloat("translationY", translation[1]);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glViewport(0, 0, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT); // Match the framebuffer size
