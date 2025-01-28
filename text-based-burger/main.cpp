@@ -15,8 +15,9 @@
 
 using namespace std;
 
-int WINDOW_WIDTH = 1280;
-int WINDOW_HEIGHT = 960;
+// These are not constants 
+int window_width = 1280;
+int window_height = 960;
 
 // Character dimensions
 int CHAR_WIDTH = 8;
@@ -30,11 +31,15 @@ int CHAR_ROWS = (CHAR_COLS / 4) * 3; // 4:3 aspect ratio
 int SMALL_WINDOW_WIDTH = CHAR_WIDTH * CHAR_COLS;
 int SMALL_WINDOW_HEIGHT = (CHAR_ROWS * CHAR_HEIGHT) / CHAR_RATIO;
 
-float target_scale = (float)SMALL_WINDOW_HEIGHT / (float)WINDOW_HEIGHT;
+// Mouse position in character space
+int mouse_char_x = 0;
+int mouse_char_y = 0;
+
+float target_scale = (float)SMALL_WINDOW_HEIGHT / (float)window_height;
 
 const char* WINDOW_TITLE = "Text based burger";
 
-float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
+float aspect_ratio = (float)window_width / (float)window_height;
 float aspect_ratio_small = (float)SMALL_WINDOW_HEIGHT / (float)SMALL_WINDOW_WIDTH;
 
 // How many z layers exist
@@ -43,10 +48,10 @@ int Z_LAYERS = 4;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 
-	WINDOW_WIDTH = width;
-	WINDOW_HEIGHT = height;
+	window_width = width;
+	window_height = height;
 
-	aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
+	aspect_ratio = (float)window_width / (float)window_height;
 	target_scale = (float)SMALL_WINDOW_HEIGHT / (float)height;
 }
 
@@ -61,9 +66,27 @@ void processInput(GLFWwindow* window) {
 			glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 		}
 		else {
-			glfwSetWindowMonitor(window, NULL, 100, 100, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+			glfwSetWindowMonitor(window, NULL, 100, 100, window_width, window_height, 0);
 		}
 	}
+
+	// Mouse position
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+
+	// Convert to character space
+
+	// Y position is simple because we can just divide by the character rows
+	mouse_char_y = (int)floor(ypos / CHAR_ROWS);
+
+	// X position we need to figure out how many character could fit in the window
+	// We could do complex scaling math but we know the character ratio so go by that
+	int char_pixels_y = window_height / CHAR_ROWS;
+	int char_pixels_x = char_pixels_y / CHAR_RATIO;
+	int char_width_max = window_width / char_pixels_x;
+
+	mouse_char_x = (int)floor(xpos / char_width_max);
+	mouse_char_x -= (CHAR_COLS - char_width_max) / 2; // Adjust for centering
 }
 
 static float scale = 1.0f;
@@ -100,7 +123,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(window_width, window_height, WINDOW_TITLE, NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -126,7 +149,7 @@ int main() {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
 	ImGui_ImplOpenGL3_Init();
 
-	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	glViewport(0, 0, window_width, window_height);
 
 	// Compile shaders
 	Shader raster_shader = Shader("vertex.glsl", "fragment.glsl", std::vector<std::string>(), 460);
@@ -275,6 +298,9 @@ int main() {
 		pass_shader.setFloat("translationX", translation[0]);
 		pass_shader.setFloat("translationY", translation[1]);
 
+		// Set mouse position uniform so dont have to waste a z layer for it
+		glUniform2ui(glGetUniformLocation(raster_shader.ID, "mouse_pos"), mouse_char_x, mouse_char_y);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glViewport(0, 0, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT); // Match the framebuffer size
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the framebuffer
@@ -286,7 +312,7 @@ int main() {
 
 		// Second Pass: Render to the screen (nearest-neighbor upscale)
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);			// Default framebuffer (screen)
-		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);	// Fullscreen viewport
+		glViewport(0, 0, window_width, window_height);	// Fullscreen viewport
 		glClear(GL_COLOR_BUFFER_BIT);					// Clear screen
 		// Set frambuffer generatred prev as screenTexture uniform
 		pass_shader.setInt("screenTexture", 0);
