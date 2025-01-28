@@ -71,6 +71,7 @@
     </None>
     <None Include="LISCENCE" />
     <None Include="..\README.MD" />
+    <None Include="..\.gitignore" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imconfig.h">
@@ -111,5 +112,7 @@
     <Text Include="assets\glyph.txt">
       <Filter>Assets</Filter>
     </Text>
+    <Text Include="assets\font.txt" />
+    <Text Include="assets\font2.txt" />
   </ItemGroup>
 </Project>

@@ -141,6 +141,7 @@
     <ClCompile Include="third-party\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.gitignore" />
     <None Include="..\README.MD" />
     <None Include="fragment.glsl" />
     <None Include="fragment_pass.glsl" />
