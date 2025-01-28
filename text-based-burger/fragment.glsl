@@ -6,6 +6,10 @@ out float FragColor;
 in vec2 TexCoords;
 
 uniform uvec4 glyphs[256];
+uniform int mouse_char_x;
+uniform int mouse_char_y;
+
+
 
 // Character grid ssbo
 layout(std430, binding = 0) buffer CharacterGrid {
@@ -54,7 +58,15 @@ void main() {
     uint bit = (block >> block_position) & 1u;
 
     // Either we draw the foreground or background color
-    FragColor = (float(bit)  * fg_float) + ((1.0 - float(bit)) * bg_float);
+    FragColor = 0.5 * (float(bit)  * fg_float) + ((1.0 - float(bit)) * bg_float);
+
+    // If we are the mouse cursor, draw glyph 165, white on black
+    if (character_position.x == mouse_char_x && character_position.y == mouse_char_y) {
+        uvec4 character = glyphs[165];
+        uint block = character[sector];
+        uint bit = (block >> block_position) & 1u;
+        FragColor = (float(bit)  * 1.0) + ((1.0 - float(bit)) * 0.0);
+    }
 
     // if we are a border pixel, make it 0
     if (gl_FragCoord.x < 1.0 || gl_FragCoord.x > 639.0 || gl_FragCoord.y < 1.0 || gl_FragCoord.y > 479.0) {

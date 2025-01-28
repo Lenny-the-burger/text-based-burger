@@ -16,8 +16,8 @@
 using namespace std;
 
 // These are not constants 
-int window_width = 1280;
-int window_height = 960;
+int window_width = 1200;
+int window_height = 600;
 
 // Character dimensions
 int CHAR_WIDTH = 8;
@@ -73,20 +73,28 @@ void processInput(GLFWwindow* window) {
 	// Mouse position
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
+	//xpos = ImGui::GetMousePos().x;
+	//ypos = ImGui::GetMousePos().y;
 
 	// Convert to character space
 
 	// Y position is simple because we can just divide by the character rows
-	mouse_char_y = (int)floor(ypos / CHAR_ROWS);
+
+	mouse_char_y = (int)floor((ypos * CHAR_ROWS) / window_height);
 
 	// X position we need to figure out how many character could fit in the window
 	// We could do complex scaling math but we know the character ratio so go by that
-	int char_pixels_y = window_height / CHAR_ROWS;
-	int char_pixels_x = char_pixels_y / CHAR_RATIO;
-	int char_width_max = window_width / char_pixels_x;
+	int char_pixels_side = (window_height / CHAR_ROWS) / CHAR_RATIO;
 
-	mouse_char_x = (int)floor(xpos / char_width_max);
-	mouse_char_x -= (CHAR_COLS - char_width_max) / 2; // Adjust for centering
+	mouse_char_x = (int)floor(xpos / char_pixels_side);
+
+	mouse_char_x *= 0.5;
+	mouse_char_y *= 0.5;
+
+	// Offset for the window border
+	// How many characters could fit in the window
+	int char_x_max = window_width / char_pixels_side;
+	mouse_char_x -= (char_x_max - CHAR_COLS) / 8;
 }
 
 static float scale = 1.0f;
@@ -107,6 +115,9 @@ void draw_ui() {
 	// Render target translation sliders
 	ImGui::SliderFloat("Translation X", &translation[0], -1.0f, 1.0f);
 	ImGui::SliderFloat("Translation Y", &translation[1], -1.0f, 1.0f);
+
+	// Because imgui hijacks things thanks imgui
+	ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 	
 	return;
 }
@@ -132,6 +143,7 @@ int main() {
     }
     glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -298,14 +310,16 @@ int main() {
 		pass_shader.setFloat("translationX", translation[0]);
 		pass_shader.setFloat("translationY", translation[1]);
 
-		// Set mouse position uniform so dont have to waste a z layer for it
-		glUniform2ui(glGetUniformLocation(raster_shader.ID, "mouse_pos"), mouse_char_x, mouse_char_y);
-
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glViewport(0, 0, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT); // Match the framebuffer size
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the framebuffer
 
 		raster_shader.use();
+
+		// Set mouse position uniform so dont have to waste a z layer for it
+		raster_shader.setInt("mouse_char_x", mouse_char_x);
+		raster_shader.setInt("mouse_char_y", mouse_char_y);
+
 		glBindVertexArray(VAO);							// Fullscreen quad VAO
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct 		// Draw the quad
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind framebuffer
