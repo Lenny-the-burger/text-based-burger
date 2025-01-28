@@ -109,10 +109,5 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="assets\glyph.txt">
-      <Filter>Assets</Filter>
-    </Text>
-    <Text Include="assets\font.txt" />
-    <Text Include="assets\font2.txt" />
   </ItemGroup>
 </Project>
