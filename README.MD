@@ -1,5 +1,5 @@
-# Text based burger
-Text based burger is an ascii (ansii) art program. It supports monospaced pixel fonts, comes stock with the cp437 rom font.
+# Text rendering base
+This is the base rendering engine for the ascii software (and tooling) Text based burger and the game CENTRALEYE.
 
 ## Liscencing
 This program is licensed under the MIT license. You can find the license in the LICENSE file.
