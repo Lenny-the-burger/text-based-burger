@@ -12,6 +12,8 @@
 
 #include "shader.h"
 #include "font_loader.h"
+#include "component.h"
+#include "ui_handler.h"
 
 using namespace std;
 
@@ -88,8 +90,8 @@ void processInput(GLFWwindow* window) {
 
 	mouse_char_x = (int)floor(xpos / char_pixels_side);
 
-	mouse_char_x *= 0.5;
-	mouse_char_y *= 0.5;
+	mouse_char_x /= 2;
+	mouse_char_y /= 2;
 
 	// Offset for the window border
 	// How many characters could fit in the window
@@ -185,6 +187,10 @@ int main() {
 
 	// Set the uniform
 	glUniform4uiv(glGetUniformLocation(raster_shader.ID, "glyphs"), 256, font_data_array);
+
+
+	// Load ui
+	UIHandler ui = UIHandler("test_scene.json");
 
 
 #pragma endregion
