@@ -1,0 +1,76 @@
+{
+  "root": [
+    {
+      "name": "test container",
+      "type": "container",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "children": [
+        {
+          "name": "text1",
+          "type": "label",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "text": "Hello, World!",
+          "style": {
+            "fg": 1.0,
+            "bg": 0.0
+          }
+        },
+        {
+          "name": "text2",
+          "type": "label",
+          "position": {
+            "x": 0,
+            "y": 1
+          },
+          "text": "This is a test.",
+          "style": {
+            "fg": 1.0,
+            "bg": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "name": "test container 2",
+      "type": "container",
+      "position": {
+        "x": 0,
+        "y": 2
+      },
+      "children": [
+        {
+          "name": "text3",
+          "type": "label",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "text": "This is a test.",
+          "style": {
+            "fg": 0.5,
+            "bg": 0.0
+          }
+        },
+        {
+          "name": "text4",
+          "type": "label",
+          "position": {
+            "x": 0,
+            "y": 1
+          },
+          "text": "Hello, World!",
+          "style": {
+            "fg": 0.5,
+            "bg": 0.0
+          }
+        }
+      ]
+    }
+  ]
+}

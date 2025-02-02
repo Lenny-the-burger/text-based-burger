@@ -22,6 +22,12 @@
     <Filter Include="Assets">
       <UniqueIdentifier>{56971b83-4de5-411f-8c95-b0734e18f75b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{fe5c4753-142d-488b-99ad-076c28a7be41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game data">
+      <UniqueIdentifier>{de7ec62f-f0ca-4008-a898-ff3e15ce4506}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -60,21 +66,30 @@
     <ClCompile Include="component.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="char_lut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ui_handler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="vertex.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="fragment.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="fragment_pass.glsl">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="LISCENCE" />
     <None Include="..\README.MD" />
     <None Include="..\.gitignore" />
+    <None Include="fragment.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="fragment_pass.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="vertex.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="test_scene.json">
+      <Filter>Game data</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imconfig.h">
@@ -115,6 +130,12 @@
     </ClInclude>
     <ClInclude Include="component.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="char_lut.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>Third party</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

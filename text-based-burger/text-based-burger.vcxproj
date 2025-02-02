@@ -128,6 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="char_lut.cpp" />
     <ClCompile Include="component.cpp" />
     <ClCompile Include="font_loader.cpp" />
     <ClCompile Include="glad.c" />
@@ -140,6 +141,7 @@
     <ClCompile Include="third-party\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="third-party\imgui\imgui_tables.cpp" />
     <ClCompile Include="third-party\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="ui_handler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore" />
@@ -148,11 +150,14 @@
     <None Include="fragment_pass.glsl" />
     <None Include="LISCENCE" />
     <None Include="packages.config" />
+    <None Include="test_scene.json" />
     <None Include="vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="char_lut.h" />
     <ClInclude Include="component.h" />
     <ClInclude Include="font_loader.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="third-party\imgui\imconfig.h" />
     <ClInclude Include="third-party\imgui\imgui.h" />
