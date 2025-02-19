@@ -11,7 +11,7 @@ class UIHandler {
 
 public:
 	// Constructors
-	UIHandler(std::string filename);
+	UIHandler(std::string filename, int scrn_w, int scrn_h);
 
 	// Update the ui
 	void update(update_data data);
@@ -21,13 +21,16 @@ public:
 	// statically makes all components rerender without updating
 	void rerender_all();
 
+	std::vector<std::vector<uint32_t>> get_screen();
+
 private:
 
 	// New screen to draw
-	std::vector<uint32_t> screen;
-	std::vector<bool> should_update;
+	std::vector<std::vector<uint32_t>> screen;
+	std::vector<std::vector<bool>> should_update;
+
+	ErrorReporter error_log;
 	
 	// Root component
 	UIComponent root;
-	
 };

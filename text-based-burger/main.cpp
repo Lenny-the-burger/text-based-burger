@@ -190,7 +190,7 @@ int main() {
 
 
 	// Load ui
-	UIHandler ui = UIHandler("test_scene.json");
+	UIHandler ui = UIHandler("test_scene.json", CHAR_COLS, CHAR_ROWS);
 
 
 #pragma endregion
@@ -305,16 +305,19 @@ int main() {
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
+
+		update_data frame_data;
+		frame_data.mouse_char_x = mouse_char_x;
+		frame_data.mouse_char_y = mouse_char_y;
+		frame_data.time = (int) glfwGetTime();
+		frame_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
+		ui.update(update_data());
+
+		// Rendering starts here
+
 		draw_ui();
 		set_uniforms();
-
-		pass_shader.setFloat("aspectRatio", aspect_ratio);
-		pass_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
-		pass_shader.setFloat("target_scale", target_scale);
-
-		pass_shader.setFloat("scale", scale);
-		pass_shader.setFloat("translationX", translation[0]);
-		pass_shader.setFloat("translationY", translation[1]);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glViewport(0, 0, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT); // Match the framebuffer size
@@ -325,6 +328,25 @@ int main() {
 		// Set mouse position uniform so dont have to waste a z layer for it
 		raster_shader.setInt("mouse_char_x", mouse_char_x);
 		raster_shader.setInt("mouse_char_y", mouse_char_y);
+
+		// For now just update all the ui and plop the whole screen on the gpu, 
+		// this will eventually happen on a sperate thread (probably)
+		ui.update(frame_data);
+		ui.rerender_all(); // for now just rerender all
+
+		// For now just blindly copy the screen to the char grid
+		vector<vector<uint32_t>> screen = ui.get_screen();
+		for (int i = 0; i < CHAR_ROWS; i++) {
+			for (int j = 0; j < CHAR_COLS; j++) {
+				char_grid[i * CHAR_COLS + j] = screen[i][j];
+			}
+		}
+
+		// Copy the screen to the gpu
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, char_grid_buffer);
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, NUM_CHARS * sizeof(uint32_t), char_grid);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
 
 		glBindVertexArray(VAO);							// Fullscreen quad VAO
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct 		// Draw the quad
@@ -337,11 +359,20 @@ int main() {
 		// Set frambuffer generatred prev as screenTexture uniform
 		pass_shader.setInt("screenTexture", 0);
 		glBindTexture(GL_TEXTURE_2D, texture);			// Bind the framebuffer texture
+
 		pass_shader.use();						       // Use passthrough shader
+
+		// Set uniforms
+		pass_shader.setFloat("aspectRatio", aspect_ratio);
+		pass_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
+		pass_shader.setFloat("target_scale", target_scale);
+
+		pass_shader.setFloat("scale", scale);
+		pass_shader.setFloat("translationX", translation[0]);
+		pass_shader.setFloat("translationY", translation[1]);
+
 		glBindVertexArray(VAO);							// Fullscreen quad VAO
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct              // Draw the quad
-
-
 
 		// Draw Dear ImGui
 		ImGui::Render();
