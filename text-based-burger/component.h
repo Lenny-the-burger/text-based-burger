@@ -41,6 +41,14 @@ public:
 	UIComponent(ErrorReporter& the_error_reporter); // Construct an empty component
 	UIComponent(json data, ErrorReporter& the_error_reporter); // Construct from json data
 
+	// Delete copy constructor and assignment
+	UIComponent(const UIComponent&) = delete;
+	UIComponent& operator=(const UIComponent&) = delete;
+
+	// Add move constructor and assignment
+	UIComponent(UIComponent&&) = default;
+	UIComponent& operator=(UIComponent&&) = default;
+
 	// Destructor
 	~UIComponent();
 
