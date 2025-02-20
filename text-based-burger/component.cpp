@@ -16,13 +16,25 @@ ErrorReporter::~ErrorReporter() {
 }
 
 void ErrorReporter::report_error(string error) {
+	// Check if the previous reported error is the same as the current one
+	if (!error_log.empty() && error_log.back() == error) {
+		// If it is, increment the repeat counter
+		repeats.back()++;
+		return;
+	}
+
 	// For now only report string errors
 	error_log.push_back(error);
+	repeats.push_back(0);
 	return;
 }
 
 vector<string> ErrorReporter::get_log() {
 	return error_log;
+}
+
+vector<int> ErrorReporter::get_repeats() {
+	return repeats;
 }
 
 uint32_t gen_frag(int character, int bg, int fg) {
@@ -204,7 +216,7 @@ void Label::render(std::vector<std::vector<uint32_t>>& screen) {
 	try {
 		for (int i : text) {
 			// Dont do any fancy calculations just try to write to the coordinates
-			screen[y][x] = gen_frag(i, background_color, foreground_color);
+			screen.at(y).at(x) = gen_frag(i, background_color, foreground_color);
 			x++;
 		}
 	}

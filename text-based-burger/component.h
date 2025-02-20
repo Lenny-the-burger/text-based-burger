@@ -25,8 +25,10 @@ public:
 	void report_error(std::string error);
 	// Get the error log
 	std::vector<std::string> get_log();
+	std::vector<int> get_repeats();
 private:
 	std::vector<std::string> error_log;
+	std::vector<int> repeats;
 };
 
 // Generates a grid fragment from character, bg and fg color
