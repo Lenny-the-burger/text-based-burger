@@ -47,6 +47,9 @@ float aspect_ratio_small = (float)SMALL_WINDOW_HEIGHT / (float)SMALL_WINDOW_WIDT
 // How many z layers exist
 int Z_LAYERS = 4;
 
+// Master ui handler
+UIHandler* ui;
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 
@@ -75,6 +78,7 @@ void processInput(GLFWwindow* window) {
 	// ctrl + f5 reload the ui
 	if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		// Reload the ui
+		ui = &UIHandler("test_scene.json", CHAR_COLS, CHAR_ROWS);
 	}
 
 	// Mouse position
@@ -195,7 +199,7 @@ int main() {
 
 
 	// Load ui
-	UIHandler ui = UIHandler("test_scene.json", CHAR_COLS, CHAR_ROWS);
+	ui = &UIHandler("test_scene.json", CHAR_COLS, CHAR_ROWS);
 
 
 #pragma endregion
@@ -317,7 +321,7 @@ int main() {
 		frame_data.time = (int) glfwGetTime();
 		frame_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
 
-		ui.update(update_data());
+		ui->update(update_data());
 
 		// Rendering starts here
 
@@ -336,11 +340,11 @@ int main() {
 
 		// For now just update all the ui and plop the whole screen on the gpu, 
 		// this will eventually happen on a sperate thread (probably)
-		ui.update(frame_data);
-		ui.rerender_all(); // for now just rerender all
+		ui->update(frame_data);
+		ui->rerender_all(); // for now just rerender all
 
 		// For now just blindly copy the screen to the char grid
-		vector<vector<uint32_t>> screen = ui.get_screen();
+		vector<vector<uint32_t>> screen = ui->get_screen();
 		for (int i = 0; i < CHAR_ROWS; i++) {
 			for (int j = 0; j < CHAR_COLS; j++) {
 				char_grid[i * CHAR_COLS + j] = screen[i][j];
