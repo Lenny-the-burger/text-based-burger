@@ -41,6 +41,11 @@ public:
 	UIComponent(ErrorReporter& the_error_reporter); // Construct an empty component
 	UIComponent(json data, ErrorReporter& the_error_reporter); // Construct from json data
 
+
+	// THESE CAN ONLY BE MOVED DO NOT EVER EVER COPY THEM
+	// ESPECIALLY IN THE INITIALIZER LIST EVERYTHING WILL EXPLODE
+	// INCLUDING THE COMPILER ERROR REPORTER
+	
 	// Delete copy constructor and assignment
 	UIComponent(const UIComponent&) = delete;
 	UIComponent& operator=(const UIComponent&) = delete;
