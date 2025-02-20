@@ -32,8 +32,8 @@ uint32_t gen_frag(int character, int bg, int fg) {
 	// The last 8 bits are unused
 	uint32_t frag = 0;
 	frag |= character;
-	frag |= bg << 8;
-	frag |= fg << 16;
+	frag |= fg << 8;
+	frag |= bg << 16;
 
 	return frag;
 }
@@ -189,7 +189,8 @@ void Label::render(std::vector<std::vector<uint32_t>>& screen) {
 	try {
 		for (int i : text) {
 			// Dont do any fancy calculations just try to write to the coordinates
-			screen.at(y).at(x) = gen_frag(i, background_color, foreground_color);
+			screen[y][x] = gen_frag(i, background_color, foreground_color);
+			x++;
 		}
 	}
 	catch (out_of_range) {
