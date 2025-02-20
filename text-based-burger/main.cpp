@@ -48,7 +48,7 @@ float aspect_ratio_small = (float)SMALL_WINDOW_HEIGHT / (float)SMALL_WINDOW_WIDT
 int Z_LAYERS = 4;
 
 // Master ui handler
-UIHandler* ui;
+unique_ptr<UIHandler> ui;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -78,7 +78,12 @@ void processInput(GLFWwindow* window) {
 	// ctrl + f5 reload the ui
 	if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		// Reload the ui
-		ui = &UIHandler("test_scene.json", CHAR_COLS, CHAR_ROWS);
+		ui = make_unique<UIHandler>("test_scene.json", CHAR_COLS, CHAR_ROWS / 2);
+	}
+
+	// ctrl + f6 rerender all components
+	if (glfwGetKey(window, GLFW_KEY_F6) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		ui->rerender_all();
 	}
 
 	// Mouse position
@@ -199,7 +204,7 @@ int main() {
 
 
 	// Load ui
-	ui = &UIHandler("test_scene.json", CHAR_COLS, CHAR_ROWS);
+	ui = make_unique<UIHandler>("test_scene.json", CHAR_COLS, CHAR_ROWS / 2);
 
 
 #pragma endregion
