@@ -39,7 +39,7 @@ class UIComponent {
 public:
 	// Constructor
 	UIComponent(ErrorReporter& the_error_reporter); // Construct an empty component
-	UIComponent(json data, ErrorReporter& the_error_reporter); // Construct from json data
+	UIComponent(json data, std::pair<int, int> offset, ErrorReporter& the_error_reporter); // Construct from json data
 
 
 	// THESE CAN ONLY BE MOVED DO NOT EVER EVER COPY THEM
@@ -86,12 +86,12 @@ protected:
 // Returns iterator that returns leaves in bfs order
 std::vector<UIComponent*> iterate_leaves(UIComponent* component);
 
-std::unique_ptr<UIComponent> type_selector(json data, ErrorReporter& reporter);
+std::unique_ptr<UIComponent> type_selector(json data, std::pair<int, int>, ErrorReporter& reporter);
 
 
 class Container : public UIComponent {
 public:
-	Container(json data, ErrorReporter& the_error_reporter);
+	Container(json data, std::pair<int, int> offset, ErrorReporter& the_error_reporter);
 };
 
 
@@ -101,7 +101,7 @@ public:
 // to interact with labels as a human, you only need to hold alt and type the number on the numpad.
 class Label : public UIComponent {
 public:
-	Label(json data, ErrorReporter& the_error_reporter);
+	Label(json data, std::pair<int, int> offset, ErrorReporter& the_error_reporter);
 
 	virtual void contains(std::unique_ptr<UIComponent>&& component) override;
 

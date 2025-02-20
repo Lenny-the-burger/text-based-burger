@@ -26,7 +26,8 @@ UIHandler::UIHandler(string filename, int scrn_w, int scrn_h)
 	json root_children = data["root"];
 
 	for (json child : root_children) {
-		root.contains(move(type_selector(child, error_log)));
+		// Children of root will always have no offset, as root is always at 0, 0
+		root.contains(move(type_selector(child, make_pair(0, 0), error_log)));
 	}
 
 	// Set the root component

@@ -42,17 +42,27 @@ uint32_t gen_frag(int character, int bg, int fg) {
 // UI COMPONENT
 UIComponent::UIComponent(ErrorReporter& the_error_reporter) : error_reporter(the_error_reporter) {
 	name = "root";
-	position = make_pair(0, 0);
+	position = make_pair(0, 0); // This constructor should only be used for the root component
 	return;
 };
 
-UIComponent::UIComponent(json data, ErrorReporter& the_error_reporter) : error_reporter(the_error_reporter) {
+UIComponent::UIComponent(json data,pair<int, int> offset, ErrorReporter& the_error_reporter) : error_reporter(the_error_reporter) {
 	name = to_string(data["name"]); // This should always return a string name im not error checking
 	position = make_pair(data["position"]["x"], data["position"]["y"]);
 
+	// Parental offsets are computed statically, so components cannot be moved after creation
+	// They must be destroyed and recreated, but ideally this should never happen. You should
+	// use an animating component for that. Otherwise, this would require backtracking through
+	// the entire ui tree on every update. This is probably fine perf wise but we still dont
+	// want to do it.
+
+	// Add the offset to the position
+	position.first += offset.first;
+	position.second += offset.second;
+
 	// Recursivly build the tree
 	for (json child : data["children"]) {
-		contains(move(type_selector(child, error_reporter)));
+		contains(move(type_selector(child, position, error_reporter)));
 	}
 
 	return;
@@ -108,31 +118,33 @@ vector<UIComponent*> iterate_leaves(UIComponent* component) {
 	return leaves;
 }
 
-std::unique_ptr<UIComponent> type_selector(json data, ErrorReporter& reporter) {
-	// const char*, string, and whatever the fuck nlhomann json uses is going to
+unique_ptr<UIComponent> type_selector(json data, pair<int, int> offset, ErrorReporter& reporter) {
+	// const char*, string, and whatever the fck nlhomann json uses is going to
 	// make me die i didnt want to use a switch anyway
 
 	if (data["type"] == "label") {
-		return make_unique<Label>(data, reporter);
+		return make_unique<Label>(data, offset, reporter);
 	}
 	if (data["type"] == "container") {
-		return make_unique<Container>(data, reporter);
+		return make_unique<Container>(data, offset, reporter);
 	}
-	else {
-		return make_unique<UIComponent>(data, reporter);
+	else { // Why are you creating a default component?
+		return make_unique<UIComponent>(data, offset, reporter);
 	}
 }
 
 
 // CONTAINER
 
-Container::Container(json data, ErrorReporter& the_error_reporter) : UIComponent(data, the_error_reporter) {
+Container::Container(json data, pair<int, int> offset, ErrorReporter& the_error_reporter) 
+	: UIComponent(data, offset, the_error_reporter) {
 	return;
 }
 
 // LABELS
 
-Label::Label(json data, ErrorReporter& the_error_reporter) : UIComponent(data, the_error_reporter) {
+Label::Label(json data, pair<int, int> offset, ErrorReporter& the_error_reporter) 
+	: UIComponent(data, offset, the_error_reporter) {
 	update_text(to_string(data["text"]));
 	foreground_color = data["style"]["fg"];
 	background_color = data["style"]["bg"];
