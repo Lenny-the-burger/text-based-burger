@@ -187,8 +187,11 @@ void Label::update_text(vector<int> new_text) {
 
 void Label::update_text(string new_text) {
 	text.clear();
-	for (char i : new_text) {
-		text.push_back(char2int(i));
+	// truncate last and first characters away as it somehow reads the " characters
+	// which should not be possible
+	new_text = new_text.substr(1, new_text.size() - 2);
+	for (char c : new_text) {
+		text.push_back(char2int(c));
 	}
 }
 
