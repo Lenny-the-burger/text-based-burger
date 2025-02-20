@@ -52,9 +52,9 @@ public:
 	virtual void render(std::vector<std::vector<uint32_t>>&screen);
 
 	// This may be overridden by some components that cannot contain children
-	virtual void contains(UIComponent component);
+	virtual void contains(std::unique_ptr<UIComponent>&& component);
 
-	std::vector<UIComponent> get_children();
+	std::vector<UIComponent*> get_children();
 
 	std::string name;
 
@@ -63,7 +63,7 @@ protected:
 
 	std::pair<int, int> position;
 
-	std::vector<UIComponent> children;
+	std::vector<std::unique_ptr<UIComponent>> children;
 
 	ErrorReporter& error_reporter;
 
@@ -71,9 +71,9 @@ protected:
 
 // Function to iterate over every leaf in component tree from some given component
 // Returns iterator that returns leaves in bfs order
-std::vector<UIComponent> iterate_leaves(UIComponent component);
+std::vector<UIComponent*> iterate_leaves(UIComponent* component);
 
-UIComponent type_selector(json data, ErrorReporter& reporter);
+std::unique_ptr<UIComponent> type_selector(json data, ErrorReporter& reporter);
 
 
 class Container : public UIComponent {
@@ -90,7 +90,7 @@ class Label : public UIComponent {
 public:
 	Label(json data, ErrorReporter& the_error_reporter);
 
-	virtual void contains(UIComponent component) override;
+	virtual void contains(std::unique_ptr<UIComponent>&& component) override;
 
 	virtual void render(std::vector<std::vector<uint32_t>>& screen) override;
 	

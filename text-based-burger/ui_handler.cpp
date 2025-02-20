@@ -26,7 +26,7 @@ UIHandler::UIHandler(std::string filename, int scrn_w, int scrn_h)
 	json root_children = data["root"];
 
 	for (json child : root_children) {
-		root.contains(UIComponent(child, error_log));
+		root.contains(move(type_selector(child, error_log)));
 	}
 
 	// Set the root component
@@ -34,20 +34,19 @@ UIHandler::UIHandler(std::string filename, int scrn_w, int scrn_h)
 
 void UIHandler::update(update_data data) {
 	// Update the root component
-	vector<UIComponent> leaves = iterate_leaves(root);
-	for (UIComponent leaf : leaves) {
-		bool should_rerender = leaf.update(data);
-		if (should_rerender) {
-			leaf.render(screen);
+	vector<UIComponent*> leaves = iterate_leaves(&root);
+	for (UIComponent* leaf : leaves) {
+		if (leaf->update(data)) {
+			leaf->render(screen);
 		}
 	}
 }
 
 void UIHandler::rerender_all() {
 	// Rerender all components
-	vector<UIComponent> leaves = iterate_leaves(root);
-	for (UIComponent leaf : leaves) {
-		leaf.render(screen);
+	vector<UIComponent*> leaves = iterate_leaves(&root);
+	for (UIComponent* leaf : leaves) {
+		leaf->render(screen);
 	}
 }
 
