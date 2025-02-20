@@ -1,6 +1,7 @@
 #pragma once
 
 #include "component.h"
+#include "char_lut.h"
 
 #include <vector>
 #include <string>
@@ -22,14 +23,24 @@ public:
 	// statically makes all components rerender without updating
 	void rerender_all();
 
+	// Toggle the error log
+	void toggle_error_log();
+
+	// Clear the screen
+	void cls();
+
 	std::vector<std::vector<uint32_t>> get_screen();
 
 private:
+
+	// Render the error log
+	void render_error_log();
 
 	// New screen to draw
 	std::vector<std::vector<uint32_t>> screen;
 	std::vector<std::vector<bool>> should_update;
 
+	bool show_error_log = false;
 	ErrorReporter error_log;
 	
 	// Root component

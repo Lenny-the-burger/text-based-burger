@@ -71,6 +71,19 @@
           }
         }
       ]
+    },
+    {
+      "name": "text5",
+      "type": "label",
+      "position": {
+        "x": 60,
+        "y": 29
+      },
+      "text": "This is a test.",
+      "style": {
+        "fg": 255,
+        "bg": 255
+      }
     }
   ]
 }

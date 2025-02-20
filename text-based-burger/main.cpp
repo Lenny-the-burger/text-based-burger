@@ -86,6 +86,12 @@ void processInput(GLFWwindow* window) {
 		ui->rerender_all();
 	}
 
+	// ctrl + f12 to open ui error log
+	if (glfwGetKey(window, GLFW_KEY_F12) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		ui->toggle_error_log();
+		ui->cls();
+	}
+
 	// Mouse position
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
@@ -350,7 +356,7 @@ int main() {
 
 		// For now just blindly copy the screen to the char grid
 		vector<vector<uint32_t>> screen = ui->get_screen();
-		for (int i = 0; i < CHAR_ROWS; i++) {
+		for (int i = 0; i < CHAR_ROWS / 2; i++) {
 			for (int j = 0; j < CHAR_COLS; j++) {
 				char_grid[i * CHAR_COLS + j] = screen[i][j];
 			}

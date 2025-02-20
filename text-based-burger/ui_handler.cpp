@@ -56,6 +56,48 @@ void UIHandler::rerender_all() {
 	}
 }
 
+void UIHandler::toggle_error_log() {
+	show_error_log = !show_error_log;
+}
+
+void UIHandler::render_error_log() {
+	// Render the error log
+
+	// Clear the screen
+	screen = vector<vector<uint32_t>>(screen.size(), vector<uint32_t>(screen[0].size(), 0));
+
+	int line = 0;
+	vector<int> all_repeats = error_log.get_repeats();
+	for (string error : error_log.get_log()) {
+
+		// Check if the error is repeated and if >0 render the number of repeats
+		int repeats = all_repeats[line];
+
+		// append the number of repeats to the error
+		if (repeats > 0) {
+			error += " x" + to_string(repeats);
+		}
+
+		// Render the error
+		for (int i = 0; i < error.size(); i++) {
+			int char_num = char2int(error[i]);
+			uint32_t char_packed = gen_frag(char_num, 0, 255);
+			screen[line][i] = char_packed;
+		}
+
+		line++;
+	}
+}
+
+void UIHandler::cls() {
+	// Clear the screen
+	screen = vector<vector<uint32_t>>(screen.size(), vector<uint32_t>(screen[0].size(), 0));
+}
+
 std::vector<std::vector<uint32_t>> UIHandler::get_screen() {
+	if (show_error_log) {
+		// This is innefficient but you probably won't be rendering the error log all the time
+		render_error_log();
+	}
 	return screen;
 }
