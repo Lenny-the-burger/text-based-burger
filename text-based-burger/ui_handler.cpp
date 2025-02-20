@@ -5,6 +5,11 @@
 using namespace std;
 using json = nlohmann::json; // for convenience
 
+UIHandler::UIHandler() : error_log(), root(move(UIComponent(error_log))) {
+	// Set error log to empty
+	error_log = ErrorReporter();
+}
+
 UIHandler::UIHandler(string filename, int scrn_w, int scrn_h)
 	: error_log(), root(move(UIComponent(error_log))) {
 	// Set error log to empty

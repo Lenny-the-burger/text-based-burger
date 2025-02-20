@@ -11,6 +11,7 @@ class UIHandler {
 
 public:
 	// Constructors
+	UIHandler();
 	UIHandler(std::string filename, int scrn_w, int scrn_h);
 
 	// Update the ui

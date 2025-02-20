@@ -72,6 +72,11 @@ void processInput(GLFWwindow* window) {
 		}
 	}
 
+	// ctrl + f5 reload the ui
+	if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		// Reload the ui
+	}
+
 	// Mouse position
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
