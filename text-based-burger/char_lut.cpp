@@ -4,6 +4,7 @@ using namespace std;
 
 int char2int(char c) {
     switch (c) {
+	    case ' ': return 32; // Space, passing 0 will break for some reason
         case '!': return 33;
         case '"': return 34;
         case '#': return 35;
@@ -105,6 +106,7 @@ int char2int(char c) {
 
 string int2char(int i) {
     switch (i) {
+	    case 32: return " "; // Space
         case 33: return "!";
         case 34: return "\"";
         case 35: return "#";
