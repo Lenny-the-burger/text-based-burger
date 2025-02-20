@@ -126,13 +126,13 @@ std::unique_ptr<UIComponent> type_selector(json data, ErrorReporter& reporter) {
 
 // CONTAINER
 
-Container::Container(json data, ErrorReporter& the_error_reporter) : UIComponent(data, error_reporter) {
+Container::Container(json data, ErrorReporter& the_error_reporter) : UIComponent(data, the_error_reporter) {
 	return;
 }
 
 // LABELS
 
-Label::Label(json data, ErrorReporter& the_error_reporter) : UIComponent(data, error_reporter) {
+Label::Label(json data, ErrorReporter& the_error_reporter) : UIComponent(data, the_error_reporter) {
 	update_text(to_string(data["text"]));
 	foreground_color = data["style"]["fg"];
 	background_color = data["style"]["bg"];
@@ -146,6 +146,13 @@ Label::Label(json data, ErrorReporter& the_error_reporter) : UIComponent(data, e
 	if (background_color < 0 || background_color > 255) {
 		error_reporter.report_error(
 			"Tried to create label " + name + " with illegal bg colour of " + to_string(background_color)
+		);
+	}
+
+	// Report an error if the fg and bg colours are the same
+	if (foreground_color == background_color) {
+		error_reporter.report_error(
+			"Tried to create label " + name + " with fg and bg colours the same"
 		);
 	}
 
