@@ -137,6 +137,9 @@
     <ClInclude Include="json.hpp">
       <Filter>Third party</Filter>
     </ClInclude>
+    <ClInclude Include="third-party\glad\glad.h">
+      <Filter>Third party</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="assets\font2.txt">

@@ -159,6 +159,7 @@
     <ClInclude Include="font_loader.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="third-party\glad\glad.h" />
     <ClInclude Include="third-party\imgui\imconfig.h" />
     <ClInclude Include="third-party\imgui\imgui.h" />
     <ClInclude Include="third-party\imgui\imgui_impl_glfw.h" />

@@ -79,6 +79,7 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		// Reload the ui
 		ui = make_unique<UIHandler>("test_scene.json", CHAR_COLS, CHAR_ROWS / 2);
+		ui->rerender_all();
 	}
 
 	// ctrl + f6 rerender all components
@@ -90,6 +91,7 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_F12) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		ui->toggle_error_log();
 		ui->cls();
+		ui->rerender_all();
 	}
 
 	// Mouse position
@@ -166,6 +168,7 @@ int main() {
     glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	glfwSwapInterval(0); // Disable vsync
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -211,6 +214,7 @@ int main() {
 
 	// Load ui
 	ui = make_unique<UIHandler>("test_scene.json", CHAR_COLS, CHAR_ROWS / 2);
+	ui->rerender_all(); // Initial render
 
 
 #pragma endregion
@@ -352,7 +356,7 @@ int main() {
 		// For now just update all the ui and plop the whole screen on the gpu, 
 		// this will eventually happen on a sperate thread (probably)
 		ui->update(frame_data);
-		ui->rerender_all(); // for now just rerender all
+		//ui->rerender_all(); // for now just rerender all
 
 		// For now just blindly copy the screen to the char grid
 		vector<vector<uint32_t>> screen = ui->get_screen();
@@ -361,6 +365,9 @@ int main() {
 				char_grid[i * CHAR_COLS + j] = screen[i][j];
 			}
 		}
+
+		// The amount of data we send to the gpu is only 7.2 kb, if you want to optimize
+		// this then go right ahead if you want another 1 fps over the 1000 you already get
 
 		// Copy the screen to the gpu
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, char_grid_buffer);
