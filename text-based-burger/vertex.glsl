@@ -1,8 +1,8 @@
+#version 460 core
+
 layout (location = 0) in vec2 aPos; // Position in NDC
 
-out TextureCoords {
-	vec2 TexCoords;
-};
+out vec2 TexCoords;
 
 void main() {
 
