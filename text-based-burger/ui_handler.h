@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 // This is the ui handler class. It handles ui operations, look drawing, updates, input handling, etc.
 
@@ -49,4 +50,7 @@ private:
 	
 	// Root component
 	UIComponent root;
+
+	// Map of targetname to component pointer
+	std::map<std::string, UIComponent*> component_registry;
 };

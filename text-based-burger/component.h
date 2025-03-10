@@ -34,6 +34,15 @@ private:
 // Generates a grid fragment from character, bg and fg color
 uint32_t gen_frag(int character, int bg, int fg);
 
+// All the various component events we can send to them
+enum class ComponentEvent {
+	CNT_ADD_CHILD,
+	CNT_KILL_CHILD,
+
+	LBL_UPDATE_TEXT,
+	LBL_SET_COLOR,
+};
+
 // The root ui component class. All ui components inherit from this class.
 
 class UIComponent {
@@ -71,7 +80,7 @@ public:
 
 	std::vector<UIComponent*> get_children();
 
-	std::string name;
+	std::string targetname;
 
 protected:
 	// These are all common to all components
@@ -115,4 +124,24 @@ private:
 	std::vector<int> text;
 	int foreground_color;
 	int background_color;
+};
+
+class Button : public Label {
+public:
+	Button(json data, std::pair<int, int> offset, ErrorReporter& the_error_reporter);
+
+	virtual void render(std::vector<std::vector<uint32_t>>& screen) override;
+
+	virtual bool update(update_data data) override;
+
+	void set_script(std::string script);
+
+private:
+	bool is_hovering;
+	bool is_clicking;
+	bool fire_only_once;
+
+	void on_hover();
+	void on_click();
+	void on_release();
 };
