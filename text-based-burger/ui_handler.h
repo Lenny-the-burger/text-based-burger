@@ -2,6 +2,7 @@
 
 #include "component.h"
 #include "char_lut.h"
+#include "ui_systems.h"
 
 #include <vector>
 #include <string>
