@@ -53,13 +53,13 @@ uint32_t gen_frag(int character, int bg, int fg) {
 
 // UI COMPONENT
 UIComponent::UIComponent(ErrorReporter& the_error_reporter) : error_reporter(the_error_reporter) {
-	name = "root";
+	targetname = "root";
 	position = make_pair(0, 0); // This constructor should only be used for the root component
 	return;
 };
 
 UIComponent::UIComponent(json data,pair<int, int> offset, ErrorReporter& the_error_reporter) : error_reporter(the_error_reporter) {
-	name = to_string(data["name"]); // This should always return a string name im not error checking
+	targetname = to_string(data["targetname"]); // This should always return a string targetname im not error checking
 	position = make_pair(data["position"]["x"], data["position"]["y"]);
 
 	// Parental offsets are computed statically, so components cannot be moved after creation
@@ -164,19 +164,19 @@ Label::Label(json data, pair<int, int> offset, ErrorReporter& the_error_reporter
 	// Report any illegal colours, illegal text should never happen
 	if (foreground_color < 0 || foreground_color > 255) {
 		error_reporter.report_error(
-			"Tried to create label " + name + " with illegal fg colour of " + to_string(foreground_color)
+			"Tried to create label " + targetname + " with illegal fg colour of " + to_string(foreground_color)
 		);
 	}
 	if (background_color < 0 || background_color > 255) {
 		error_reporter.report_error(
-			"Tried to create label " + name + " with illegal bg colour of " + to_string(background_color)
+			"Tried to create label " + targetname + " with illegal bg colour of " + to_string(background_color)
 		);
 	}
 
 	// Report an error if the fg and bg colours are the same
 	if (foreground_color == background_color) {
 		error_reporter.report_error(
-			"Tried to create label " + name + " with fg and bg colours the same"
+			"Tried to create label " + targetname + " with fg and bg colours the same"
 		);
 	}
 
@@ -186,7 +186,7 @@ Label::Label(json data, pair<int, int> offset, ErrorReporter& the_error_reporter
 // Labels do not update, have special init function, and hold text
 void Label::contains(std::unique_ptr<UIComponent>&& component) {
 	// labels cannot get pregnant
-	error_reporter.report_error("Tried to add a child to a label " + name);
+	error_reporter.report_error("Tried to add a child to a label " + targetname);
 	return;
 }
 
@@ -221,7 +221,7 @@ void Label::render(std::vector<std::vector<uint32_t>>& screen) {
 		}
 	}
 	catch (out_of_range) {
-		error_reporter.report_error("Label " + name + " tried to render out of bounds");
+		error_reporter.report_error("Label " + targetname + " tried to render out of bounds");
 	}
 	return;
 }

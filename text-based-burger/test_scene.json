@@ -1,7 +1,7 @@
 {
   "root": [
     {
-      "name": "test container",
+      "targetname": "test container",
       "type": "container",
       "position": {
         "x": 0,
@@ -9,7 +9,7 @@
       },
       "children": [
         {
-          "name": "text1",
+          "targetname": "text1",
           "type": "label",
           "position": {
             "x": 0,
@@ -22,7 +22,7 @@
           }
         },
         {
-          "name": "text2",
+          "targetname": "text2",
           "type": "label",
           "position": {
             "x": 0,
@@ -37,7 +37,7 @@
       ]
     },
     {
-      "name": "test container 2",
+      "targetname": "test container 2",
       "type": "container",
       "position": {
         "x": 0,
@@ -45,7 +45,7 @@
       },
       "children": [
         {
-          "name": "text3",
+          "targetname": "text3",
           "type": "label",
           "position": {
             "x": 0,
@@ -58,7 +58,7 @@
           }
         },
         {
-          "name": "text4",
+          "targetname": "text4",
           "type": "label",
           "position": {
             "x": 0,
@@ -73,7 +73,7 @@
       ]
     },
     {
-      "name": "text5",
+      "targetname": "text5",
       "type": "label",
       "position": {
         "x": 60,
