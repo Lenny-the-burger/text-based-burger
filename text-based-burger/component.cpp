@@ -3,19 +3,19 @@
 
 using namespace std;
 
-// Error Reporter
-ErrorReporter::ErrorReporter() {
-	// Reporters will always start with an empty log
+// Component io handler
+ComponentIO::ComponentIO() {
+	// Reporters will always start with an empty error log
 	error_log = vector<string>();
 	return;
 }
 
-ErrorReporter::~ErrorReporter() {
+ComponentIO::~ComponentIO() {
 	error_log.clear();
 	return;
 }
 
-void ErrorReporter::report_error(string error) {
+void ComponentIO::report_error(string error) {
 	// Check if the previous reported error is the same as the current one
 	if (!error_log.empty() && error_log.back() == error) {
 		// If it is, increment the repeat counter
@@ -29,11 +29,11 @@ void ErrorReporter::report_error(string error) {
 	return;
 }
 
-vector<string> ErrorReporter::get_log() {
+vector<string> ComponentIO::get_log() {
 	return error_log;
 }
 
-vector<int> ErrorReporter::get_repeats() {
+vector<int> ComponentIO::get_repeats() {
 	return repeats;
 }
 
@@ -52,13 +52,13 @@ uint32_t gen_frag(int character, int bg, int fg) {
 
 
 // UI COMPONENT
-UIComponent::UIComponent(ErrorReporter& the_error_reporter) : error_reporter(the_error_reporter) {
+UIComponent::UIComponent(ComponentIO& the_comp_io) : comp_io(the_comp_io) {
 	targetname = "root";
 	position = make_pair(0, 0); // This constructor should only be used for the root component
 	return;
 };
 
-UIComponent::UIComponent(json data,pair<int, int> offset, ErrorReporter& the_error_reporter) : error_reporter(the_error_reporter) {
+UIComponent::UIComponent(json data,pair<int, int> offset, ComponentIO& the_comp_io) : comp_io(the_comp_io) {
 	targetname = to_string(data["targetname"]); // This should always return a string targetname im not error checking
 	position = make_pair(data["position"]["x"], data["position"]["y"]);
 
@@ -74,7 +74,7 @@ UIComponent::UIComponent(json data,pair<int, int> offset, ErrorReporter& the_err
 
 	// Recursivly build the tree
 	for (json child : data["children"]) {
-		contains(move(type_selector(child, position, error_reporter)));
+		contains(move(type_selector(child, position, comp_io)));
 	}
 
 	return;
@@ -130,7 +130,7 @@ vector<UIComponent*> iterate_leaves(UIComponent* component) {
 	return leaves;
 }
 
-unique_ptr<UIComponent> type_selector(json data, pair<int, int> offset, ErrorReporter& reporter) {
+unique_ptr<UIComponent> type_selector(json data, pair<int, int> offset, ComponentIO& reporter) {
 	// const char*, string, and whatever the fck nlhomann json uses is going to
 	// make me die i didnt want to use a switch anyway
 
@@ -148,34 +148,34 @@ unique_ptr<UIComponent> type_selector(json data, pair<int, int> offset, ErrorRep
 
 // CONTAINER
 
-Container::Container(json data, pair<int, int> offset, ErrorReporter& the_error_reporter) 
-	: UIComponent(data, offset, the_error_reporter) {
+Container::Container(json data, pair<int, int> offset, ComponentIO& the_comp_io) 
+	: UIComponent(data, offset, the_comp_io) {
 	return;
 }
 
 // LABELS
 
-Label::Label(json data, pair<int, int> offset, ErrorReporter& the_error_reporter) 
-	: UIComponent(data, offset, the_error_reporter) {
+Label::Label(json data, pair<int, int> offset, ComponentIO& the_comp_io) 
+	: UIComponent(data, offset, the_comp_io) {
 	update_text(to_string(data["text"]));
 	foreground_color = data["style"]["fg"];
 	background_color = data["style"]["bg"];
 
 	// Report any illegal colours, illegal text should never happen
 	if (foreground_color < 0 || foreground_color > 255) {
-		error_reporter.report_error(
+		comp_io.report_error(
 			"Tried to create label " + targetname + " with illegal fg colour of " + to_string(foreground_color)
 		);
 	}
 	if (background_color < 0 || background_color > 255) {
-		error_reporter.report_error(
+		comp_io.report_error(
 			"Tried to create label " + targetname + " with illegal bg colour of " + to_string(background_color)
 		);
 	}
 
 	// Report an error if the fg and bg colours are the same
 	if (foreground_color == background_color) {
-		error_reporter.report_error(
+		comp_io.report_error(
 			"Tried to create label " + targetname + " with fg and bg colours the same"
 		);
 	}
@@ -186,7 +186,7 @@ Label::Label(json data, pair<int, int> offset, ErrorReporter& the_error_reporter
 // Labels do not update, have special init function, and hold text
 void Label::contains(std::unique_ptr<UIComponent>&& component) {
 	// labels cannot get pregnant
-	error_reporter.report_error("Tried to add a child to a label " + targetname);
+	comp_io.report_error("Tried to add a child to a label " + targetname);
 	return;
 }
 
@@ -221,7 +221,7 @@ void Label::render(std::vector<std::vector<uint32_t>>& screen) {
 		}
 	}
 	catch (out_of_range) {
-		error_reporter.report_error("Label " + targetname + " tried to render out of bounds");
+		comp_io.report_error("Label " + targetname + " tried to render out of bounds");
 	}
 	return;
 }

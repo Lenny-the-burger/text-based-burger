@@ -43,11 +43,8 @@ private:
 	std::vector<std::vector<bool>> should_update;
 
 	bool show_error_log = false;
-	ErrorReporter error_log;
+	ComponentIO component_io;
 	
 	// Root component
 	UIComponent root;
-
-	// Map of targetname to component pointer
-	std::map<std::string, UIComponent*> component_registry;
 };

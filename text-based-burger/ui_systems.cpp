@@ -3,18 +3,18 @@
 using namespace std;
 
 // Error Reporter
-ErrorReporter::ErrorReporter() {
+ComponentIO::ComponentIO() {
 	// Reporters will always start with an empty log
 	error_log = vector<string>();
 	return;
 }
 
-ErrorReporter::~ErrorReporter() {
+ComponentIO::~ComponentIO() {
 	error_log.clear();
 	return;
 }
 
-void ErrorReporter::report_error(string error) {
+void ComponentIO::report_error(string error) {
 	// Check if the previous reported error is the same as the current one
 	if (!error_log.empty() && error_log.back() == error) {
 		// If it is, increment the repeat counter
@@ -28,11 +28,11 @@ void ErrorReporter::report_error(string error) {
 	return;
 }
 
-vector<string> ErrorReporter::get_log() {
+vector<string> ComponentIO::get_log() {
 	return error_log;
 }
 
-vector<int> ErrorReporter::get_repeats() {
+vector<int> ComponentIO::get_repeats() {
 	return repeats;
 }
 

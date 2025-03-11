@@ -5,15 +5,15 @@
 using namespace std;
 using json = nlohmann::json; // for convenience
 
-UIHandler::UIHandler() : error_log(), root(move(UIComponent(error_log))) {
+UIHandler::UIHandler() : component_io(), root(move(UIComponent(component_io))) {
 	// Set error log to empty
-	error_log = ErrorReporter();
+	component_io = ComponentIO();
 }
 
 UIHandler::UIHandler(string filename, int scrn_w, int scrn_h)
-	: error_log(), root(move(UIComponent(error_log))) {
+	: component_io(), root(move(UIComponent(component_io))) {
 	// Set error log to empty
-	error_log = ErrorReporter();
+	component_io = ComponentIO();
 
 	// Initialize the screen to all 0s
 	screen = vector<vector<uint32_t>>(scrn_h, vector<uint32_t>(scrn_w, 0));
@@ -32,7 +32,7 @@ UIHandler::UIHandler(string filename, int scrn_w, int scrn_h)
 
 	for (json child : root_children) {
 		// Children of root will always have no offset, as root is always at 0, 0
-		root.contains(move(type_selector(child, make_pair(0, 0), error_log)));
+		root.contains(move(type_selector(child, make_pair(0, 0), component_io)));
 	}
 
 	// Set the root component
@@ -67,8 +67,8 @@ void UIHandler::render_error_log() {
 	screen = vector<vector<uint32_t>>(screen.size(), vector<uint32_t>(screen[0].size(), 0));
 
 	int line = 0;
-	vector<int> all_repeats = error_log.get_repeats();
-	for (string error : error_log.get_log()) {
+	vector<int> all_repeats = component_io.get_repeats();
+	for (string error : component_io.get_log()) {
 
 		// Check if the error is repeated and if >0 render the number of repeats
 		int repeats = all_repeats[line];

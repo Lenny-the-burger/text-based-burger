@@ -17,12 +17,12 @@ struct UpdateData {
 };
 
 // Error reporter class
-class ErrorReporter {
+class ComponentIO {
 public:
 	// Constructor
-	ErrorReporter();
+	ComponentIO();
 	// Destructor
-	~ErrorReporter();
+	~ComponentIO();
 	// Report an error
 	void report_error(std::string error);
 	// Get the error log
