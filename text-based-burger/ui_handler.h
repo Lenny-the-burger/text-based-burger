@@ -31,10 +31,6 @@ public:
 	// Clear the screen
 	void cls();
 
-	// What part of the screen actually needs to be updated?
-	// THIS FUNCTION IS NOT IMPLEMENTED DO NOT USE
-	std::pair<int, int> get_update_window();
-
 	std::vector<std::vector<uint32_t>> get_screen();
 
 private:
