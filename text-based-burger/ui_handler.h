@@ -18,7 +18,7 @@ public:
 	UIHandler(std::string filename, int scrn_w, int scrn_h);
 
 	// Update the ui
-	void update(update_data data);
+	void update(UpdateData data);
 
 	// Sometimes it may be useful to switch to a different screen
 	// that is handled by a different ui handler, so this function

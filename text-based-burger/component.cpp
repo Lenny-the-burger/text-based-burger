@@ -84,7 +84,7 @@ UIComponent::~UIComponent() {
 	children.clear();
 };
 
-bool UIComponent::update(update_data data) {
+bool UIComponent::update(UpdateData data) {
 	return false;
 }
 

@@ -330,13 +330,13 @@ int main() {
 	{
 		processInput(window);
 
-		update_data frame_data;
+		UpdateData frame_data;
 		frame_data.mouse_char_x = mouse_char_x;
 		frame_data.mouse_char_y = mouse_char_y;
 		frame_data.time = (int) glfwGetTime();
 		frame_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
 
-		ui->update(update_data());
+		ui->update(UpdateData());
 
 		// Rendering starts here
 

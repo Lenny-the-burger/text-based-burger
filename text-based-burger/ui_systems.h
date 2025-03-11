@@ -9,7 +9,7 @@ using json = nlohmann::json;
 // This file holds all the random ui things that are needed for the ui system to work
 // but arent components themselves or the actual ui handler
 
-struct update_data {
+struct UpdateData {
 	int mouse_char_x;
 	int mouse_char_y;
 	int time;

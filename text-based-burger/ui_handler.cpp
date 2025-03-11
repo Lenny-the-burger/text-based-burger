@@ -38,7 +38,7 @@ UIHandler::UIHandler(string filename, int scrn_w, int scrn_h)
 	// Set the root component
 }
 
-void UIHandler::update(update_data data) {
+void UIHandler::update(UpdateData data) {
 	// Update the root component
 	vector<UIComponent*> leaves = iterate_leaves(&root);
 	for (UIComponent* leaf : leaves) {

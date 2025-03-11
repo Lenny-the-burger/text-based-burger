@@ -34,7 +34,7 @@ public:
 	~UIComponent();
 
 	// Update function, returns true if the component should rerender
-	virtual bool update(update_data data);
+	virtual bool update(UpdateData data);
 
 	// Tell the component to render to the given screen
 	// If it runs out of bounds it just clips
@@ -97,7 +97,7 @@ public:
 
 	virtual void render(std::vector<std::vector<uint32_t>>& screen) override;
 
-	virtual bool update(update_data data) override;
+	virtual bool update(UpdateData data) override;
 
 	void set_script(std::string script);
 
