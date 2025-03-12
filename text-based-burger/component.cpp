@@ -164,19 +164,19 @@ Label::Label(json data, pair<int, int> offset, ComponentIO& the_comp_io)
 	// Report any illegal colours, illegal text should never happen
 	if (foreground_color < 0 || foreground_color > 255) {
 		comp_io.report_error(
-			"Tried to create label " + targetname + " with illegal fg colour of " + to_string(foreground_color)
+			"ERROR: Tried to create label " + targetname + " with illegal fg colour of " + to_string(foreground_color)
 		);
 	}
 	if (background_color < 0 || background_color > 255) {
 		comp_io.report_error(
-			"Tried to create label " + targetname + " with illegal bg colour of " + to_string(background_color)
+			"ERROR: Tried to create label " + targetname + " with illegal bg colour of " + to_string(background_color)
 		);
 	}
 
 	// Report an error if the fg and bg colours are the same
 	if (foreground_color == background_color) {
 		comp_io.report_error(
-			"Tried to create label " + targetname + " with fg and bg colours the same"
+			"WARN: Tried to create label " + targetname + " with fg and bg colours the same"
 		);
 	}
 
@@ -186,7 +186,7 @@ Label::Label(json data, pair<int, int> offset, ComponentIO& the_comp_io)
 // Labels do not update, have special init function, and hold text
 void Label::contains(std::unique_ptr<UIComponent>&& component) {
 	// labels cannot get pregnant
-	comp_io.report_error("Tried to add a child to a label " + targetname);
+	comp_io.report_error("FATAL: Tried to add a child to a label " + targetname);
 	return;
 }
 
@@ -221,7 +221,7 @@ void Label::render(std::vector<std::vector<uint32_t>>& screen) {
 		}
 	}
 	catch (out_of_range) {
-		comp_io.report_error("Label " + targetname + " tried to render out of bounds");
+		comp_io.report_error("WARN: Label " + targetname + " tried to render out of bounds");
 	}
 	return;
 }
