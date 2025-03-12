@@ -1,5 +1,6 @@
 #include "component.h"
 #include "char_lut.h"
+#include "hash_fnv1a.h"
 
 using namespace std;
 
@@ -89,19 +90,23 @@ vector<UIComponent*> iterate_leaves(UIComponent* component) {
 	return leaves;
 }
 
-unique_ptr<UIComponent> type_selector(json data, pair<int, int> offset, ComponentIO& reporter) {
-	// const char*, string, and whatever the fck nlhomann json uses is going to
-	// make me die i didnt want to use a switch anyway
+hash<string> hasher;
 
-	if (data["type"] == "label") {
-		return make_unique<Label>(data, offset, reporter);
+unique_ptr<UIComponent> type_selector(json data, pair<int, int> offset, ComponentIO& reporter) {
+	std::string type_str = data["type"].get_ref<const std::string&>();
+	const char* type = type_str.c_str();
+	int len = (int)type_str.size();
+
+	switch (hash_64_fnv1a(type, len)) {
+		case hash_64_fnv1a_const("label"):
+			return make_unique<Label>(data, offset, reporter);
+		case hash_64_fnv1a_const("container"):
+			return make_unique<Container>(data, offset, reporter);
+
+		default:
+			return make_unique<UIComponent>(data, offset, reporter);
 	}
-	if (data["type"] == "container") {
-		return make_unique<Container>(data, offset, reporter);
-	}
-	else { // Why are you creating a default component?
-		return make_unique<UIComponent>(data, offset, reporter);
-	}
+
 }
 
 

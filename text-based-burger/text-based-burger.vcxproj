@@ -159,6 +159,7 @@
     <ClInclude Include="char_lut.h" />
     <ClInclude Include="component.h" />
     <ClInclude Include="font_loader.h" />
+    <ClInclude Include="hash_fnv1a.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="scripts.h" />
     <ClInclude Include="shader.h" />
