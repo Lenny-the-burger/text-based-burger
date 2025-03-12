@@ -72,6 +72,9 @@
     <ClCompile Include="ui_handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ui_systems.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -139,6 +142,9 @@
     </ClInclude>
     <ClInclude Include="third-party\glad\glad.h">
       <Filter>Third party</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_systems.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
