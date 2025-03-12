@@ -97,8 +97,6 @@ class Button : public Label {
 public:
 	Button(json data, std::pair<int, int> offset, ComponentIO& the_comp_io);
 
-	//virtual void render(std::vector<std::vector<uint32_t>>& screen) override;
-
 	virtual bool update(UpdateData data) override;
 
 	void set_script(std::string script);
