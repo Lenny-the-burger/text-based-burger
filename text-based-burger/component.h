@@ -45,6 +45,9 @@ public:
 
 	std::vector<UIComponent*> get_children();
 
+	// This is a function that is called when an event is sent to the component
+	virtual void call_event(ComponentEvent event, json data);
+
 	std::string targetname;
 
 protected:
@@ -63,7 +66,6 @@ protected:
 std::vector<UIComponent*> iterate_leaves(UIComponent* component);
 
 std::unique_ptr<UIComponent> type_selector(json data, std::pair<int, int>, ComponentIO& reporter);
-
 
 class Container : public UIComponent {
 public:
@@ -85,7 +87,7 @@ public:
 	
 	void update_text(std::string new_text);
 	void update_text(std::vector<int> new_text);
-private:
+protected:
 	std::vector<int> text;
 	int foreground_color;
 	int background_color;
@@ -95,13 +97,13 @@ class Button : public Label {
 public:
 	Button(json data, std::pair<int, int> offset, ComponentIO& the_comp_io);
 
-	virtual void render(std::vector<std::vector<uint32_t>>& screen) override;
+	//virtual void render(std::vector<std::vector<uint32_t>>& screen) override;
 
 	virtual bool update(UpdateData data) override;
 
 	void set_script(std::string script);
 
-private:
+protected:
 	bool is_hovering;
 	bool is_clicking;
 	bool fire_only_once;

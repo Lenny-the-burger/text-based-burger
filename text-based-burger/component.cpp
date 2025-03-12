@@ -13,6 +13,7 @@ UIComponent::UIComponent(ComponentIO& the_comp_io) : comp_io(the_comp_io) {
 UIComponent::UIComponent(json data,pair<int, int> offset, ComponentIO& the_comp_io) : comp_io(the_comp_io) {
 	targetname = to_string(data["targetname"]); // This should always return a string targetname im not error checking
 	position = make_pair(data["position"]["x"], data["position"]["y"]);
+	comp_io.register_component(targetname, this);
 
 	// Parental offsets are computed statically, so components cannot be moved after creation
 	// They must be destroyed and recreated, but ideally this should never happen. You should
@@ -37,6 +38,7 @@ UIComponent::~UIComponent() {
 };
 
 bool UIComponent::update(UpdateData data) {
+	// This is where you handle you pull events
 	return false;
 }
 
@@ -55,6 +57,11 @@ vector<UIComponent*> UIComponent::get_children() {
 		raw_children.push_back(child.get()); // Extract raw pointer
 	}
 	return raw_children;
+}
+
+void UIComponent::call_event(ComponentEvent event, json data) {
+	// This is where you would handle your push events
+	return;
 }
 
 vector<UIComponent*> iterate_leaves(UIComponent* component) {
@@ -105,7 +112,7 @@ Container::Container(json data, pair<int, int> offset, ComponentIO& the_comp_io)
 	return;
 }
 
-// LABELS
+// LABEL
 
 Label::Label(json data, pair<int, int> offset, ComponentIO& the_comp_io) 
 	: UIComponent(data, offset, the_comp_io) {
@@ -177,3 +184,6 @@ void Label::render(std::vector<std::vector<uint32_t>>& screen) {
 	}
 	return;
 }
+
+
+// BUTTON

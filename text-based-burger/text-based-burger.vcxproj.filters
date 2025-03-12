@@ -75,6 +75,9 @@
     <ClCompile Include="ui_systems.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="scripts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -144,6 +147,9 @@
       <Filter>Third party</Filter>
     </ClInclude>
     <ClInclude Include="ui_systems.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

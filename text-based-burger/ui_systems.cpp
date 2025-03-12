@@ -1,4 +1,5 @@
 #include "ui_systems.h"
+#include "component.h"
 
 using namespace std;
 
@@ -34,6 +35,46 @@ vector<string> ComponentIO::get_log() {
 
 vector<int> ComponentIO::get_repeats() {
 	return repeats;
+}
+
+void ComponentIO::register_component(string name, UIComponent* component) {
+	// First check if the component is already registered
+	if (component_registry.find(name) != component_registry.end()) {
+		// If it is, report an error
+		// this should never happen and will be a nightmare to debug
+		report_error("FATAL: Tried to register component " + name + " twice");
+		return;
+	}
+	
+	component_registry[name] = component;
+	return;
+}
+
+void ComponentIO::send_event(string target, ComponentEvent event, json data) {
+	// Check if the target component is registered
+	if (component_registry.find(target) == component_registry.end()) {
+		// If it is not, report an error
+		report_error("FATAL: Tried to send event to unregistered component " + target);
+		return;
+	}
+	// Get the target component
+	UIComponent* target_component = component_registry[target];
+
+	// Call the event on the target component
+	target_component->call_event(event, data);
+
+	return;
+}
+
+UIComponent* ComponentIO::get_component(string name) {
+	// Check if the target component is registered
+	if (component_registry.find(name) == component_registry.end()) {
+		// If it is not, report an error
+		report_error("FATAL: Tried to get unregistered component " + name);
+		return nullptr;
+	}
+	// Get the target component
+	return component_registry[name];
 }
 
 uint32_t gen_frag(int character, int bg, int fg) {

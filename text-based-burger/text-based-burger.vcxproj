@@ -133,6 +133,7 @@
     <ClCompile Include="font_loader.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="scripts.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="third-party\imgui\imgui.cpp" />
     <ClCompile Include="third-party\imgui\imgui_demo.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="component.h" />
     <ClInclude Include="font_loader.h" />
     <ClInclude Include="json.hpp" />
+    <ClInclude Include="scripts.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="third-party\glad\glad.h" />
     <ClInclude Include="third-party\imgui\imconfig.h" />
