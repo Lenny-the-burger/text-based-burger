@@ -3,54 +3,6 @@
 
 using namespace std;
 
-// Component io handler
-ComponentIO::ComponentIO() {
-	// Reporters will always start with an empty error log
-	error_log = vector<string>();
-	return;
-}
-
-ComponentIO::~ComponentIO() {
-	error_log.clear();
-	return;
-}
-
-void ComponentIO::report_error(string error) {
-	// Check if the previous reported error is the same as the current one
-	if (!error_log.empty() && error_log.back() == error) {
-		// If it is, increment the repeat counter
-		repeats.back()++;
-		return;
-	}
-
-	// For now only report string errors
-	error_log.push_back(error);
-	repeats.push_back(0);
-	return;
-}
-
-vector<string> ComponentIO::get_log() {
-	return error_log;
-}
-
-vector<int> ComponentIO::get_repeats() {
-	return repeats;
-}
-
-uint32_t gen_frag(int character, int bg, int fg) {
-	// Generate a fragment from a character, background color, and foreground color
-	// This is a 32 bit integer with the first 8 bits being the character, the next
-	// 8 bits being the background color, and the next 8 bits being the foreground color
-	// The last 8 bits are unused
-	uint32_t frag = 0;
-	frag |= character;
-	frag |= fg << 8;
-	frag |= bg << 16;
-
-	return frag;
-}
-
-
 // UI COMPONENT
 UIComponent::UIComponent(ComponentIO& the_comp_io) : comp_io(the_comp_io) {
 	targetname = "root";
