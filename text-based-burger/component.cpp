@@ -90,23 +90,29 @@ vector<UIComponent*> iterate_leaves(UIComponent* component) {
 	return leaves;
 }
 
-hash<string> hasher;
+using ComponentFactory = std::function<std::unique_ptr<UIComponent>(json, std::pair<int, int>, ComponentIO&)>;
 
-unique_ptr<UIComponent> type_selector(json data, pair<int, int> offset, ComponentIO& reporter) {
-	std::string type_str = data["type"].get_ref<const std::string&>();
-	const char* type = type_str.c_str();
-	int len = (int)type_str.size();
+std::unique_ptr<UIComponent> type_selector(json data, std::pair<int, int> offset, ComponentIO& reporter) {
+	static const std::unordered_map<std::string, ComponentFactory> factory_map = {
+		{"label", [](json d, std::pair<int, int> off, ComponentIO& rep) {
+			return std::make_unique<Label>(d, off, rep);
+		}},
+		{"container", [](json d, std::pair<int, int> off, ComponentIO& rep) {
+			return std::make_unique<Container>(d, off, rep);
+		}},
+		{"button", [](json d, std::pair<int, int> off, ComponentIO& rep) {
+			return std::make_unique<Button>(d, off, rep);
+		}}
+	};
 
-	switch (hash_64_fnv1a(type, len)) {
-		case hash_64_fnv1a_const("label"):
-			return make_unique<Label>(data, offset, reporter);
-		case hash_64_fnv1a_const("container"):
-			return make_unique<Container>(data, offset, reporter);
+	std::string type = data["type"].get_ref<const std::string&>();
 
-		default:
-			return make_unique<UIComponent>(data, offset, reporter);
+	auto it = factory_map.find(type);
+	if (it != factory_map.end()) {
+		return it->second(data, offset, reporter);
 	}
 
+	return std::make_unique<UIComponent>(data, offset, reporter);
 }
 
 
@@ -144,6 +150,8 @@ Label::Label(json data, pair<int, int> offset, ComponentIO& the_comp_io)
 		);
 	}
 
+	should_render = true;
+
 	return;
 }
 
@@ -159,6 +167,8 @@ void Label::update_text(vector<int> new_text) {
 	for (int i : new_text) {
 		text.push_back(i);
 	}
+
+	should_render = true;
 }
 
 void Label::update_text(string new_text) {
@@ -169,6 +179,28 @@ void Label::update_text(string new_text) {
 	for (char c : new_text) {
 		text.push_back(char2int(c));
 	}
+
+	should_render = true;
+}
+
+void Label::change_fg_color(int new_color, bool relative) {
+	if (relative) {
+		foreground_color += new_color;
+	}
+	else {
+		foreground_color = new_color;
+	}
+	should_render = true;
+}
+
+void Label::change_bg_color(int new_color, bool relative) {
+	if (relative) {
+		background_color += new_color;
+	}
+	else {
+		background_color = new_color;
+	}
+	should_render = true;
 }
 
 void Label::render(std::vector<std::vector<uint32_t>>& screen) {
@@ -190,5 +222,90 @@ void Label::render(std::vector<std::vector<uint32_t>>& screen) {
 	return;
 }
 
+bool Label::update(UpdateData data) {
+	if (should_render) {
+		// Maybe we animated the text or something
+		should_render = false;
+		return true;
+	}
+	return false;
+}
+
 
 // BUTTON
+
+Button::Button(json data, pair<int, int> offset, ComponentIO& the_comp_io)
+	: Label(data, offset, the_comp_io) {
+
+	// Buttons are just labels with a script attached
+	click_script_name = to_string(data["click_script"]);
+	hover_script_name = to_string(data["hover_script"]);
+
+	click_script_args = data["click_script_args"];
+	hover_script_args = data["hover_script_args"];
+
+	fire_only_once = data["fire_only_once"];
+
+	// If bbox is set to text, then the bounding box is the size of the text
+	if (data["bbox"] == "text") {
+		bbox = make_pair(text.size(), 1);
+	}
+	else {
+		bbox = make_pair(data["bbox"]["x"], data["bbox"]["y"]);
+	}
+	
+	// Init to false
+	is_hovering = false;
+	is_clicking = false;
+
+
+
+	return;
+}
+
+bool Button::update(UpdateData data) {
+	// Check if mouse is within the bbox
+	bool within_bbox = (data.mouse_char_x >= position.first && data.mouse_char_x < position.first + bbox.first &&
+		data.mouse_char_y >= position.second && data.mouse_char_y < position.second + bbox.second);
+
+	if (within_bbox) {
+		if (!is_hovering) {
+			is_hovering = true;
+			on_hover();
+		}
+
+		// Click logic
+		if (data.is_clicking && !is_clicking) {
+			is_clicking = true;
+			on_click();
+		}
+		else if (!data.is_clicking && is_clicking) {
+			is_clicking = false;
+			on_release();
+		}
+	}
+	else {
+		if (is_hovering) {
+			is_hovering = false;
+			is_clicking = false;
+			on_exit();
+		}
+	}
+
+	if (should_render) {
+		// Maybe we animated the text or something
+		should_render = false;
+		return true;
+	}
+	return false;
+}
+
+void Button::set_click_script(string script) {
+	click_script_name = script;
+	return;
+}
+
+void Button::set_hover_script(string script) {
+	hover_script_name = script;
+	return;
+}

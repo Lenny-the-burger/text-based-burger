@@ -89,15 +89,6 @@ void UIHandler::render_error_log() {
 	}
 }
 
-pair<int, int> get_update_window() {
-	// What part of the screen actually needs to be updated?
-	
-	// Loop through the should_update array in flattened order and record the first and last
-	// places that need to be updated
-
-	return make_pair(0, 0);
-}
-
 void UIHandler::cls() {
 	// Clear the screen
 	screen = vector<vector<uint32_t>>(screen.size(), vector<uint32_t>(screen[0].size(), 0));

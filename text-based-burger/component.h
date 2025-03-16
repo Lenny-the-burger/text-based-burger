@@ -84,13 +84,19 @@ public:
 	virtual void contains(std::unique_ptr<UIComponent>&& component) override;
 
 	virtual void render(std::vector<std::vector<uint32_t>>& screen) override;
+
+	virtual bool update(UpdateData data) override;
 	
 	void update_text(std::string new_text);
 	void update_text(std::vector<int> new_text);
+
+	void change_fg_color(int new_color, bool relative);
+	void change_bg_color(int new_color, bool relative);
 protected:
 	std::vector<int> text;
 	int foreground_color;
 	int background_color;
+	bool should_render;
 };
 
 class Button : public Label {
@@ -99,14 +105,23 @@ public:
 
 	virtual bool update(UpdateData data) override;
 
-	void set_script(std::string script);
+	void set_click_script(std::string script);
+	void set_hover_script(std::string script);
 
 protected:
 	bool is_hovering;
 	bool is_clicking;
 	bool fire_only_once;
+	std::pair<int, int> bbox;
+
+	std::string click_script_name;
+	std::string hover_script_name;
+
+	json click_script_args;
+	json hover_script_args;
 
 	void on_hover();
 	void on_click();
 	void on_release();
+	void on_exit();
 };

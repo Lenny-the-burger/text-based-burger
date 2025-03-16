@@ -28,6 +28,9 @@
     <Filter Include="Game data">
       <UniqueIdentifier>{de7ec62f-f0ca-4008-a898-ff3e15ce4506}</UniqueIdentifier>
     </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{f41feadd-1a28-4427-95ec-5e593d0643aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -60,13 +63,7 @@
     <ClCompile Include="shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="font_loader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="component.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="char_lut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ui_handler.cpp">
@@ -77,6 +74,12 @@
     </ClCompile>
     <ClCompile Include="scripts.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="char_lut.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="font_loader.cpp">
+      <Filter>utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -128,16 +131,10 @@
     <ClInclude Include="shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="font_loader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ui_handler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="component.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="char_lut.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="json.hpp">
@@ -152,8 +149,14 @@
     <ClInclude Include="scripts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="char_lut.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="font_loader.h">
+      <Filter>utils</Filter>
+    </ClInclude>
     <ClInclude Include="hash_fnv1a.h">
-      <Filter>Header Files</Filter>
+      <Filter>utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

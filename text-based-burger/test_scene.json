@@ -73,16 +73,28 @@
       ]
     },
     {
-      "targetname": "text5",
-      "type": "label",
+      "targetname": "button1",
+      "type": "button",
       "position": {
-        "x": 60,
-        "y": 29
+        "x": 30,
+        "y": 10
       },
-      "text": "This is a test.",
+      "text": "Button",
       "style": {
-        "fg": 255,
-        "bg": 255
+        "fg": 200,
+        "bg": 100
+      },
+      "bbox": "text",
+      "fire_once": false,
+      "click_script": "click_test",
+      "click_args": {
+        "targetname": "text1",
+        "text": "Hello, World!"
+      },
+      "hover_script": "simple_highlight",
+      "hover_args": {
+        "fg": 20,
+        "bg": 20
       }
     }
   ]

@@ -24,3 +24,6 @@ void* get_script(std::string name);
 class UIComponent; // Forward declaration
 class ComponentIO; // Forward declaration
 class UIHandler; // Forward declaration
+
+
+void test_label_script(json data);
