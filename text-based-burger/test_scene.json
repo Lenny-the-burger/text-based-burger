@@ -85,7 +85,7 @@
         "bg": 100
       },
       "bbox": "text",
-      "fire_once": false,
+      "fire_only_once": false,
       "click_script": "click_test",
       "click_args": {
         "targetname": "text1",
