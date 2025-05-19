@@ -309,3 +309,23 @@ void Button::set_hover_script(string script) {
 	hover_script_name = script;
 	return;
 }
+
+void Button::on_hover() {
+	// Call the hover script
+	return;
+}
+
+void Button::on_click() {
+	// Call the click script
+	return;
+}
+
+void Button::on_release() {
+	// Call the release script
+	return;
+}
+
+void Button::on_exit() {
+	// Call the exit script
+	return;
+}
