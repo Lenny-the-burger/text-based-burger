@@ -2,6 +2,10 @@
 #include "char_lut.h"
 #include "hash_fnv1a.h"
 
+// Include my very well engineered script system right into sorse file
+// scope pollution is a conspiracy theory
+#include "scripts.h"
+
 using namespace std;
 
 // UI COMPONENT
@@ -238,8 +242,8 @@ Button::Button(json data, pair<int, int> offset, ComponentIO& the_comp_io)
 	: Label(data, offset, the_comp_io) {
 
 	// Buttons are just labels with a script attached
-	click_script_name = to_string(data["click_script"]);
-	hover_script_name = to_string(data["hover_script"]);
+	click_script_name = data["click_script"].get<std::string>();
+	hover_script_name = data["hover_script"].get<std::string>();
 
 	click_script_args = data["click_script_args"];
 	hover_script_args = data["hover_script_args"];
@@ -248,7 +252,7 @@ Button::Button(json data, pair<int, int> offset, ComponentIO& the_comp_io)
 
 	// If bbox is set to text, then the bounding box is the size of the text
 	if (data["bbox"] == "text") {
-		bbox = make_pair(text.size(), 1);
+		bbox = make_pair((int)text.size(), 1);
 	}
 	else {
 		bbox = make_pair(data["bbox"]["x"], data["bbox"]["y"]);
@@ -317,9 +321,17 @@ void Button::on_hover() {
 
 void Button::on_click() {
 	// Call the click script
+	// Get the script from the script system
+	Script script = get_script(click_script_name);
+	if (script == nullptr) {
+		comp_io.report_error("ERROR: Button " + targetname + " tried to call a non existant script " + click_script_name);
 	return;
 }
 
+	script(click_script_args);
+}
+	return;
+}
 void Button::on_release() {
 	// Call the release script
 	return;

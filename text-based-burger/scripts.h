@@ -4,26 +4,37 @@
 using json = nlohmann::json;
 
 #include <vector>
+#include <string>
+#include <unordered_map>
 
-// "scripts" are more just general subroutines that can be called. Scripts can be called by anything,
-// and can do anything, but do not exist as objects and do not have a state. A use for a script could 
-// be interfacing between on screen ui, such as calling in an air strike, which would originate from 
-// a ui component, but would need to interface with the game state, which are two completly seperate 
-// systems. 
-// Scripts let you do anything you want, this is to make it so you dont need to go through 200 layers
-// of abstraction to do a very specific thing, but makes it very easy to explode everything if you are 
-// not careful.
-// Scripts can even interface with the gpu through glfw but probably dont do that. They are statically
-// compiled with the rest of the program so should not be a security risk as no arbitrary code can be
-// run.
+// Scripts are statically registered C++ functions that act as generic, global subroutines.
+// They can be triggered from anywhere in the engine — typically from UI elements — and are
+// used to interface with other systems such as game state, audio, rendering, or I/O.
+// 
+// Scripts are stateless, freely callable, and compiled directly into the binary,
+// meaning they do not require any form of registration at runtime.
+//
+// Use cases include:
+// - Triggering game events from UI (e.g. launching an airstrike, spawning entities)
+// - Executing complex or one-off logic without needing to wire through multiple layers
+// - Interfacing between isolated systems (UI, world, engine)
+//
+// Scripts should be used with caution: they have full access to engine internals
+// and can perform destructive or unsafe operations if misused.
+//
+// Function signature:
+//     void my_script(json data);
+//
+// The 'data' parameter is an arbitrary JSON payload that the caller provides,
+// allowing for flexible argument passing without requiring a fixed function interface.
+using Script = void(*)(json data);
 
 // Get the function pointer for the given script name
-void* get_script(std::string name);
+Script get_script(std::string name);
 
 // Various things that scripts might need
 class UIComponent; // Forward declaration
 class ComponentIO; // Forward declaration
 class UIHandler; // Forward declaration
 
-
-void test_label_script(json data);
+void test_button_script(json data);

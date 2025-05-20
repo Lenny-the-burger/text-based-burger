@@ -86,8 +86,8 @@
       },
       "bbox": "text",
       "fire_only_once": false,
-      "click_script": "click_test",
-      "click_args": {
+      "click_script": "button_test",
+      "click_script_args": {
         "targetname": "text1",
         "text": "Hello, World!"
       },
