@@ -248,7 +248,9 @@ Button::Button(json data, pair<int, int> offset, ComponentIO& the_comp_io)
 	click_script_args = data["click_script_args"];
 	hover_script_args = data["hover_script_args"];
 
+	// Weather we want button to fire only once per click or repeatedly every frame
 	fire_only_once = data["fire_only_once"];
+	have_already_fired = false;
 
 	// If bbox is set to text, then the bounding box is the size of the text
 	if (data["bbox"] == "text") {
@@ -320,24 +322,43 @@ void Button::on_hover() {
 }
 
 void Button::on_click() {
+	if (have_already_fired && fire_only_once) {
+		// If we have already fired and we are not allowed to fire again, return
+		return;
+	}
+
 	// Call the click script
 	// Get the script from the script system
 	Script script = get_script(click_script_name);
 	if (script == nullptr) {
 		comp_io.report_error("ERROR: Button " + targetname + " tried to call a non existant script " + click_script_name);
+		return;
+	}
+	
+	script(click_script_args);
+
+	if (fire_only_once) {
+		have_already_fired = true;
+	}
+
 	return;
 }
 
-	script(click_script_args);
-}
-	return;
-}
 void Button::on_release() {
+	if (fire_only_once && have_already_fired) {
+		have_already_fired = false;
+	}
+
 	// Call the release script
+
 	return;
 }
 
 void Button::on_exit() {
+	if (fire_only_once && have_already_fired) {
+		have_already_fired = false;
+	}
+
 	// Call the exit script
 	return;
 }

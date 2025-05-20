@@ -63,6 +63,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void processInput(GLFWwindow* window) {
 	// input handling
 
+	// f1 to show help menu
+
 	// f11 to toggle fullscreen
 	if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS) {
 		GLFWmonitor* monitor = glfwGetPrimaryMonitor();

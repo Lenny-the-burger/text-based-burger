@@ -112,6 +112,8 @@ protected:
 	bool is_hovering;
 	bool is_clicking;
 	bool fire_only_once;
+	bool have_already_fired;
+
 	std::pair<int, int> bbox;
 
 	std::string click_script_name;
