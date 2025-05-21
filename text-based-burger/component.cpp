@@ -134,7 +134,7 @@ Container::Container(json data, pair<int, int> offset, ComponentIO& the_comp_io)
 
 Label::Label(json data, pair<int, int> offset, ComponentIO& the_comp_io) 
 	: UIComponent(data, offset, the_comp_io) {
-	update_text(to_string(data["text"]));
+	update_text(data["text"].get<std::string>());
 	foreground_color = data["style"]["fg"];
 	background_color = data["style"]["bg"];
 
@@ -180,9 +180,6 @@ void Label::update_text(vector<int> new_text) {
 
 void Label::update_text(string new_text) {
 	text.clear();
-	// truncate last and first characters away as it somehow reads the " characters
-	// which should not be possible
-	new_text = new_text.substr(1, new_text.size() - 2);
 	for (char c : new_text) {
 		text.push_back(char2int(c));
 	}
