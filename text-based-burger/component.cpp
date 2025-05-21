@@ -106,6 +106,9 @@ std::unique_ptr<UIComponent> type_selector(json data, std::pair<int, int> offset
 		}},
 		{"button", [](json d, std::pair<int, int> off, ComponentIO& rep) {
 			return std::make_unique<Button>(d, off, rep);
+		}},
+		{"dynlabel", [](json d, std::pair<int, int> off, ComponentIO& rep) {
+			return std::make_unique<DynLabel>(d, off, rep);
 		}}
 	};
 
@@ -359,6 +362,35 @@ void Button::on_exit() {
 		have_already_fired = false;
 	}
 
-	// Call the exit script
+
+// DYN LABEL
+
+DynLabel::DynLabel(json data, pair<int, int> offset, ComponentIO& the_comp_io)
+	: Label(data, offset, the_comp_io) {
+	script_name = data["script"].get<std::string>();
 	return;
+}
+
+bool DynLabel::update(UpdateData data) {
+	// Call the script every frame
+	Script script = get_script(script_name);
+	if (script == nullptr) {
+		comp_io.report_error("ERROR: DynLabel " + targetname + " tried to call a non existant script " + script_name);
+		return false;
+	}
+
+	// Encode update data into json and pass it to the script
+	json data_json = {
+		{"mouse_char_x", data.mouse_char_x},
+		{"mouse_char_y", data.mouse_char_y},
+		{"is_clicking", data.is_clicking},
+		{"time", data.time},
+
+		// Who is this label
+		{"targetname", targetname},
+		{"text", text}
+	};
+
+	script(data_json, comp_io);
+	return true;
 }

@@ -127,3 +127,16 @@ protected:
 	void on_release();
 	void on_exit();
 };
+
+// Idenitical to label but executes script on every frame. Should only be used for
+// simple displays like an fps counter.
+class DynLabel : public Label {
+public:
+	DynLabel(json data, std::pair<int, int> offset, ComponentIO& the_comp_io);
+
+	virtual bool update(UpdateData data) override;
+
+protected:
+
+	std::string script_name;
+};
