@@ -278,9 +278,9 @@ bool Button::update(UpdateData data) {
 
 	// Hover logic
 	if (within_bbox && !is_hovering) {
-			is_hovering = true;
-			on_hover();
-		}
+		is_hovering = true;
+		on_hover();
+	}
 	else if (!within_bbox && is_hovering) {
 		is_hovering = false;
 		on_exit();
@@ -294,7 +294,7 @@ bool Button::update(UpdateData data) {
 
 			if (fire_only_once) {
 				have_already_fired = false;
-		}
+			}
 
 			on_press();
 		}
@@ -367,7 +367,7 @@ void Button::on_click() {
 		return;
 	}
 	
-	script(click_script_args);
+	script(click_script_args, comp_io);
 
 	if (fire_only_once) {
 		have_already_fired = true;
@@ -386,7 +386,7 @@ void Button::on_exit() {
 	// Call the exit script
 
 	return;
-	}
+}
 
 
 // DYN LABEL

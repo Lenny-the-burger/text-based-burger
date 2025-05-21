@@ -7,6 +7,11 @@ using json = nlohmann::json;
 #include <string>
 #include <unordered_map>
 
+// Various things that scripts might need
+class UIComponent; // Forward declaration
+class ComponentIO; // Forward declaration
+class UIHandler; // Forward declaration
+
 // Scripts are statically registered C++ functions that act as generic, global subroutines.
 // They can be triggered from anywhere in the engine — typically from UI elements — and are
 // used to interface with other systems such as game state, audio, rendering, or I/O.
@@ -27,14 +32,12 @@ using json = nlohmann::json;
 //
 // The 'data' parameter is an arbitrary JSON payload that the caller provides,
 // allowing for flexible argument passing without requiring a fixed function interface.
-using Script = void(*)(json data);
+using Script = void(*)(const json data, ComponentIO& io);
 
 // Get the function pointer for the given script name
 Script get_script(std::string name);
 
-// Various things that scripts might need
-class UIComponent; // Forward declaration
-class ComponentIO; // Forward declaration
-class UIHandler; // Forward declaration
+void test_button_script(json data, ComponentIO& io);
+void hover_reporter(json data, ComponentIO& io);
 
-void test_button_script(json data);
+void mouse_pos_shower(json data, ComponentIO& io);

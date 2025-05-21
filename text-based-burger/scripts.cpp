@@ -27,7 +27,7 @@ Script get_script(std::string name) {
     }
 }
 
-void test_button_script(json data) {
+void test_button_script(json data, ComponentIO& io) {
 	// Dump data to console
 	std::cout << "Test button script called with data:\n" << data.dump() << std::endl;
 
