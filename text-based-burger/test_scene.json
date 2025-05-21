@@ -91,11 +91,26 @@
         "targetname": "text1",
         "text": "Hello, World!"
       },
-      "hover_script": "simple_highlight",
+      "hover_script": "fart",
       "hover_args": {
         "fg": 20,
-        "bg": 20
+        "bg": 20,
+        "targetname": "button1"
       }
+    },
+    {
+      "targetname": "mouseposshower",
+      "type": "dynlabel",
+      "position": {
+        "x": 30,
+        "y": 0
+      },
+      "text": "000,000",
+      "style": {
+        "fg": 255,
+        "bg": 0
+      },
+      "script": "mousepos"
     }
   ]
 }
