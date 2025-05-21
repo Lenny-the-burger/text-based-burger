@@ -338,8 +338,6 @@ int main() {
 		frame_data.time = (int) glfwGetTime();
 		frame_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
 
-		ui->update(UpdateData());
-
 		// Rendering starts here
 
 		draw_ui();
