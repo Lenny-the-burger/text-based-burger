@@ -318,6 +318,18 @@ void Button::set_hover_script(string script) {
 
 void Button::on_hover() {
 	// Call the hover script
+	Script script = get_script(hover_script_name);
+	if (script == nullptr) {
+		comp_io.report_error("ERROR: Button " + targetname + " tried to call a non existant script " + hover_script_name);
+		return;
+	}
+	script(hover_script_args, comp_io);
+	return;
+}
+
+void Button::on_press() {
+	// Call the press script
+
 	return;
 }
 
