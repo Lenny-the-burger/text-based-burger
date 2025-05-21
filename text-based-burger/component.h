@@ -113,6 +113,7 @@ protected:
 	bool is_clicking;
 	bool fire_only_once;
 	bool have_already_fired;
+	bool is_click_start_inside;
 
 	std::pair<int, int> bbox;
 
@@ -123,6 +124,7 @@ protected:
 	json hover_script_args;
 
 	void on_hover();
+	void on_press();
 	void on_click();
 	void on_release();
 	void on_exit();

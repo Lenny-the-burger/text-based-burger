@@ -248,6 +248,8 @@ Button::Button(json data, pair<int, int> offset, ComponentIO& the_comp_io)
 	click_script_args = data["click_script_args"];
 	hover_script_args = data["hover_script_args"];
 
+	is_click_start_inside = false;
+
 	// Weather we want button to fire only once per click or repeatedly every frame
 	fire_only_once = data["fire_only_once"];
 	have_already_fired = false;
@@ -270,31 +272,48 @@ Button::Button(json data, pair<int, int> offset, ComponentIO& the_comp_io)
 }
 
 bool Button::update(UpdateData data) {
-	// Check if mouse is within the bbox
+	// Check if mouse is within the button bounds
 	bool within_bbox = (data.mouse_char_x >= position.first && data.mouse_char_x < position.first + bbox.first &&
 		data.mouse_char_y >= position.second && data.mouse_char_y < position.second + bbox.second);
 
-	if (within_bbox) {
-		if (!is_hovering) {
+	// Hover logic
+	if (within_bbox && !is_hovering) {
 			is_hovering = true;
 			on_hover();
 		}
+	else if (!within_bbox && is_hovering) {
+		is_hovering = false;
+		on_exit();
+	}
 
-		// Click logic
-		if (data.is_clicking && !is_clicking) {
+	// Click tracking logic
+	if (data.is_clicking) {
+		if (!is_clicking && within_bbox) {
 			is_clicking = true;
-			on_click();
+			is_click_start_inside = true;
+
+			if (fire_only_once) {
+				have_already_fired = false;
 		}
-		else if (!data.is_clicking && is_clicking) {
-			is_clicking = false;
-			on_release();
+
+			on_press();
 		}
 	}
 	else {
-		if (is_hovering) {
-			is_hovering = false;
+		if (is_clicking) {
+			// Only count as a full click if press and release both happen inside
+			if (is_click_start_inside && within_bbox) {
+				on_click();  // This is the full "click"
+			}
+			on_release(); // Trigger on all releases
 			is_clicking = false;
-			on_exit();
+			is_click_start_inside = false;
+
+			// Reset if we are allowed to fire again
+			// Leads to this bool flippping every frame but too bad
+			if (!fire_only_once) {
+				have_already_fired = false;
+			}
 		}
 	}
 
@@ -303,6 +322,7 @@ bool Button::update(UpdateData data) {
 		should_render = false;
 		return true;
 	}
+
 	return false;
 }
 
@@ -357,18 +377,15 @@ void Button::on_click() {
 }
 
 void Button::on_release() {
-	if (fire_only_once && have_already_fired) {
-		have_already_fired = false;
-	}
-
 	// Call the release script
 
 	return;
 }
 
 void Button::on_exit() {
-	if (fire_only_once && have_already_fired) {
-		have_already_fired = false;
+	// Call the exit script
+
+	return;
 	}
 
 
