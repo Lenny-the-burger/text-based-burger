@@ -69,23 +69,28 @@ void UIHandler::render_error_log() {
 	int line = 0;
 	vector<int> all_repeats = component_io.get_repeats();
 	for (string error : component_io.get_log()) {
-
-		// Check if the error is repeated and if >0 render the number of repeats
+		// Append repeat count if greater than 0
 		int repeats = all_repeats[line];
-
-		// append the number of repeats to the error
 		if (repeats > 0) {
 			error += " x" + to_string(repeats);
 		}
 
-		// Render the error
-		for (int i = 0; i < error.size(); i++) {
-			int char_num = char2int(error[i]);
-			uint32_t char_packed = gen_frag(char_num, 0, 255);
-			screen[line][i] = char_packed;
-		}
+		// Render the error, split across multiple lines if needed
+		size_t max_width = screen[0].size();
+		size_t pos = 0;
 
-		line++;
+		while (pos < error.size()) {
+			string line_error = error.substr(pos, max_width);
+
+			for (int i = 0; i < line_error.size(); i++) {
+				int char_num = char2int(line_error[i]);
+				uint32_t char_packed = gen_frag(char_num, 0, 255);
+				screen[line][i] = char_packed;
+			}
+
+			pos += max_width;
+			line++;
+		}
 	}
 }
 
