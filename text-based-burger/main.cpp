@@ -127,7 +127,7 @@ static float scale = 1.0f;
 
 static float translation[2] = { 0.0f, 0.0f };
 
-void draw_ui() {
+void draw_imgui() {
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -192,6 +192,8 @@ int main() {
 
 	// Compile shaders
 	Shader raster_shader = Shader("vertex.glsl", "fragment.glsl", std::vector<std::string>(), 460);
+	Shader line_shader = Shader("vertex.glsl", "fragment_lines.glsl", std::vector<std::string>(), 460);
+
 	Shader pass_shader = Shader("vertex.glsl", "fragment_pass.glsl", std::vector<std::string>(), 460);
 
 #pragma region General loading
@@ -264,6 +266,45 @@ int main() {
 	glBindVertexArray(0);
 
 
+	// Line drawing vertex buffer and color buffer
+	// Vertex buffer is just draw elements, unindexed. Monolithic buffer, so lines can be any random
+	// object so no indeces, gldrawarrays(gl_lines)
+	// Color buffer is array of 32 bit uints.
+
+	// How many lines do you think youll want to ever draw:
+	int MAX_LINES = 10000;
+
+	float* line_verts = new float[MAX_LINES * 4 * 2]; // 4 vertices per line, 2 floats per vertex
+
+	uint32_t* line_colors = new uint32_t[MAX_LINES]; // 1 color per line
+
+	// Create line vertex buffer
+	unsigned int line_VBO, line_VAO, line_color_SSBO;
+
+	// Generate VAO
+	glGenVertexArrays(1, &line_VAO);
+	glBindVertexArray(line_VAO);
+
+	// Generate and bind VBO
+	glGenBuffers(1, &line_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
+	glBufferData(GL_ARRAY_BUFFER, MAX_LINES * 4 * sizeof(float), nullptr, GL_STREAM_DRAW); // Orphaned initially
+
+	// Vertex layout: vec2 per vertex (x, y), 2 vertices per line = 4 floats
+	// Just treat it as a flat array of vec2s
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+	// Unbind VAO
+	glBindVertexArray(0);
+
+	// Color buffer — SSBO
+	glGenBuffers(1, &line_color_SSBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, line_color_SSBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_LINES * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, line_color_SSBO); // Binding = 1, match in GLSL
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 1); // Bind to 1
+
 	// Frame buffern stuff
 
 	// Create framebuffer
@@ -326,6 +367,21 @@ int main() {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 
+	// Set this every frame how many lines were drawing this time
+	int num_lines = 0;
+
+	// Fill lines with ramdom data 4 test
+	num_lines = 100;
+	for (int i = 0; i < num_lines; i++) {
+		// Verts should be in ndc space
+		line_verts[i * 4    ] = (2.0f * float((rand() % 1000)) / 1000.0f) - 1.0f;
+		line_verts[i * 4 + 1] = (2.0f * float((rand() % 1000)) / 1000.0f) - 1.0f;
+		line_verts[i * 4 + 2] = (2.0f * float((rand() % 1000)) / 1000.0f) - 1.0f;
+		line_verts[i * 4 + 3] = (2.0f * float((rand() % 1000)) / 1000.0f) - 1.0f;
+
+		line_colors[i] = (rand() % 255);
+	}
+
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
@@ -340,7 +396,7 @@ int main() {
 
 		// Rendering starts here
 
-		draw_ui();
+		draw_imgui();
 		set_uniforms();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -374,10 +430,42 @@ int main() {
 		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, NUM_CHARS * sizeof(uint32_t), char_grid);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-
 		glBindVertexArray(VAO);							// Fullscreen quad VAO
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct 		// Draw the quad
-		glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind framebuffer
+
+		// Render lines
+
+		line_shader.use();
+
+		// Upload line vertex data
+		glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
+		glBufferData(GL_ARRAY_BUFFER, MAX_LINES * 4 * sizeof(float), nullptr, GL_STREAM_DRAW); // Orphaning
+		glBufferSubData(GL_ARRAY_BUFFER, 0, num_lines * 4 * sizeof(float), line_verts);        // Upload only used
+
+		// Upload line color data
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, line_color_SSBO);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_LINES * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, num_lines * sizeof(uint32_t), line_colors);
+
+		// Bind the SSBO to binding point 1
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, line_color_SSBO);
+
+		// Setup VAO
+		glBindVertexArray(line_VAO);
+
+		// Draw lines, each line has two verts
+		glDrawArrays(GL_LINES, 0, num_lines * 2);
+
+		// Unbind for cleanliness
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+
+		// Finally unbind the small framebuffer
+		// ---- ALL IN SOFTWARE ELEMENTS MUST BE DRAWN ABOVE THIS LINE ----
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
 		// Second Pass: Render to the screen (nearest-neighbor upscale)
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);			// Default framebuffer (screen)

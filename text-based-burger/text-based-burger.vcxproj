@@ -149,6 +149,7 @@
     <None Include="..\.gitignore" />
     <None Include="..\README.MD" />
     <None Include="fragment.glsl" />
+    <None Include="fragment_lines.glsl" />
     <None Include="fragment_pass.glsl" />
     <None Include="LISCENCE" />
     <None Include="packages.config" />

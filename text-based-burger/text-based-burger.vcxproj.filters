@@ -99,6 +99,9 @@
     <None Include="test_scene.json">
       <Filter>Game data</Filter>
     </None>
+    <None Include="fragment_lines.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imconfig.h">
