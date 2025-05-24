@@ -45,7 +45,6 @@ public:
 	std::vector<int> get_repeats();
 
 	void register_component(std::string name, UIComponent* component);
-	void send_event(std::string target, ComponentEvent event, json data);
 
 	// This can only be used by the script system
 	UIComponent* get_component(std::string name);

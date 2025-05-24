@@ -50,22 +50,6 @@ void ComponentIO::register_component(string name, UIComponent* component) {
 	return;
 }
 
-void ComponentIO::send_event(string target, ComponentEvent event, json data) {
-	// Check if the target component is registered
-	if (component_registry.find(target) == component_registry.end()) {
-		// If it is not, report an error
-		report_error("FATAL: Tried to send event to unregistered component " + target);
-		return;
-	}
-	// Get the target component
-	UIComponent* target_component = component_registry[target];
-
-	// Call the event on the target component
-	target_component->call_event(event, data);
-
-	return;
-}
-
 UIComponent* ComponentIO::get_component(string name) {
 	// Check if the target component is registered
 	if (component_registry.find(name) == component_registry.end()) {
