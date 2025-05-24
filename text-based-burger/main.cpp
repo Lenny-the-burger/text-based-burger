@@ -199,7 +199,7 @@ int main() {
 #pragma region General loading
 
 	// Load font, this had to be done first and on the main thread
-	vector<uint32_t> font_data = load_font("assets\\font2.txt"); // Enter your font path here
+	vector<uint32_t> font_data = load_font("gamedata\\fonts\\font2.txt"); // Enter your font path here
 
 	// Bind the main shader and set uniform
 	raster_shader.use();
@@ -217,7 +217,7 @@ int main() {
 
 
 	// Load ui
-	ui = make_unique<UIHandler>("test_scene.json", CHAR_COLS, CHAR_ROWS / 2);
+	ui = make_unique<UIHandler>("gamedata\\ui\\test_scene.json", CHAR_COLS, CHAR_ROWS / 2);
 	ui->rerender_all(); // Initial render
 
 
