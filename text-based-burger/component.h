@@ -45,9 +45,6 @@ public:
 
 	std::vector<UIComponent*> get_children();
 
-	// This is a function that is called when an event is sent to the component
-	virtual void call_event(ComponentEvent event, json data);
-
 	std::string targetname;
 
 protected:

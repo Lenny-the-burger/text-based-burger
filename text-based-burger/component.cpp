@@ -64,11 +64,6 @@ vector<UIComponent*> UIComponent::get_children() {
 	return raw_children;
 }
 
-void UIComponent::call_event(ComponentEvent event, json data) {
-	// This is where you would handle your push events
-	return;
-}
-
 vector<UIComponent*> iterate_leaves(UIComponent* component) {
 	vector<UIComponent*> leaves;
 	vector<UIComponent*> queue;

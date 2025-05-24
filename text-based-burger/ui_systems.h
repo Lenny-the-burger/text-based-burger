@@ -17,16 +17,6 @@ struct UpdateData {
 	bool is_clicking;
 };
 
-// All the various component events we can send to them
-enum class ComponentEvent {
-	CNT_ADD_CHILD,
-	CNT_KILL_CHILD,
-
-	LBL_UPDATE_TEXT,
-	LBL_SET_COLOR,
-};
-
-
 // Forward declaration
 class UIComponent;
 
