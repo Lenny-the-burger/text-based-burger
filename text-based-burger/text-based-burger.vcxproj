@@ -131,8 +131,11 @@
     <ClCompile Include="char_lut.cpp" />
     <ClCompile Include="component.cpp" />
     <ClCompile Include="font_loader.cpp" />
+    <ClCompile Include="game_object.cpp" />
+    <ClCompile Include="game_object.h" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="object_utils.cpp" />
     <ClCompile Include="scripts.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="third-party\imgui\imgui.cpp" />
@@ -151,6 +154,7 @@
     <None Include="fragment.glsl" />
     <None Include="fragment_lines.glsl" />
     <None Include="fragment_pass.glsl" />
+    <None Include="gamedata\props\gen_props.json" />
     <None Include="gamedata\ui\test_scene.json" />
     <None Include="LISCENCE" />
     <None Include="packages.config" />
@@ -160,8 +164,10 @@
     <ClInclude Include="char_lut.h" />
     <ClInclude Include="component.h" />
     <ClInclude Include="font_loader.h" />
+    <ClInclude Include="game_object_handler.h" />
     <ClInclude Include="hash_fnv1a.h" />
     <ClInclude Include="json.hpp" />
+    <ClInclude Include="object_utils.h" />
     <ClInclude Include="scripts.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="third-party\glad\glad.h" />

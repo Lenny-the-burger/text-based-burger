@@ -1,26 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Third party">
       <UniqueIdentifier>{74da5d11-26d1-4439-8bfb-87cb42aed8da}</UniqueIdentifier>
     </Filter>
     <Filter Include="Third party\Imgui">
       <UniqueIdentifier>{499ff2a8-210b-48fe-88f3-d7b3ef170c16}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{fe5c4753-142d-488b-99ad-076c28a7be41}</UniqueIdentifier>
     </Filter>
     <Filter Include="Game data">
       <UniqueIdentifier>{de7ec62f-f0ca-4008-a898-ff3e15ce4506}</UniqueIdentifier>
@@ -37,11 +22,41 @@
     <Filter Include="Game data\props">
       <UniqueIdentifier>{b46a345f-ddbd-4a34-8609-3c2f414bf330}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{619cb3e3-ee9c-440b-8037-40858146913b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\ui">
+      <UniqueIdentifier>{b5a47df2-7ef0-42f4-8536-085c8f7ac50f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\world">
+      <UniqueIdentifier>{b37d70c3-0492-46b1-90de-45470bb684c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\world\header">
+      <UniqueIdentifier>{baa55ae3-ea32-4078-9f9f-278f2e1c0bd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\world\source">
+      <UniqueIdentifier>{7508501b-0f25-442f-ac86-a6d9fdf72b94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\ui\header">
+      <UniqueIdentifier>{969e3e25-50ed-412c-9ad0-819ff463ba3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\ui\source">
+      <UniqueIdentifier>{b0d2e064-5f20-4e0d-b8e2-9fceb5b8c213}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\misc">
+      <UniqueIdentifier>{9fb3e472-0da7-4786-948b-dd16e9e9c2b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\misc\header">
+      <UniqueIdentifier>{3808cb10-9c48-4454-9159-e656043295aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\misc\source">
+      <UniqueIdentifier>{c4cf135e-2b9a-41c2-a041-035c94b5a298}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{fe5c4753-142d-488b-99ad-076c28a7be41}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="glad.c">
       <Filter>Third party</Filter>
     </ClCompile>
@@ -66,26 +81,38 @@
     <ClCompile Include="third-party\imgui\imgui_widgets.cpp">
       <Filter>Third party\Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="component.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ui_handler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ui_systems.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="scripts.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="char_lut.cpp">
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="font_loader.cpp">
       <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="game_object.h">
+      <Filter>src\world\header</Filter>
+    </ClCompile>
+    <ClCompile Include="component.cpp">
+      <Filter>src\ui\source</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts.cpp">
+      <Filter>src\misc\source</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>src\misc\source</Filter>
+    </ClCompile>
+    <ClCompile Include="ui_handler.cpp">
+      <Filter>src\ui\source</Filter>
+    </ClCompile>
+    <ClCompile Include="ui_systems.cpp">
+      <Filter>src\ui\source</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="object_utils.cpp">
+      <Filter>src\world\source</Filter>
+    </ClCompile>
+    <ClCompile Include="game_object.cpp">
+      <Filter>src\world\source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +134,9 @@
     </None>
     <None Include="gamedata\ui\test_scene.json">
       <Filter>Game data\ui</Filter>
+    </None>
+    <None Include="gamedata\props\gen_props.json">
+      <Filter>Game data\props</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -137,26 +167,11 @@
     <ClInclude Include="third-party\imgui\imstb_truetype.h">
       <Filter>Third party\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ui_handler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="component.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="json.hpp">
       <Filter>Third party</Filter>
     </ClInclude>
     <ClInclude Include="third-party\glad\glad.h">
       <Filter>Third party</Filter>
-    </ClInclude>
-    <ClInclude Include="ui_systems.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="scripts.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="char_lut.h">
       <Filter>utils</Filter>
@@ -166,6 +181,27 @@
     </ClInclude>
     <ClInclude Include="hash_fnv1a.h">
       <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="component.h">
+      <Filter>src\ui\header</Filter>
+    </ClInclude>
+    <ClInclude Include="game_object_handler.h">
+      <Filter>src\world\header</Filter>
+    </ClInclude>
+    <ClInclude Include="object_utils.h">
+      <Filter>src\world\header</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts.h">
+      <Filter>src\misc\header</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>src\misc\header</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_handler.h">
+      <Filter>src\ui\header</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_systems.h">
+      <Filter>src\ui\header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
