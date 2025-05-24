@@ -18,7 +18,7 @@ public:
 	UIHandler(std::string filename, int scrn_w, int scrn_h);
 
 	// Update the ui
-	void update(UpdateData data);
+	void update(UIUpdateData data);
 
 	// Sometimes it may be useful to switch to a different screen
 	// that is handled by a different ui handler, so this function
@@ -43,7 +43,7 @@ private:
 	std::vector<std::vector<bool>> should_update;
 
 	bool show_error_log = false;
-	ComponentIO component_io;
+	UIComponentIO component_io;
 	
 	// Root component
 	UIComponent root;

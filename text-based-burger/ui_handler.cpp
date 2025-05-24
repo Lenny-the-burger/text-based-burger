@@ -7,13 +7,13 @@ using json = nlohmann::json; // for convenience
 
 UIHandler::UIHandler() : component_io(), root(move(UIComponent(component_io))) {
 	// Set error log to empty
-	component_io = ComponentIO();
+	component_io = UIComponentIO();
 }
 
 UIHandler::UIHandler(string filename, int scrn_w, int scrn_h)
 	: component_io(), root(move(UIComponent(component_io))) {
 	// Set error log to empty
-	component_io = ComponentIO();
+	component_io = UIComponentIO();
 
 	// Initialize the screen to all 0s
 	screen = vector<vector<uint32_t>>(scrn_h, vector<uint32_t>(scrn_w, 0));
@@ -38,7 +38,7 @@ UIHandler::UIHandler(string filename, int scrn_w, int scrn_h)
 	// Set the root component
 }
 
-void UIHandler::update(UpdateData data) {
+void UIHandler::update(UIUpdateData data) {
 	// Update the root component
 	vector<UIComponent*> leaves = iterate_leaves(&root);
 	for (UIComponent* leaf : leaves) {

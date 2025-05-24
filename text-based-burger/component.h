@@ -14,8 +14,8 @@ class UIComponent {
 
 public:
 	// Constructor
-	UIComponent(ComponentIO& the_comp_io); // Construct an empty component
-	UIComponent(json data, std::pair<int, int> offset, ComponentIO& the_comp_io); // Construct from json data
+	UIComponent(UIComponentIO& the_comp_io); // Construct an empty component
+	UIComponent(json data, std::pair<int, int> offset, UIComponentIO& the_comp_io); // Construct from json data
 
 
 	// THESE CAN ONLY BE MOVED DO NOT EVER EVER COPY THEM
@@ -34,7 +34,7 @@ public:
 	~UIComponent();
 
 	// Update function, returns true if the component should rerender
-	virtual bool update(UpdateData data);
+	virtual bool update(UIUpdateData data);
 
 	// Tell the component to render to the given screen
 	// If it runs out of bounds it just clips
@@ -54,7 +54,7 @@ protected:
 
 	std::vector<std::unique_ptr<UIComponent>> children;
 
-	ComponentIO& comp_io;
+	UIComponentIO& comp_io;
 
 };
 
@@ -62,11 +62,11 @@ protected:
 // Returns iterator that returns leaves in bfs order
 std::vector<UIComponent*> iterate_leaves(UIComponent* component);
 
-std::unique_ptr<UIComponent> type_selector(json data, std::pair<int, int>, ComponentIO& reporter);
+std::unique_ptr<UIComponent> type_selector(json data, std::pair<int, int>, UIComponentIO& reporter);
 
 class Container : public UIComponent {
 public:
-	Container(json data, std::pair<int, int> offset, ComponentIO& the_comp_io);
+	Container(json data, std::pair<int, int> offset, UIComponentIO& the_comp_io);
 };
 
 
@@ -76,13 +76,13 @@ public:
 // to interact with labels as a human, you only need to hold alt and type the number on the numpad.
 class Label : public UIComponent {
 public:
-	Label(json data, std::pair<int, int> offset, ComponentIO& the_comp_io);
+	Label(json data, std::pair<int, int> offset, UIComponentIO& the_comp_io);
 
 	virtual void contains(std::unique_ptr<UIComponent>&& component) override;
 
 	virtual void render(std::vector<std::vector<uint32_t>>& screen) override;
 
-	virtual bool update(UpdateData data) override;
+	virtual bool update(UIUpdateData data) override;
 	
 	void update_text(std::string new_text);
 	void update_text(std::vector<int> new_text);
@@ -98,9 +98,9 @@ protected:
 
 class Button : public Label {
 public:
-	Button(json data, std::pair<int, int> offset, ComponentIO& the_comp_io);
+	Button(json data, std::pair<int, int> offset, UIComponentIO& the_comp_io);
 
-	virtual bool update(UpdateData data) override;
+	virtual bool update(UIUpdateData data) override;
 
 	void set_click_script(std::string script);
 	void set_hover_script(std::string script);
@@ -131,9 +131,9 @@ protected:
 // simple displays like an fps counter.
 class DynLabel : public Label {
 public:
-	DynLabel(json data, std::pair<int, int> offset, ComponentIO& the_comp_io);
+	DynLabel(json data, std::pair<int, int> offset, UIComponentIO& the_comp_io);
 
-	virtual bool update(UpdateData data) override;
+	virtual bool update(UIUpdateData data) override;
 
 protected:
 

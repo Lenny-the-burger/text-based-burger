@@ -9,13 +9,13 @@
 using namespace std;
 
 // UI COMPONENT
-UIComponent::UIComponent(ComponentIO& the_comp_io) : comp_io(the_comp_io) {
+UIComponent::UIComponent(UIComponentIO& the_comp_io) : comp_io(the_comp_io) {
 	targetname = "root";
 	position = make_pair(0, 0); // This constructor should only be used for the root component
 	return;
 };
 
-UIComponent::UIComponent(json data,pair<int, int> offset, ComponentIO& the_comp_io) : comp_io(the_comp_io) {
+UIComponent::UIComponent(json data,pair<int, int> offset, UIComponentIO& the_comp_io) : comp_io(the_comp_io) {
 	targetname = to_string(data["targetname"]); // This should always return a string targetname im not error checking
 	position = make_pair(data["position"]["x"], data["position"]["y"]);
 	comp_io.register_component(targetname, this);
@@ -42,7 +42,7 @@ UIComponent::~UIComponent() {
 	children.clear();
 };
 
-bool UIComponent::update(UpdateData data) {
+bool UIComponent::update(UIUpdateData data) {
 	// This is where you handle you pull events
 	return false;
 }
@@ -89,20 +89,20 @@ vector<UIComponent*> iterate_leaves(UIComponent* component) {
 	return leaves;
 }
 
-using ComponentFactory = std::function<std::unique_ptr<UIComponent>(json, std::pair<int, int>, ComponentIO&)>;
+using ComponentFactory = std::function<std::unique_ptr<UIComponent>(json, std::pair<int, int>, UIComponentIO&)>;
 
-std::unique_ptr<UIComponent> type_selector(json data, std::pair<int, int> offset, ComponentIO& reporter) {
+std::unique_ptr<UIComponent> type_selector(json data, std::pair<int, int> offset, UIComponentIO& reporter) {
 	static const std::unordered_map<std::string, ComponentFactory> factory_map = {
-		{"label", [](json d, std::pair<int, int> off, ComponentIO& rep) {
+		{"label", [](json d, std::pair<int, int> off, UIComponentIO& rep) {
 			return std::make_unique<Label>(d, off, rep);
 		}},
-		{"container", [](json d, std::pair<int, int> off, ComponentIO& rep) {
+		{"container", [](json d, std::pair<int, int> off, UIComponentIO& rep) {
 			return std::make_unique<Container>(d, off, rep);
 		}},
-		{"button", [](json d, std::pair<int, int> off, ComponentIO& rep) {
+		{"button", [](json d, std::pair<int, int> off, UIComponentIO& rep) {
 			return std::make_unique<Button>(d, off, rep);
 		}},
-		{"dynlabel", [](json d, std::pair<int, int> off, ComponentIO& rep) {
+		{"dynlabel", [](json d, std::pair<int, int> off, UIComponentIO& rep) {
 			return std::make_unique<DynLabel>(d, off, rep);
 		}}
 	};
@@ -120,14 +120,14 @@ std::unique_ptr<UIComponent> type_selector(json data, std::pair<int, int> offset
 
 // CONTAINER
 
-Container::Container(json data, pair<int, int> offset, ComponentIO& the_comp_io) 
+Container::Container(json data, pair<int, int> offset, UIComponentIO& the_comp_io) 
 	: UIComponent(data, offset, the_comp_io) {
 	return;
 }
 
 // LABEL
 
-Label::Label(json data, pair<int, int> offset, ComponentIO& the_comp_io) 
+Label::Label(json data, pair<int, int> offset, UIComponentIO& the_comp_io) 
 	: UIComponent(data, offset, the_comp_io) {
 	update_text(data["text"].get<std::string>());
 	foreground_color = data["style"]["fg"];
@@ -221,7 +221,7 @@ void Label::render(std::vector<std::vector<uint32_t>>& screen) {
 	return;
 }
 
-bool Label::update(UpdateData data) {
+bool Label::update(UIUpdateData data) {
 	if (should_render) {
 		// Maybe we animated the text or something
 		should_render = false;
@@ -233,7 +233,7 @@ bool Label::update(UpdateData data) {
 
 // BUTTON
 
-Button::Button(json data, pair<int, int> offset, ComponentIO& the_comp_io)
+Button::Button(json data, pair<int, int> offset, UIComponentIO& the_comp_io)
 	: Label(data, offset, the_comp_io) {
 
 	// Buttons are just labels with a script attached
@@ -266,7 +266,7 @@ Button::Button(json data, pair<int, int> offset, ComponentIO& the_comp_io)
 	return;
 }
 
-bool Button::update(UpdateData data) {
+bool Button::update(UIUpdateData data) {
 	// Check if mouse is within the button bounds
 	bool within_bbox = (data.mouse_char_x >= position.first && data.mouse_char_x < position.first + bbox.first &&
 		data.mouse_char_y >= position.second && data.mouse_char_y < position.second + bbox.second);
@@ -386,13 +386,13 @@ void Button::on_exit() {
 
 // DYN LABEL
 
-DynLabel::DynLabel(json data, pair<int, int> offset, ComponentIO& the_comp_io)
+DynLabel::DynLabel(json data, pair<int, int> offset, UIComponentIO& the_comp_io)
 	: Label(data, offset, the_comp_io) {
 	script_name = data["script"].get<std::string>();
 	return;
 }
 
-bool DynLabel::update(UpdateData data) {
+bool DynLabel::update(UIUpdateData data) {
 	// Call the script every frame
 	Script script = get_script(script_name);
 	if (script == nullptr) {

@@ -10,7 +10,7 @@ using json = nlohmann::json;
 // This file holds all the random ui things that are needed for the ui system to work
 // but arent components themselves or the actual ui handler
 
-struct UpdateData {
+struct UIUpdateData {
 	int mouse_char_x;
 	int mouse_char_y;
 	int time;
@@ -21,12 +21,12 @@ struct UpdateData {
 class UIComponent;
 
 // Error reporter class
-class ComponentIO {
+class UIComponentIO {
 public:
 	// Constructor
-	ComponentIO();
+	UIComponentIO();
 	// Destructor
-	~ComponentIO();
+	~UIComponentIO();
 
 	// Report an error
 	void report_error(std::string error);

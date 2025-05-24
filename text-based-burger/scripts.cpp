@@ -27,25 +27,25 @@ Script get_script(std::string name) {
     }
 }
 
-void test_button_script(json data, ComponentIO& io) {
+void test_button_script(json data, UIComponentIO& ui_io) {
 	// Dump data to console
 	std::cout << "Test button script called with data:\n" << data.dump() << std::endl;
 
 	return;
 }
 
-void hover_reporter(json data, ComponentIO& io) {
+void hover_reporter(json data, UIComponentIO& ui_io) {
 	// Dump data to console
 	std::cout << "Hovering over " << data["targetname"] << std::endl;
 	return;
 }
 
-void mouse_pos_shower(json data, ComponentIO& io) {
+void mouse_pos_shower(json data, UIComponentIO& ui_io) {
 	// Get the caller component from the io
-	DynLabel* lbl = dynamic_cast<DynLabel*>(io.get_component(data["targetname"]));
+	DynLabel* lbl = dynamic_cast<DynLabel*>(ui_io.get_component(data["targetname"]));
 
 	if (lbl == nullptr) {
-		io.report_error("ERROR: Mouse pos shower called on non existant component " + data["targetname"]);
+		ui_io.report_error("ERROR: Mouse pos shower called on non existant component " + data["targetname"]);
 		return;
 	}
 

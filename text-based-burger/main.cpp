@@ -392,7 +392,7 @@ int main() {
 	{
 		processInput(window);
 
-		UpdateData frame_data;
+		UIUpdateData frame_data;
 		frame_data.mouse_char_x = mouse_char_x;
 		frame_data.mouse_char_y = mouse_char_y;
 		frame_data.time = (int) glfwGetTime();

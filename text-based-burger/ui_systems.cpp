@@ -4,18 +4,18 @@
 using namespace std;
 
 // Error Reporter
-ComponentIO::ComponentIO() {
+UIComponentIO::UIComponentIO() {
 	// Reporters will always start with an empty log
 	error_log = vector<string>();
 	return;
 }
 
-ComponentIO::~ComponentIO() {
+UIComponentIO::~UIComponentIO() {
 	error_log.clear();
 	return;
 }
 
-void ComponentIO::report_error(string error) {
+void UIComponentIO::report_error(string error) {
 	// Check if the previous reported error is the same as the current one
 	if (!error_log.empty() && error_log.back() == error) {
 		// If it is, increment the repeat counter
@@ -29,15 +29,15 @@ void ComponentIO::report_error(string error) {
 	return;
 }
 
-vector<string> ComponentIO::get_log() {
+vector<string> UIComponentIO::get_log() {
 	return error_log;
 }
 
-vector<int> ComponentIO::get_repeats() {
+vector<int> UIComponentIO::get_repeats() {
 	return repeats;
 }
 
-void ComponentIO::register_component(string name, UIComponent* component) {
+void UIComponentIO::register_component(string name, UIComponent* component) {
 	// First check if the component is already registered
 	if (component_registry.find(name) != component_registry.end()) {
 		// If it is, report an error
@@ -50,7 +50,7 @@ void ComponentIO::register_component(string name, UIComponent* component) {
 	return;
 }
 
-UIComponent* ComponentIO::get_component(string name) {
+UIComponent* UIComponentIO::get_component(string name) {
 	// Check if the target component is registered
 	if (component_registry.find(name) == component_registry.end()) {
 		// If it is not, report an error
