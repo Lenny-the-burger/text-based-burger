@@ -19,9 +19,6 @@
     <Filter Include="Game data\ui">
       <UniqueIdentifier>{4dd18a63-e97f-426b-9e00-f18b13f85f62}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game data\props">
-      <UniqueIdentifier>{b46a345f-ddbd-4a34-8609-3c2f414bf330}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{619cb3e3-ee9c-440b-8037-40858146913b}</UniqueIdentifier>
     </Filter>
@@ -54,6 +51,9 @@
     </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{fe5c4753-142d-488b-99ad-076c28a7be41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game data\meshes">
+      <UniqueIdentifier>{b46a345f-ddbd-4a34-8609-3c2f414bf330}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -114,6 +114,9 @@
     <ClCompile Include="game_object.cpp">
       <Filter>src\world\source</Filter>
     </ClCompile>
+    <ClCompile Include="game_object_handler.cpp">
+      <Filter>src\world\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -136,7 +139,7 @@
       <Filter>Game data\ui</Filter>
     </None>
     <None Include="gamedata\props\gen_props.json">
-      <Filter>Game data\props</Filter>
+      <Filter>Game data\meshes</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

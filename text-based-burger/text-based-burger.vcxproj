@@ -133,6 +133,7 @@
     <ClCompile Include="font_loader.cpp" />
     <ClCompile Include="game_object.cpp" />
     <ClCompile Include="game_object.h" />
+    <ClCompile Include="game_object_handler.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="object_utils.cpp" />
