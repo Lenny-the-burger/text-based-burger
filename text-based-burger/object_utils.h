@@ -47,8 +47,16 @@ public:
 	// This should only be used by the script system
 	GameObject* get_object(std::string name);
 
+	// Points to the meshes data. The actual one is held by the handler
+	json* meshes;
+
 private:
 	std::vector<std::string> error_log;
 	std::vector<int> repeats;
 	std::map<std::string, GameObject*> object_registry;
 };
+
+// Split given path along "." delimiter
+std::vector<std::string> split_file_path(std::string path);
+
+// Helper function to print out a json data for the debugger or immediate window

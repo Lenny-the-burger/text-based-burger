@@ -62,3 +62,14 @@ GameObject* ObjectIO::get_object(string name) {
 	return object_registry[name];
 }
 
+vector<string> split_file_path(string path) {
+	// Split the path along the "." delimiter
+	vector<string> result;
+	size_t pos = 0;
+	while ((pos = path.find('.')) != string::npos) {
+		result.push_back(path.substr(0, pos));
+		path.erase(0, pos + 1);
+	}
+	result.push_back(path);
+	return result;
+}
