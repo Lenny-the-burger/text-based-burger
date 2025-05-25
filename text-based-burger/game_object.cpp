@@ -6,16 +6,16 @@ using namespace std;
 // GAME OBJECT
 
 GameObject::GameObject(json data, ObjectIO& io) : io(io) {
-	targetname = to_string(data["targetname"]);
+	targetname = data["targetname"].get_ref<const string&>();
 
 	update_script_name = data["update_script"].get_ref<const string&>();
 
 	// For non rendering objects you can probably not even write these, if you know
 	// you will never need to render it is probably fine if they are null.
-	render_name = data["render_name"].get_ref<const string&>();
-	position = make_pair(data["position"]["x"], data["position"]["y"]);
-	rotation = data["rotation"];
-	render_scale = make_pair(data["scale"]["x"], data["scale"]["y"]);
+	mesh = data["mesh"].get_ref<const string&>();
+	position = make_pair(data["position"][0], data["position"][1]);
+	//rotation = data["rotation"];
+	render_scale = make_pair(data["scale"][0], data["scale"][1]);
 	color = data["color"];
 	return;
 }
