@@ -167,6 +167,7 @@
     <ClInclude Include="game_object_handler.h" />
     <ClInclude Include="hash_fnv1a.h" />
     <ClInclude Include="json.hpp" />
+    <ClInclude Include="map_manager.h" />
     <ClInclude Include="object_utils.h" />
     <ClInclude Include="scripts.h" />
     <ClInclude Include="shader.h" />
