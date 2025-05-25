@@ -15,6 +15,10 @@
 #include "component.h"
 #include "ui_handler.h"
 
+#include "object_utils.h"
+#include "game_object_handler.h"
+#include "game_object.h"
+
 using namespace std;
 
 // These are not constants 
@@ -49,6 +53,9 @@ int Z_LAYERS = 4;
 
 // Master ui handler
 unique_ptr<UIHandler> ui;
+
+// Master object handler
+unique_ptr<ObjectsHandler> objects_handler;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -219,6 +226,9 @@ int main() {
 	// Load ui
 	ui = make_unique<UIHandler>("gamedata\\ui\\test_scene.json", CHAR_COLS, CHAR_ROWS / 2);
 	ui->rerender_all(); // Initial render
+
+	// Load test map
+	objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\testmap.json");
 
 
 #pragma endregion
