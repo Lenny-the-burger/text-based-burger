@@ -35,3 +35,21 @@ void GameObject::render(std::vector<float>& lines_list, std::vector<uint32_t> co
 	// you get from updata data. Note that you should output NDC here not world space.
 	return;
 }
+
+using ObjectFactory = std::unique_ptr<GameObject>(*)(json data, ObjectIO& io);
+
+std::unique_ptr<GameObject> type_selector(json data, ObjectIO& io) {
+	static const std::map<std::string, ObjectFactory> factory_map = {
+		{"generic", [](json data, ObjectIO& io) { return std::make_unique<GameObject>(data, io); }},
+
+		// Add more game object types here
+	};
+
+	auto it = factory_map.find(data["type"].get_ref<const string&>());
+	if (it != factory_map.end()) {
+		return it->second(data, io);
+	}
+	else {
+		throw std::runtime_error("Unknown game object type: " + data["type"].get_ref<const string&>());
+	}
+}

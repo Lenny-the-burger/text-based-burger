@@ -5,6 +5,10 @@ using json = nlohmann::json;
 
 #include "object_utils.h"
 
+#include <vector>
+#include <string>
+#include <map>
+
 // This is all the game objects. Game objects are responcible for their own
 // interaction and submitting their own rendering data to the handler.
 
@@ -33,7 +37,7 @@ protected:
 	ObjectIO& io;
 
 	// Name of the (mesh?) that this object uses
-	std::string render_name;
+	std::string mesh;
 
 	std::string update_script_name;
 
@@ -49,3 +53,6 @@ protected:
 	// This is the color of the object
 	int color;
 };
+
+// Type selctor for game objects
+std::unique_ptr<GameObject> type_selector(json data, ObjectIO& io);
