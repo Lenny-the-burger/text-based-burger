@@ -1,7 +1,5 @@
-# Text rendering base
-This is the base rendering engine for the ascii software (and tooling) Text based burger and the game CENTRALEYE.
-
-Because visual studio was made by the devil, microsoft, all solutions and directory are named text-based-burger.
+# Text based burger
+This is the engine source code for the text based burger engine, used by the game CENTRALEYE. This repo is missing the game files requitred for the game, but otherwise contains all the source code for the game.
 
 ## Liscencing
 This program is licensed under the MIT license. You can find the license in the LICENSE file.
