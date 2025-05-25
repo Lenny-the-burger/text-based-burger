@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="GameObject">
+    <DisplayString>
+      GameObject {targetname}, mesh: {mesh}
+    </DisplayString>
+
+    <Expand>
+      <Item Name="Name">targetname</Item>
+      <Item Name="Position X">position.first</Item>
+      <Item Name="Position Y">position.second</Item>
+      <Item Name="Rotation (rad)">rotation</Item>
+      <Item Name="Scale X">render_scale.first</Item>
+      <Item Name="Scale Y">render_scale.second</Item>
+      <Item Name="Mesh">mesh</Item>
+      <Item Name="Script">update_script_name</Item>
+      <Item Name="Color (int)">color</Item>
+      <Item Name="[IO Ref]">io</Item>
+    </Expand>
+  </Type>
+</AutoVisualizer>

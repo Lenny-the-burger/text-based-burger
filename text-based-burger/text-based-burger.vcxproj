@@ -155,7 +155,8 @@
     <None Include="fragment.glsl" />
     <None Include="fragment_lines.glsl" />
     <None Include="fragment_pass.glsl" />
-    <None Include="gamedata\props\gen_props.json" />
+    <None Include="gamedata\maps\testmap.json" />
+    <None Include="gamedata\meshes\gen_props.json" />
     <None Include="gamedata\ui\test_scene.json" />
     <None Include="LISCENCE" />
     <None Include="packages.config" />
@@ -188,6 +189,9 @@
   <ItemGroup>
     <Text Include="gamedata\fonts\font.txt" />
     <Text Include="gamedata\fonts\font2.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="engine.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

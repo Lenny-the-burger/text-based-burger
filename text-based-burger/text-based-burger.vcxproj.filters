@@ -55,6 +55,9 @@
     <Filter Include="Game data\meshes">
       <UniqueIdentifier>{b46a345f-ddbd-4a34-8609-3c2f414bf330}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game data\maps">
+      <UniqueIdentifier>{2b058a23-c319-4cf4-9089-d63632fcb0c3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -138,7 +141,10 @@
     <None Include="gamedata\ui\test_scene.json">
       <Filter>Game data\ui</Filter>
     </None>
-    <None Include="gamedata\props\gen_props.json">
+    <None Include="gamedata\maps\testmap.json">
+      <Filter>Game data\maps</Filter>
+    </None>
+    <None Include="gamedata\meshes\gen_props.json">
       <Filter>Game data\meshes</Filter>
     </None>
   </ItemGroup>
@@ -217,5 +223,8 @@
     <Text Include="gamedata\fonts\font2.txt">
       <Filter>Game data\fonts</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="engine.natvis" />
   </ItemGroup>
 </Project>
