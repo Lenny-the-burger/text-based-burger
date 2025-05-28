@@ -436,6 +436,26 @@ int main() {
 			}
 		}
 
+		// --- update objects ---
+		ObjectUpdateData update_data;
+		update_data.time = (int)glfwGetTime();
+		update_data.mouse_x = mouse_char_x;
+		update_data.mouse_y = mouse_char_y;
+		update_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
+		// Should probably not reset this every frame, but its a pointer so whatever
+		update_data.window = window;
+
+		// add camera stuff
+
+		// Call update
+		objects_handler->update(update_data);
+
+		// Render objects
+		// Clear line verts and colors
+		num_lines = objects_handler->render(line_verts, line_colors);
+
+
 		// The amount of data we send to the gpu is only 7.2 kb, if you want to optimize
 		// this then go right ahead if you want another 1 fps over the 1000 you already get
 

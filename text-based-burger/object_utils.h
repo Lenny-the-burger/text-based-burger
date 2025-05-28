@@ -56,7 +56,7 @@ private:
 	std::map<std::string, GameObject*> object_registry;
 };
 
-// Split given path along "." delimiter
+// Split given path along "/" delimiter
 std::vector<std::string> split_file_path(std::string path);
 
 // Helper function to print out a json data for the debugger or immediate window

@@ -39,9 +39,8 @@ ObjectsHandler::ObjectsHandler(string filename) : object_io() {
 
 		// Check the object mesh and if we dont have the filename already
 		// add it to the list. 
-		// Mesh names are file.folder.mesh with any number of folders possible
-		// so we only need the first one. Using "." as delimiter because why would 
-		// you make your file delimiter a control character thats stupid.
+		// Mesh names are file/folder/mesh with any number of folders possible
+		// "/" as a delimiter was not chosen by me it is what the fuckass json pointers use
 		string filename = split_file_path(entity_data["mesh"].get_ref<const string&>())[0];
 
 		if (find(mesh_files_to_load.begin(), mesh_files_to_load.end(), filename) == mesh_files_to_load.end()) {
@@ -64,9 +63,8 @@ ObjectsHandler::ObjectsHandler(string filename) : object_io() {
 			ifstream f(path + mesh_file + ".json");
 			// If we cant find the file with the last path then something went wrong
 			if (!f.is_open() && path == paths.back()) {
-				// You should not have missing mesh files, if an object cant find its specific
-				// mesh it just gets reported as an error, but you should really not be mispelling
-				// file names.
+				// You should really not have missing mesh files, that will break a lot of things.
+				// Maybe you just mispelled a mesh name in the wrong place but i dont know that
 				throw runtime_error("Could not find mesh file " + mesh_file + ".json");
 			}
 			else if (!f.is_open()) {
@@ -81,4 +79,28 @@ ObjectsHandler::ObjectsHandler(string filename) : object_io() {
 	object_io.meshes = &meshes;
 
 	GameObject* test = objects[0].get();
+}
+
+void ObjectsHandler::update(ObjectUpdateData data) {
+	// Update all the objects
+	for (auto& obj : objects) {
+		if (obj->update(data)) {
+			// If the object needs to be rerendered, we can handle that later
+			// For now we just update the object
+		}
+	}
+}
+
+int ObjectsHandler::render(float* lines_list, uint32_t* colors) {
+	// Render all the objects
+
+	// counter to where we should write in the lines list
+	int counter = 0;
+
+	int cols_counter = 0;
+	for (std::unique_ptr<GameObject>& obj : objects) {
+		counter = obj->render(lines_list, counter, colors);
+	}
+
+	return counter / 4; // Return the number of lines rendered
 }

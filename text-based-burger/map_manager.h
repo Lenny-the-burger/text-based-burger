@@ -31,8 +31,9 @@
 // 8 bit uint: color of line
 // 
 // Lines have several basic types:
-// 0: normal line (collision, parralax)
+// 0: normal line (collision, rendered)
 // 1: cosmetic line (no collision, no parralax)
+// 2: technical line (no collision, not rendered)
 // 
 // More advanced types should be handled by brush entities, this is mostly
 // intended for general purpouse brushless lines.

@@ -28,9 +28,12 @@ public:
 	// were rendered the previous frame. The entire array is cleared. For optimization
 	// you should only render if you are within some distance of the camera position
 	// you get from updata data. Note that you should output NDC here not world space.
-	virtual void render(std::vector<float>& lines_list, std::vector<uint32_t> colors);
+	virtual int render(float* lines_list, int offset, uint32_t* colors);
 
 	std::string targetname;
+
+	// This is the color of the object
+	int color;
 
 protected:
 	// This is the object io instance. It is used to call scripts and report errors
@@ -49,9 +52,6 @@ protected:
 
 	// This is the scale of the object
 	std::pair<float, float> render_scale;
-
-	// This is the color of the object
-	int color;
 };
 
 // Type selctor for game objects

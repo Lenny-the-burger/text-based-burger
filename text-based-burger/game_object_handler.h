@@ -22,7 +22,7 @@ public:
 	void update(ObjectUpdateData data);
 
 	// Render the objects
-	void render(std::vector<float>& lines_list, std::vector<uint32_t> colors);
+	int render(float* lines_list, uint32_t* colors);
 
 	// Cant just directly render the error log, so just return strings
 	std::vector<std::string> get_error_log();
