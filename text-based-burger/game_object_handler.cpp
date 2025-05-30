@@ -27,6 +27,13 @@ ObjectsHandler::ObjectsHandler(string filename) : object_io() {
 	// and then at the end read them all in at once.
 	vector<string> mesh_files_to_load;
 
+	// Create the mouse renderer object
+	mouse_renderer = std::make_unique<MouseRenderer>(object_io);
+
+	// Push back gen props file to files we should load as this should never be missing.
+	// This may be renamed in the future to like util_meshes or something
+	mesh_files_to_load.push_back("gen_props");
+
 	// Load the json file
 	ifstream f(filename);
 	if (!f.is_open()) {
@@ -82,6 +89,8 @@ ObjectsHandler::ObjectsHandler(string filename) : object_io() {
 }
 
 void ObjectsHandler::update(ObjectUpdateData data) {
+	mouse_renderer->update(data); // Update the mouse renderer
+
 	// Update all the objects
 	for (auto& obj : objects) {
 		if (obj->update(data)) {
@@ -96,6 +105,9 @@ int ObjectsHandler::render(float* lines_list, uint32_t* colors) {
 
 	// counter to where we should write in the lines list
 	int counter = 0;
+
+	// Render mouse cursor first
+	counter = mouse_renderer->render(lines_list, counter, colors);
 
 	int cols_counter = 0;
 	for (std::unique_ptr<GameObject>& obj : objects) {

@@ -59,12 +59,4 @@ void main() {
 
     // Either we draw the foreground or background color
     FragColor = (float(bit)  * fg_float) + ((1.0 - float(bit)) * bg_float);
-
-    // If we are the mouse cursor, draw glyph 165, white on black
-    if (character_position.x == mouse_char_x && character_position.y == mouse_char_y) {
-        uvec4 character = glyphs[165];
-        uint block = character[sector];
-        uint bit = (block >> block_position) & 1u;
-        FragColor = (float(bit)  * 1.0) + ((1.0 - float(bit)) * 0.0);
-    }
 }

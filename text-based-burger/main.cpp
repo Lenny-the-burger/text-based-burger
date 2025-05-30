@@ -41,6 +41,8 @@ int SMALL_WINDOW_HEIGHT = (CHAR_ROWS * CHAR_HEIGHT) / CHAR_RATIO;
 int mouse_char_x = 0;
 int mouse_char_y = 0;
 
+int native_x, native_y = 0;
+
 const char* WINDOW_TITLE = "Text based burger";
 
 float aspect_ratio = (float)window_width / (float)window_height;
@@ -108,8 +110,8 @@ void processInput(GLFWwindow* window) {
 	float scale = (float)window_height / 480.0f; // more hard coded numbers oh yeah
 	int offset_x = (window_width - 640 * scale) / 2;
 
-	float native_x = (xpos - offset_x) / scale;
-	float native_y = (ypos - 0) / scale;
+	native_x = (xpos - offset_x) / scale;
+	native_y = (ypos - 0) / scale;
 
 	// Convert to character space
 	mouse_char_x = (int)(native_x / CHAR_WIDTH);
@@ -394,10 +396,6 @@ int main() {
 
 		raster_shader.use();
 
-		// Set mouse position uniform so dont have to waste a z layer for it
-		raster_shader.setInt("mouse_char_x", mouse_char_x);
-		raster_shader.setInt("mouse_char_y", mouse_char_y);
-
 		// For now just update all the ui and plop the whole screen on the gpu, 
 		// this will eventually happen on a sperate thread (probably)
 		ui->update(frame_data);
@@ -414,8 +412,8 @@ int main() {
 		// --- update objects ---
 		ObjectUpdateData update_data;
 		update_data.time = (int)glfwGetTime();
-		update_data.mouse_x = mouse_char_x;
-		update_data.mouse_y = mouse_char_y;
+		update_data.mouse_x = native_x;
+		update_data.mouse_y = native_y;
 		update_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
 
 		// Should probably not reset this every frame, but its a pointer so whatever

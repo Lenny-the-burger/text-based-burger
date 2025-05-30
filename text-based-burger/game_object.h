@@ -56,3 +56,20 @@ protected:
 
 // Type selctor for game objects
 std::unique_ptr<GameObject> type_selector(json data, ObjectIO& io);
+
+enum MouseState {
+	MOUSE_NORMAL,
+	MOUSE_CLICKING,
+	MOUSE_DRAGGING
+};
+
+// Just renders the mouse cursor. This object cannot be created from JSON
+// and only one exists, specially held by the ObjectsHandler
+class MouseRenderer : public GameObject {
+public:
+	MouseRenderer(ObjectIO& io);
+
+	virtual bool update(ObjectUpdateData data) override;
+
+	MouseState mouse_state;
+};

@@ -32,6 +32,9 @@ private:
 	// The common object io
 	ObjectIO object_io;
 
+	// Render mouse cursor
+	std::unique_ptr<MouseRenderer> mouse_renderer;
+
 	// Holds all the game objects. Note that this is just a flat array, and if
 	// you want get objects by targetname you should use the io, as that holds
 	// the object registry.
