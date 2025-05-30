@@ -9,8 +9,6 @@ uniform uvec4 glyphs[256];
 uniform int mouse_char_x;
 uniform int mouse_char_y;
 
-
-
 // Character grid ssbo
 layout(std430, binding = 0) buffer CharacterGrid {
 	uint character_grid[];

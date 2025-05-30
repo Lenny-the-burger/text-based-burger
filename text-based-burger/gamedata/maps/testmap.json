@@ -10,7 +10,7 @@
       "mesh": "gen_props/npc_icons/foundation",
       "position": [ 0, 0 ],
       "scale": [ 32, 32 ],
-      "color": 220
+      "color": 255
     }
 
   ],
