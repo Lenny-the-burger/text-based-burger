@@ -41,8 +41,6 @@ int SMALL_WINDOW_HEIGHT = (CHAR_ROWS * CHAR_HEIGHT) / CHAR_RATIO;
 int mouse_char_x = 0;
 int mouse_char_y = 0;
 
-float target_scale = (float)SMALL_WINDOW_HEIGHT / (float)window_height;
-
 const char* WINDOW_TITLE = "Text based burger";
 
 float aspect_ratio = (float)window_width / (float)window_height;
@@ -130,10 +128,6 @@ void processInput(GLFWwindow* window) {
 	mouse_char_x -= (char_x_max - CHAR_COLS) / 8;
 }
 
-static float scale = 1.0f;
-
-static float translation[2] = { 0.0f, 0.0f };
-
 void draw_imgui() {
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
@@ -141,13 +135,6 @@ void draw_imgui() {
 	ImGui::NewFrame();
 
 	//ImGui::ShowDemoWindow(); // Show demo window! :)
-
-	// Render target scale slider
-	ImGui::SliderFloat("Scale", &scale, 0.1f, 10.0f);
-
-	// Render target translation sliders
-	ImGui::SliderFloat("Translation X", &translation[0], -1.0f, 1.0f);
-	ImGui::SliderFloat("Translation Y", &translation[1], -1.0f, 1.0f);
 
 	// Because imgui hijacks things thanks imgui
 	ImGui::SetMouseCursor(ImGuiMouseCursor_None);
