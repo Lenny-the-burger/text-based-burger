@@ -62,7 +62,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	window_height = height;
 
 	aspect_ratio = (float)window_width / (float)window_height;
-	target_scale = (float)SMALL_WINDOW_HEIGHT / (float)height;
 }
 
 void processInput(GLFWwindow* window) {
@@ -104,28 +103,17 @@ void processInput(GLFWwindow* window) {
 	// Mouse position
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-	//xpos = ImGui::GetMousePos().x;
-	//ypos = ImGui::GetMousePos().y;
+
+	// Convert from window space to native space
+	float scale = (float)window_height / 480.0f; // more hard coded numbers oh yeah
+	int offset_x = (window_width - 640 * scale) / 2;
+
+	float native_x = (xpos - offset_x) / scale;
+	float native_y = (ypos - 0) / scale;
 
 	// Convert to character space
-
-	// Y position is simple because we can just divide by the character rows
-
-	mouse_char_y = (int)floor((ypos * CHAR_ROWS) / window_height);
-
-	// X position we need to figure out how many character could fit in the window
-	// We could do complex scaling math but we know the character ratio so go by that
-	int char_pixels_side = (window_height / CHAR_ROWS) / CHAR_RATIO;
-
-	mouse_char_x = (int)floor(xpos / char_pixels_side);
-
-	mouse_char_x /= 2;
-	mouse_char_y /= 2;
-
-	// Offset for the window border
-	// How many characters could fit in the window
-	int char_x_max = window_width / char_pixels_side;
-	mouse_char_x -= (char_x_max - CHAR_COLS) / 8;
+	mouse_char_x = (int)(native_x / CHAR_WIDTH);
+	mouse_char_y = (int)(native_y / CHAR_HEIGHT);
 }
 
 void draw_imgui() {
