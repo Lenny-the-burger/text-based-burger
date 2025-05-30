@@ -161,6 +161,7 @@
     <None Include="LISCENCE" />
     <None Include="packages.config" />
     <None Include="vertex.glsl" />
+    <None Include="vertex_lines.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="char_lut.h" />

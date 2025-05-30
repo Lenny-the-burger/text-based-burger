@@ -147,6 +147,9 @@
     <None Include="gamedata\meshes\gen_props.json">
       <Filter>Game data\meshes</Filter>
     </None>
+    <None Include="vertex_lines.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imconfig.h">
