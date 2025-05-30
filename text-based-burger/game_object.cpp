@@ -117,11 +117,20 @@ bool MouseRenderer::update(ObjectUpdateData data) {
 
 	if (data.is_clicking) {
 		mouse_state = MOUSE_CLICKING;
-		mesh = "gen_props/pointers/click"; // Change mesh to clicking pointer
 	}
 	else {
 		mouse_state = MOUSE_NORMAL;
-		mesh = "gen_props/pointers/point"; // Change mesh to normal pointer
+	}
+
+	// Mouse state switcher. Modify mouse state to change the mesh.
+	switch (mouse_state) {
+		case MOUSE_NORMAL:
+			mesh = "gen_props/pointers/point";
+			break;
+	
+		case MOUSE_CLICKING:
+			mesh = "gen_props/pointers/click";
+			break;
 	}
 
 	return true;
