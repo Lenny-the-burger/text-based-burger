@@ -93,3 +93,36 @@ std::unique_ptr<GameObject> type_selector(json data, ObjectIO& io) {
 		throw std::runtime_error("Unknown game object type: " + data["type"].get_ref<const string&>());
 	}
 }
+
+// Mouse renderer
+
+MouseRenderer::MouseRenderer(ObjectIO& io) : GameObject(json::object(
+	{  // Dummy data that will never change on init
+		{"targetname", "mouse_renderer"},
+		{"position", {0, 0}},
+		{"scale", {1, 1}},
+		{"mesh", "gen_props/pointers/point"},
+		{"color", 255},
+		{"update_script", "none"}
+
+	}), io) {
+
+	mouse_state = MOUSE_NORMAL;
+	return;
+}
+
+bool MouseRenderer::update(ObjectUpdateData data) {
+	// TODO: make all pointer meshes point from 0,0 so i dont have to do -19 here.
+	position = make_pair(float(data.mouse_x), float(480 - data.mouse_y - 19));
+
+	if (data.is_clicking) {
+		mouse_state = MOUSE_CLICKING;
+		mesh = "gen_props/pointers/click"; // Change mesh to clicking pointer
+	}
+	else {
+		mouse_state = MOUSE_NORMAL;
+		mesh = "gen_props/pointers/point"; // Change mesh to normal pointer
+	}
+
+	return true;
+}
