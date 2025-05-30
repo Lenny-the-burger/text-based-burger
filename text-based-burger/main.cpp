@@ -199,7 +199,7 @@ int main() {
 
 	// Compile shaders
 	Shader raster_shader = Shader("vertex.glsl", "fragment.glsl", std::vector<std::string>(), 460);
-	Shader line_shader = Shader("vertex.glsl", "fragment_lines.glsl", std::vector<std::string>(), 460);
+	Shader line_shader = Shader("vertex_lines.glsl", "fragment_lines.glsl", std::vector<std::string>(), 460);
 
 	Shader pass_shader = Shader("vertex.glsl", "fragment_pass.glsl", std::vector<std::string>(), 460);
 
@@ -467,9 +467,39 @@ int main() {
 		glBindVertexArray(VAO);							// Fullscreen quad VAO
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct 		// Draw the quad
 
-		// Render lines
+
+		// Finally unbind the small framebuffer
+		// ---- ALL IN SOFTWARE RAsTER ELEMENTS MUST BE DRAWN ABOVE THIS LINE ----
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+		// Second Pass: Render to the screen (nearest-neighbor upscale)
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);			// Default framebuffer (screen)
+		glViewport(0, 0, window_width, window_height);	// Fullscreen viewport
+		glClear(GL_COLOR_BUFFER_BIT);					// Clear screen
+		// Set frambuffer generatred prev as screenTexture uniform
+		pass_shader.setInt("screenTexture", 0);
+		glBindTexture(GL_TEXTURE_2D, texture);			// Bind the framebuffer texture
+
+		pass_shader.use();						       // Use passthrough shader
+
+		// Set uniforms
+		pass_shader.setFloat("aspectRatio", aspect_ratio);
+		pass_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
+
+		glBindVertexArray(VAO);							// Fullscreen quad VAO
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct              // Draw the quad
+
+		// Draw electron beam lines, these are not rasterized so draw them at screen resolution
 
 		line_shader.use();
+
+		// Set uniforms
+		line_shader.setFloat("aspectRatio", aspect_ratio);
+		line_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_ONE, GL_ONE); // Set blend function
 
 		// Upload line vertex data
 		glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
@@ -495,33 +525,7 @@ int main() {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-
-		// Finally unbind the small framebuffer
-		// ---- ALL IN SOFTWARE ELEMENTS MUST BE DRAWN ABOVE THIS LINE ----
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-		// Second Pass: Render to the screen (nearest-neighbor upscale)
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);			// Default framebuffer (screen)
-		glViewport(0, 0, window_width, window_height);	// Fullscreen viewport
-		glClear(GL_COLOR_BUFFER_BIT);					// Clear screen
-		// Set frambuffer generatred prev as screenTexture uniform
-		pass_shader.setInt("screenTexture", 0);
-		glBindTexture(GL_TEXTURE_2D, texture);			// Bind the framebuffer texture
-
-		pass_shader.use();						       // Use passthrough shader
-
-		// Set uniforms
-		pass_shader.setFloat("aspectRatio", aspect_ratio);
-		pass_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
-		pass_shader.setFloat("target_scale", target_scale);
-
-		pass_shader.setFloat("scale", scale);
-		pass_shader.setFloat("translationX", translation[0]);
-		pass_shader.setFloat("translationY", translation[1]);
-
-		glBindVertexArray(VAO);							// Fullscreen quad VAO
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct              // Draw the quad
+		glDisable(GL_BLEND); // Disable blending for next draw calls
 
 		// Draw Dear ImGui
 		ImGui::Render();
