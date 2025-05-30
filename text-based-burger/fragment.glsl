@@ -67,9 +67,4 @@ void main() {
         uint bit = (block >> block_position) & 1u;
         FragColor = (float(bit)  * 1.0) + ((1.0 - float(bit)) * 0.0);
     }
-
-    // if we are a border pixel, make it 0
-    if (gl_FragCoord.x < 1.0 || gl_FragCoord.x > 639.0 || gl_FragCoord.y < 1.0 || gl_FragCoord.y > 479.0) {
-		FragColor = 0.0;
-	}
 }
