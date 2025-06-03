@@ -150,6 +150,9 @@
     <None Include="vertex_lines.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="testmap_temp.json">
+      <Filter>Game data\maps</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imconfig.h">

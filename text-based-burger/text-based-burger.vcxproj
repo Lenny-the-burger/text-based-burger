@@ -160,6 +160,7 @@
     <None Include="gamedata\ui\test_scene.json" />
     <None Include="LISCENCE" />
     <None Include="packages.config" />
+    <None Include="testmap_temp.json" />
     <None Include="vertex.glsl" />
     <None Include="vertex_lines.glsl" />
   </ItemGroup>

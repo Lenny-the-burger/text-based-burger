@@ -1,7 +1,7 @@
 //! #version 460
 // This is for the glsl addon the compiler adds the version
 
-out vec3 FragColor;
+out vec4 FragColor;
 
 in vec2 TexCoords;
 
@@ -15,6 +15,6 @@ layout(std430, binding = 1) buffer LineColors {
 
 void main() {
     // Just look up the color and draw it
-    uint colorVal = colors[gl_PrimitiveID];
-    FragColor = vec3(colorVal, colorVal, colorVal) / 255.0;
+    float colorVal = colors[gl_PrimitiveID] / 255.0;
+    FragColor = vec4(colorVal, colorVal, colorVal, 0.7);
 }
