@@ -48,14 +48,17 @@ const char* WINDOW_TITLE = "Text based burger";
 float aspect_ratio = (float)window_width / (float)window_height;
 float aspect_ratio_small = (float)SMALL_WINDOW_HEIGHT / (float)SMALL_WINDOW_WIDTH;
 
-// How many z layers exist
-int Z_LAYERS = 4;
-
 // Master ui handler
 unique_ptr<UIHandler> ui;
 
 // Master object handler
 unique_ptr<ObjectsHandler> objects_handler;
+
+double last_time = 0;
+double frame_time = 0;
+
+double camera_x = 0.0f;
+double camera_y = 0.0f;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -116,6 +119,42 @@ void processInput(GLFWwindow* window) {
 	// Convert to character space
 	mouse_char_x = (int)(native_x / CHAR_WIDTH);
 	mouse_char_y = (int)(native_y / CHAR_HEIGHT);
+
+	
+	// Set time
+	frame_time = last_time - glfwGetTime();
+	last_time = glfwGetTime();
+
+	float move_x = 0.0f;
+	float move_y = 0.0f;
+
+	// Handle camera movement
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		move_y -= 1.0f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		move_y += 1.0f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		move_x += 1.0f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		move_x -= 1.0f;
+	}
+
+	// Normalize the movement vector
+	float div = sqrt((move_x * move_x) + (move_y * move_y));
+	div = div == 0.0f ? 1.0f : div; // Prevent division by zero
+	move_x /= div;
+	move_y /= div;
+
+	float move_speed = 2.0f / 10000.0f;
+
+	move_x *= move_speed / frame_time;
+	move_y *= move_speed / frame_time;
+
+	camera_x += move_x;
+	camera_y += move_y;
 }
 
 void draw_imgui() {
@@ -305,9 +344,8 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-	// Set nearest-neighbor filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
@@ -416,6 +454,9 @@ int main() {
 		update_data.mouse_y = native_y;
 		update_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
 
+		update_data.camera_x = camera_x;
+		update_data.camera_y = camera_y;
+
 		// Should probably not reset this every frame, but its a pointer so whatever
 		update_data.window = window;
 
@@ -472,7 +513,9 @@ int main() {
 		line_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
 
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ONE); // Set blend function
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		glLineWidth(2.0f);
+		glEnable(GL_LINE_SMOOTH);
 
 		// Upload line vertex data
 		glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
