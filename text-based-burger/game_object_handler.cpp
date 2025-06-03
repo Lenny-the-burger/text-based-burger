@@ -53,6 +53,9 @@ ObjectsHandler::ObjectsHandler(string filename) : object_io() {
 		if (find(mesh_files_to_load.begin(), mesh_files_to_load.end(), filename) == mesh_files_to_load.end()) {
 			mesh_files_to_load.push_back(filename);
 		}
+
+		// Register the object in the io
+		object_io.register_object(entity_data["targetname"].get_ref<const string&>(), objects.back().get());
 	}
 
 	// By default looks for meshes in the directory /gamedata/meshes/[filename].json
