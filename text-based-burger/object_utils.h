@@ -23,8 +23,8 @@ struct ObjectUpdateData {
 	// Pointer to actual window, do whatever you want with it
 	GLFWwindow* window;
 
-	int camera_x;
-	int camera_y;
+	double camera_x;
+	double camera_y;
 };
 
 // Objects all hold a pointer to an instance of this class and use it to call

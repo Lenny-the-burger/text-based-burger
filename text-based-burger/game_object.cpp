@@ -22,7 +22,16 @@ GameObject::GameObject(json data, ObjectIO& io) : io(io) {
 
 bool GameObject::update(ObjectUpdateData data) {
 	// This is the update function. It is called every frame and should
-	// return true if the object needs to be rerendered
+	// return true if the object needs to be 
+
+	// TEMP: just move object to camera position
+	Script move_ho = get_script("basic_mover");
+	move_ho({
+		{"targetname", "testobject"},
+		{"x", (float)data.camera_x},
+		{"y", (float)data.camera_y}
+		}, nullptr, &io);
+
 	return false;
 }
 

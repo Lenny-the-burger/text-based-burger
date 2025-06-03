@@ -35,6 +35,10 @@ public:
 	// This is the color of the object
 	int color;
 
+	void set_position(float x, float y) {
+		position = std::make_pair(x, y);
+	}
+
 protected:
 	// This is the object io instance. It is used to call scripts and report errors
 	ObjectIO& io;

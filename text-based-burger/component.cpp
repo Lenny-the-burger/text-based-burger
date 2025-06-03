@@ -338,7 +338,7 @@ void Button::on_hover() {
 		comp_io.report_error("ERROR: Button " + targetname + " tried to call a non existant script " + hover_script_name);
 		return;
 	}
-	script(hover_script_args, comp_io);
+	script(hover_script_args, &comp_io, nullptr);
 	return;
 }
 
@@ -362,7 +362,7 @@ void Button::on_click() {
 		return;
 	}
 	
-	script(click_script_args, comp_io);
+	script(click_script_args, &comp_io, nullptr);
 
 	if (fire_only_once) {
 		have_already_fired = true;
@@ -412,6 +412,6 @@ bool DynLabel::update(UIUpdateData data) {
 		{"text", text}
 	};
 
-	script(data_json, comp_io);
+	script(data_json, &comp_io, nullptr);
 	return true;
 }

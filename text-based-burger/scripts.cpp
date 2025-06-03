@@ -5,6 +5,9 @@
 #include "component.h"
 #include "ui_handler.h"
 
+#include "game_object.h"
+#include "game_object_handler.h"
+
 #include <iostream>
 #include "json.hpp"
 
@@ -15,6 +18,7 @@ Script get_script(std::string name) {
         {"button_test", test_button_script},
 		{"hover_reporter", hover_reporter},
 		{"mousepos", mouse_pos_shower},
+		{"basic_mover", basic_mover}
     };
 
     auto it = script_map.find(name);
@@ -27,25 +31,25 @@ Script get_script(std::string name) {
     }
 }
 
-void test_button_script(json data, UIComponentIO& ui_io) {
+void test_button_script(json data, UIComponentIO* ui_io, ObjectIO* obj_io) {
 	// Dump data to console
 	std::cout << "Test button script called with data:\n" << data.dump() << std::endl;
 
 	return;
 }
 
-void hover_reporter(json data, UIComponentIO& ui_io) {
+void hover_reporter(json data, UIComponentIO* ui_io, ObjectIO* obj_io) {
 	// Dump data to console
 	std::cout << "Hovering over " << data["targetname"] << std::endl;
 	return;
 }
 
-void mouse_pos_shower(json data, UIComponentIO& ui_io) {
+void mouse_pos_shower(json data, UIComponentIO* ui_io, ObjectIO* obj_io) {
 	// Get the caller component from the io
-	DynLabel* lbl = dynamic_cast<DynLabel*>(ui_io.get_component(data["targetname"]));
+	DynLabel* lbl = dynamic_cast<DynLabel*>(ui_io->get_component(data["targetname"]));
 
 	if (lbl == nullptr) {
-		ui_io.report_error("ERROR: Mouse pos shower called on non existant component " + data["targetname"]);
+		ui_io->report_error("ERROR: Mouse pos shower called on non existant component " + data["targetname"]);
 		return;
 	}
 
@@ -75,4 +79,20 @@ void mouse_pos_shower(json data, UIComponentIO& ui_io) {
 	lbl->update_text(new_text);
 
     return;
+}
+
+void basic_mover(json data, UIComponentIO* ui_io, ObjectIO* obj_io) {
+	// Get the caller component from the io
+	GameObject* obj = dynamic_cast<GameObject*>(obj_io->get_object(data["targetname"]));
+
+	if (obj == nullptr) {
+		ui_io->report_error("ERROR: Basic mover called on non existant object " + data["targetname"]);
+		return;
+	}
+	
+	obj->set_position(
+		data["x"].get<float>(),
+		data["y"].get<float>()
+	);
+	return;
 }
