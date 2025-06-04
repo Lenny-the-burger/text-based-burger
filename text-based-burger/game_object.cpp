@@ -21,8 +21,7 @@ GameObject::GameObject(json data, ObjectIO& io) : io(io) {
 }
 
 bool GameObject::update(ObjectUpdateData data) {
-	// This is the update function. It is called every frame and should
-	// return true if the object needs to be 
+	// This is the update function.
 
 	// TEMP: just move object to camera position
 	Script move_ho = get_script("basic_mover");

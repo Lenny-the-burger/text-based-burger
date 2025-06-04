@@ -120,6 +120,9 @@
     <ClCompile Include="game_object_handler.cpp">
       <Filter>src\world\source</Filter>
     </ClCompile>
+    <ClCompile Include="map_manager.cpp">
+      <Filter>src\world\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

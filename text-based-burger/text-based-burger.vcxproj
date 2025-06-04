@@ -136,6 +136,7 @@
     <ClCompile Include="game_object_handler.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="map_manager.cpp" />
     <ClCompile Include="object_utils.cpp" />
     <ClCompile Include="scripts.cpp" />
     <ClCompile Include="shader.cpp" />
