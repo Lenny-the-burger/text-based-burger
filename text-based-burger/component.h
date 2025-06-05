@@ -62,7 +62,7 @@ protected:
 // Returns iterator that returns leaves in bfs order
 std::vector<UIComponent*> iterate_leaves(UIComponent* component);
 
-std::unique_ptr<UIComponent> type_selector(json data, std::pair<int, int>, UIComponentIO& reporter);
+std::unique_ptr<UIComponent> component_type_selector(json data, std::pair<int, int>, UIComponentIO& reporter);
 
 class Container : public UIComponent {
 public:

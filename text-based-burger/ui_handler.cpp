@@ -32,7 +32,7 @@ UIHandler::UIHandler(string filename, int scrn_w, int scrn_h)
 
 	for (json child : root_children) {
 		// Children of root will always have no offset, as root is always at 0, 0
-		root.contains(move(type_selector(child, make_pair(0, 0), component_io)));
+		root.contains(move(component_type_selector(child, make_pair(0, 0), component_io)));
 	}
 
 	// Set the root component

@@ -42,7 +42,7 @@ ObjectsHandler::ObjectsHandler(string filename) : object_io() {
 	json data = json::parse(f);
 
 	for (auto entity_data : data["entities"]) {
-		objects.push_back(move(type_selector(entity_data, object_io)));
+		objects.push_back(move(object_type_selector(entity_data, object_io)));
 
 		// Check the object mesh and if we dont have the filename already
 		// add it to the list. 

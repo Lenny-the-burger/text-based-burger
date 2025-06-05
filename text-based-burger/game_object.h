@@ -59,7 +59,7 @@ protected:
 };
 
 // Type selctor for game objects
-std::unique_ptr<GameObject> type_selector(json data, ObjectIO& io);
+std::unique_ptr<GameObject> object_type_selector(json data, ObjectIO& io);
 
 enum MouseState {
 	MOUSE_NORMAL,

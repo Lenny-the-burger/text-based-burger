@@ -32,7 +32,7 @@ UIComponent::UIComponent(json data,pair<int, int> offset, UIComponentIO& the_com
 
 	// Recursivly build the tree
 	for (json child : data["children"]) {
-		contains(move(type_selector(child, position, comp_io)));
+		contains(move(component_type_selector(child, position, comp_io)));
 	}
 
 	return;
@@ -91,7 +91,7 @@ vector<UIComponent*> iterate_leaves(UIComponent* component) {
 
 using ComponentFactory = std::function<std::unique_ptr<UIComponent>(json, std::pair<int, int>, UIComponentIO&)>;
 
-std::unique_ptr<UIComponent> type_selector(json data, std::pair<int, int> offset, UIComponentIO& reporter) {
+std::unique_ptr<UIComponent> component_type_selector(json data, std::pair<int, int> offset, UIComponentIO& reporter) {
 	static const std::unordered_map<std::string, ComponentFactory> factory_map = {
 		{"label", [](json d, std::pair<int, int> off, UIComponentIO& rep) {
 			return std::make_unique<Label>(d, off, rep);

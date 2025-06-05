@@ -86,7 +86,7 @@ int GameObject::render(float* lines_list, int offset, uint32_t* colors) {
 
 using ObjectFactory = std::unique_ptr<GameObject>(*)(json data, ObjectIO& io);
 
-std::unique_ptr<GameObject> type_selector(json data, ObjectIO& io) {
+std::unique_ptr<GameObject> object_type_selector(json data, ObjectIO& io) {
 	static const std::map<std::string, ObjectFactory> factory_map = {
 		{"generic", [](json data, ObjectIO& io) { return std::make_unique<GameObject>(data, io); }},
 
