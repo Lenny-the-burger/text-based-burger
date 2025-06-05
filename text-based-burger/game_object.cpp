@@ -10,8 +10,8 @@ GameObject::GameObject(json data, ObjectIO& io) : io(io) {
 
 	update_script_name = data["update_script"].get_ref<const string&>();
 
-	// For non rendering objects you can probably not even write these, if you know
-	// you will never need to render it is probably fine if they are null.
+	// For non rendering objects you can probably not even write these, if you
+	// know you will never need to render it is probably fine if they are null.
 	mesh = data["mesh"].get_ref<const string&>();
 	position = make_pair(data["position"][0], data["position"][1]);
 	//rotation = data["rotation"];
@@ -23,24 +23,16 @@ GameObject::GameObject(json data, ObjectIO& io) : io(io) {
 bool GameObject::update(ObjectUpdateData data) {
 	// This is the update function.
 
-	// TEMP: just move object to camera position
-	Script move_ho = get_script("basic_mover");
-	move_ho({
-		{"targetname", "testobject"},
-		{"x", (float)data.camera_x},
-		{"y", (float)data.camera_y}
-		}, nullptr, &io);
-
 	return false;
 }
 
 int GameObject::render(float* lines_list, int offset, uint32_t* colors) {
-	// Render function is called every frame. You are given a pointer to
-	// an array and should append yourself to it if you need to be rendered.
-	// Not appending yourself will cause you to not be rendered, even if you
-	// were rendered the previous frame. The entire array is cleared. For optimization
-	// you should only render if you are within some distance of the camera position
-	// you get from updata data. Note that you should output NDC here not world space.
+	// Render function is called every frame. You are given a pointer to an array
+	// and should append yourself to it if you need to be rendered. Not appending
+	// yourself will cause you to not be rendered, even if you were rendered the
+	// previous frame. The entire array is cleared. For optimization you should only
+	// render if you are within some distance of the camera position you get from
+	// updata data. Note that you should output NDC here not world space.
 
 	// Hard coded screen size whatever
 	float scrn_width = 640.0f;

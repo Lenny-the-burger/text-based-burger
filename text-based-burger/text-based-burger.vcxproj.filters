@@ -153,7 +153,7 @@
     <None Include="vertex_lines.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="testmap_temp.json">
+    <None Include="gamedata\maps\testmap_temp.json">
       <Filter>Game data\maps</Filter>
     </None>
   </ItemGroup>

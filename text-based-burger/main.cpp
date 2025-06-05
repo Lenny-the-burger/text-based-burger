@@ -19,6 +19,8 @@
 #include "game_object_handler.h"
 #include "game_object.h"
 
+#include "map_manager.h"
+
 using namespace std;
 
 // These are not constants 
@@ -54,11 +56,17 @@ unique_ptr<UIHandler> ui;
 // Master object handler
 unique_ptr<ObjectsHandler> objects_handler;
 
+// Master map manager
+MapManager map_manager("gamedata\\maps\\testmap_temp.json");
+
 double last_time = 0;
 double frame_time = 0;
 
 double camera_x = 0.0f;
 double camera_y = 0.0f;
+
+float mapz = 0.8f;
+float map_z_fov = 90.0f;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -148,7 +156,7 @@ void processInput(GLFWwindow* window) {
 	move_x /= div;
 	move_y /= div;
 
-	float move_speed = 2.0f / 10000.0f;
+	float move_speed = 1.0f / 10000.0f;
 
 	move_x *= move_speed / frame_time;
 	move_y *= move_speed / frame_time;
@@ -164,6 +172,13 @@ void draw_imgui() {
 	ImGui::NewFrame();
 
 	//ImGui::ShowDemoWindow(); // Show demo window! :)
+
+	// Map z height slider
+	ImGui::SliderFloat("map z", &mapz, -3.0f, 3.0f);
+
+	// Map z fov slider
+	ImGui::SliderFloat("map z fov", &map_z_fov, 30.0f, 150.0f);
+
 
 	// Because imgui hijacks things thanks imgui
 	ImGui::SetMouseCursor(ImGuiMouseCursor_None);
@@ -372,20 +387,20 @@ int main() {
 
 	uint32_t* char_grid = new uint32_t[NUM_CHARS];
 
-	// Run through the grid and set a test pattern
-	for (int i = 0; i < NUM_CHARS; i++) {
-		uint32_t c = 0;
-		// Set characters mod 255
-		c |= (i % 255);
+	//// Run through the grid and set a test pattern
+	//for (int i = 0; i < NUM_CHARS; i++) {
+	//	uint32_t c = 0;
+	//	// Set characters mod 255
+	//	c |= (i % 255);
 
-		// Set fg to random color
-		c |= (rand() % 255) << 8;
+	//	// Set fg to random color
+	//	c |= (rand() % 255) << 8;
 
-		// Set bg to random color
-		c |= (rand() % 255) << 16;
+	//	// Set bg to random color
+	//	c |= (rand() % 255) << 16;
 
-		char_grid[i] = c;
-	}
+	//	char_grid[i] = c;
+	//}
 
 	unsigned int char_grid_buffer;
 
@@ -398,19 +413,6 @@ int main() {
 
 	// Set this every frame how many lines were drawing this time
 	int num_lines = 0;
-
-	// Fill lines with ramdom data 4 test
-	num_lines = 100;
-	for (int i = 0; i < num_lines; i++) {
-		// Verts should be in ndc space
-		line_verts[i * 4    ] = (2.0f * float((rand() % 1000)) / 1000.0f) - 1.0f;
-		line_verts[i * 4 + 1] = (2.0f * float((rand() % 1000)) / 1000.0f) - 1.0f;
-		line_verts[i * 4 + 2] = (2.0f * float((rand() % 1000)) / 1000.0f) - 1.0f;
-		line_verts[i * 4 + 3] = (2.0f * float((rand() % 1000)) / 1000.0f) - 1.0f;
-
-		line_colors[i] = (rand() % 255);
-	}
-
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
@@ -457,17 +459,23 @@ int main() {
 		update_data.camera_x = camera_x;
 		update_data.camera_y = camera_y;
 
+		update_data.mapz = mapz;
+		update_data.map_z_fov = map_z_fov;
+
 		// Should probably not reset this every frame, but its a pointer so whatever
 		update_data.window = window;
 
-		// add camera stuff
+		// Render map first
+		map_manager.update(update_data);
+
+		num_lines = map_manager.render(line_verts, line_colors);
 
 		// Call update
 		objects_handler->update(update_data);
 
 		// Render objects
 		// Clear line verts and colors
-		num_lines = objects_handler->render(line_verts, line_colors);
+		num_lines = objects_handler->render(line_verts, line_colors, num_lines);
 
 
 		// The amount of data we send to the gpu is only 7.2 kb, if you want to optimize

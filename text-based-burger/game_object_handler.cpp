@@ -103,11 +103,12 @@ void ObjectsHandler::update(ObjectUpdateData data) {
 	}
 }
 
-int ObjectsHandler::render(float* lines_list, uint32_t* colors) {
+int ObjectsHandler::render(float* lines_list, uint32_t* colors, int offset) {
 	// Render all the objects
-
-	// counter to where we should write in the lines list
-	int counter = 0;
+	
+	// Map rendering and object rendering i guess count lines drawn differently.
+	// This is a well designed system!
+	int counter = offset * 4;
 
 	// Render mouse cursor first
 	counter = mouse_renderer->render(lines_list, counter, colors);

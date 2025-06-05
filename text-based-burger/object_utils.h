@@ -26,6 +26,8 @@ struct ObjectUpdateData {
 	double camera_x;
 	double camera_y;
 
+	float mapz;
+	float map_z_fov;
 };
 
 // Objects all hold a pointer to an instance of this class and use it to call
