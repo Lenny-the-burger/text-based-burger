@@ -20,10 +20,10 @@ GameObject::GameObject(json data, ObjectIO& io) : io(io) {
 	return;
 }
 
-bool GameObject::update(ObjectUpdateData data) {
+void GameObject::update(ObjectUpdateData data) {
 	// This is the update function.
 
-	return false;
+	return;
 }
 
 int GameObject::render(float* lines_list, int offset, uint32_t* colors) {
@@ -111,7 +111,7 @@ MouseRenderer::MouseRenderer(ObjectIO& io) : GameObject(json::object(
 	return;
 }
 
-bool MouseRenderer::update(ObjectUpdateData data) {
+void MouseRenderer::update(ObjectUpdateData data) {
 	// TODO: make all pointer meshes point from 0,0 so i dont have to do -19 here.
 	position = make_pair(float(data.mouse_x), float(480 - data.mouse_y - 19));
 
@@ -133,5 +133,6 @@ bool MouseRenderer::update(ObjectUpdateData data) {
 			break;
 	}
 
-	return true;
+	return;
+}
 }

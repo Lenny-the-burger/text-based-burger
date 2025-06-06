@@ -96,10 +96,7 @@ void ObjectsHandler::update(ObjectUpdateData data) {
 
 	// Update all the objects
 	for (auto& obj : objects) {
-		if (obj->update(data)) {
-			// If the object needs to be rerendered, we can handle that later
-			// For now we just update the object
-		}
+		obj->update(data);
 	}
 }
 

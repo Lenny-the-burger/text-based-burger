@@ -20,7 +20,7 @@ public:
 
 	// This is the update function. It is called every frame and should
 	// return true if the object needs to be rerendered
-	virtual bool update(ObjectUpdateData data);
+	virtual void update(ObjectUpdateData data);
 
 	// Render function is called every frame. You are given a pointer to
 	// an array and should append yourself to it if you need to be rendered.
@@ -73,7 +73,7 @@ class MouseRenderer : public GameObject {
 public:
 	MouseRenderer(ObjectIO& io);
 
-	virtual bool update(ObjectUpdateData data) override;
+	virtual void update(ObjectUpdateData data) override;
 
 	MouseState mouse_state;
 };
@@ -101,7 +101,7 @@ class PointViewControl : public GameObject {
 public:
 	PointViewControl(json data, ObjectIO& io);
 
-	virtual bool update(ObjectUpdateData data) override;
+	virtual void update(ObjectUpdateData data) override;
 
 	std::pair<float, float> get_cam();
 	float get_cam_rot();
@@ -129,7 +129,7 @@ class Possessor : public GameObject {
 public:
 	Possessor(json data, ObjectIO& io);
 
-	virtual bool update(ObjectUpdateData data) override;
+	virtual void update(ObjectUpdateData data) override;
 
 	// Set the targetname of the object to possess. Set to empty string to stop
 	// possessing.
@@ -145,7 +145,7 @@ class NPC : public GameObject {
 public:
 	NPC(json data, ObjectIO& io);
 
-	virtual bool update(ObjectUpdateData data) override;
+	virtual void update(ObjectUpdateData data) override;
 
 	// Attempt to move in given direction by distance.
 	virtual void move(std::pair<float, float> direction, float distance);
@@ -248,7 +248,7 @@ class NPC_Guy : public NPC {
 public:
 	NPC_Guy(json data, ObjectIO& io);
 
-	virtual bool update(ObjectUpdateData data) override;
+	virtual void update(ObjectUpdateData data) override;
 	
 	virtual void move(std::pair<float, float> direction, float distance) override;
 	virtual void aim(std::pair<float, float> direction) override;
