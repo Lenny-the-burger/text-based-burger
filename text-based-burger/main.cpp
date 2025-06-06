@@ -156,7 +156,7 @@ void processInput(GLFWwindow* window) {
 	move_x /= div;
 	move_y /= div;
 
-	float move_speed = 1.0f / 10000.0f;
+	float move_speed = 1.5f / 10000.0f;
 
 	move_x *= move_speed / frame_time;
 	move_y *= move_speed / frame_time;
