@@ -13,7 +13,9 @@ GameObject::GameObject(json data, ObjectIO& io) : io(io) {
 	// For non rendering objects you can probably not even write these, if you
 	// know you will never need to render it is probably fine if they are null.
 	mesh = data["mesh"].get_ref<const string&>();
-	position = make_pair(data["position"][0], data["position"][1]);
+
+	position = vec2(data["position"]);
+
 	//rotation = data["rotation"];
 	render_scale = make_pair(data["scale"][0], data["scale"][1]);
 	color = data["color"];
@@ -52,12 +54,12 @@ int GameObject::render(float* lines_list, int offset, uint32_t* colors) {
 		// It goes x, y, x, y so if offset % 2 == 0 then we are at x
 		if (offset % 2 == 0) {
 			// Transform the x coordinate
-			number = (number * render_scale.first) + position.first;
+			number = (number * render_scale.first) + position.x;
 			number = number / scrn_width; // Normalize to screen width
 		}
 		else {
 			// Transform the y coordinate
-			number = (number * render_scale.second) + position.second;
+			number = (number * render_scale.second) + position.y;
 			number = number / scrn_height; // Normalize to screen height
 		}
 		// Normalize to full screen ndc -1 to 1
@@ -113,7 +115,7 @@ MouseRenderer::MouseRenderer(ObjectIO& io) : GameObject(json::object(
 
 void MouseRenderer::update(ObjectUpdateData data) {
 	// TODO: make all pointer meshes point from 0,0 so i dont have to do -19 here.
-	position = make_pair(float(data.mouse_x), float(480 - data.mouse_y - 19));
+	position = vec2(float(data.mouse_x), float(480 - data.mouse_y - 19));
 
 	if (data.is_clicking) {
 		mouse_state = MOUSE_CLICKING;

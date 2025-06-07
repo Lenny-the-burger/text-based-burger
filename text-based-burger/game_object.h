@@ -35,11 +35,6 @@ public:
 	// This is the color of the object
 	int color;
 
-	void set_position(float x, float y) {
-		position = std::make_pair(x, y);
-	}
-
-protected:
 	// This is the object io instance. It is used to call scripts and report errors
 	ObjectIO& io;
 
@@ -49,16 +44,23 @@ protected:
 	std::string update_script_name;
 
 	// Safe to assume all objects have a world space position
-	std::pair<float, float> position;
+	vec2 position;
 
 	// This is the rotation of the object in radians
 	float rotation;
 
 	// This is the scale of the object
 	std::pair<float, float> render_scale;
+
+protected:
+	// For now everything is publically acessible becasuse getters and setters are a waste of time a lot of the time
 };
 
-// Type selctor for game objects
+// Type selector for game objects
+// This function LOVES to explode the linker. Or not this function, but VS loves
+// to. There is nothing wrong, you probably just edited a contructor or
+// something, and now visual studio is angry. Just clean and rebuild, it will
+// fix it.
 std::unique_ptr<GameObject> object_type_selector(json data, ObjectIO& io);
 
 enum MouseState {
@@ -103,9 +105,6 @@ public:
 
 	virtual void update(ObjectUpdateData data) override;
 
-	std::pair<float, float> get_cam();
-	float get_cam_rot();
-
 	void set_mode(CameraMode mode);
 
 	void set_target(std::string targetname);
@@ -113,7 +112,7 @@ public:
 protected:
 	std::string follow_name;
 	CameraMode mode;
-	std::pair<float, float> prev_position;
+	vec2 prev_position;
 	float rotation;
 };
 

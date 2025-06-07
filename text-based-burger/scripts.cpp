@@ -90,7 +90,7 @@ void basic_mover(json data, UIComponentIO* ui_io, ObjectIO* obj_io) {
 		return;
 	}
 	
-	obj->set_position(
+	obj->position = vec2(
 		data["x"].get<float>(),
 		data["y"].get<float>()
 	);
