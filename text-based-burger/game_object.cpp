@@ -1,5 +1,6 @@
 #include "game_object.h"
 #include "scripts.h"
+#include <iostream>
 
 using namespace std;
 
@@ -28,7 +29,7 @@ void GameObject::update(ObjectUpdateData data) {
 	return;
 }
 
-int GameObject::render(float* lines_list, int offset, uint32_t* colors) {
+int GameObject::render(float* lines_list, int offset, uint32_t* colors, vec2 camera) {
 	// Render function is called every frame. You are given a pointer to an array
 	// and should append yourself to it if you need to be rendered. Not appending
 	// yourself will cause you to not be rendered, even if you were rendered the
@@ -47,6 +48,11 @@ int GameObject::render(float* lines_list, int offset, uint32_t* colors) {
 
 	json arr = io.meshes->at(p);
 
+	vec2 screen_position = position - camera; // Offset the position by the camera position
+	// Centre the position on the screen
+	screen_position.x += scrn_width / 2.0f;
+	screen_position.y += scrn_height / 2.0f;
+
 	// Loop over the mesh array of coordinates and transform and copy to lines list until done
 	for (json num: arr) {
 		float number = num.get<float>();
@@ -54,12 +60,12 @@ int GameObject::render(float* lines_list, int offset, uint32_t* colors) {
 		// It goes x, y, x, y so if offset % 2 == 0 then we are at x
 		if (offset % 2 == 0) {
 			// Transform the x coordinate
-			number = (number * render_scale.first) + position.x;
+			number = (number * render_scale.first) + screen_position.x;
 			number = number / scrn_width; // Normalize to screen width
 		}
 		else {
 			// Transform the y coordinate
-			number = (number * render_scale.second) + position.y;
+			number = (number * render_scale.second) + screen_position.y;
 			number = number / scrn_height; // Normalize to screen height
 		}
 		// Normalize to full screen ndc -1 to 1
@@ -78,11 +84,22 @@ int GameObject::render(float* lines_list, int offset, uint32_t* colors) {
 	return offset; // Return the new offset
 }
 
-using ObjectFactory = std::unique_ptr<GameObject>(*)(json data, ObjectIO& io);
+void GameObject::move(vec2 velocity) {
+	// Generic game objects always move
+	position += velocity;
+	return;
+}
+
+using ObjectFactory = std::function<std::unique_ptr<GameObject>(json, ObjectIO&)>;
 
 std::unique_ptr<GameObject> object_type_selector(json data, ObjectIO& io) {
 	static const std::map<std::string, ObjectFactory> factory_map = {
-		{"generic", [](json data, ObjectIO& io) { return std::make_unique<GameObject>(data, io); }},
+		{"generic", [](json data, ObjectIO& io) { 
+			return std::make_unique<GameObject>(data, io); 
+		}},
+		{"point_view_control", [](json data, ObjectIO& io) { 
+			return std::make_unique<PointViewControl>(data, io); 
+		}},
 
 		// Add more game object types here
 	};
@@ -115,7 +132,7 @@ MouseRenderer::MouseRenderer(ObjectIO& io) : GameObject(json::object(
 
 void MouseRenderer::update(ObjectUpdateData data) {
 	// TODO: make all pointer meshes point from 0,0 so i dont have to do -19 here.
-	position = vec2(float(data.mouse_x), float(480 - data.mouse_y - 19));
+	position = vec2(data.mouse_pos.x, 480.0f - data.mouse_pos.y - 0.0f);
 
 	if (data.is_clicking) {
 		mouse_state = MOUSE_CLICKING;
@@ -127,7 +144,7 @@ void MouseRenderer::update(ObjectUpdateData data) {
 	// Mouse state switcher. Modify mouse state to change the mesh.
 	switch (mouse_state) {
 		case MOUSE_NORMAL:
-			mesh = "gen_props/pointers/point";
+			mesh = "gen_props/pointers/aim";
 			break;
 	
 		case MOUSE_CLICKING:
@@ -139,7 +156,16 @@ void MouseRenderer::update(ObjectUpdateData data) {
 }
 
 // Point view control
-PointViewControl::PointViewControl(json data, ObjectIO& io) : GameObject(data, io) {
+PointViewControl::PointViewControl(json data, ObjectIO& io) : GameObject(json::object(
+	{  // Dummy data that will never change on init
+		{"targetname", "view_controller_" + data["controller_num"]},
+		{"position", {0, 0}},
+		{"scale", {1, 1}},
+		{"mesh", ""},
+		{"color", 255},
+		{"update_script", "none"}
+
+	}), io) {
 	follow_name = data["follow_target"].get_ref<const string&>();
 	switch (data["mode"].get<int>()) {
 	case 0:
@@ -166,14 +192,15 @@ PointViewControl::PointViewControl(json data, ObjectIO& io) : GameObject(data, i
 	return;
 }
 
-static vec2 smooth_follow(vec2 current_pos, vec2 target_pos, vec2 aimpos, float dtime) {
+static vec2 smooth_follow(vec2 current_pos, vec2 target_pos, vec2 aimpos, float dtime, bool extended_look) {
 	// Follow the given target position from the current position with some fake inertia.
 	vec2 output = vec2();
-	vec2 aimdir = aimpos - target_pos;
+	vec2 aimdir = aimpos - vec2(320, 240); // screen space
+	aimdir *= vec2(1.0f, -1.0f);
 
 	// Offset the target in the aim direction, unnormalized. This means that if aimdir is 00
 	// then it will not offset.
-	float max_offset = 10.0f;
+	float max_offset = extended_look ? 150.0f : 40.0f;
 	if (aimdir.mag() > max_offset) {
 		aimdir = aimdir.unit() * max_offset;
 	}
@@ -190,7 +217,7 @@ static vec2 smooth_follow(vec2 current_pos, vec2 target_pos, vec2 aimpos, float 
 	direction = direction.unit();
 
 	// How far should the camera lag back at most
-	float max_lag = 5.0f;
+	float max_lag = 30.0f;
 	distance = min(distance, max_lag);
 	distance /= max_lag;
 
@@ -201,10 +228,6 @@ static vec2 smooth_follow(vec2 current_pos, vec2 target_pos, vec2 aimpos, float 
 	step *= max(0.0f, min(1.0f, 
 		distance * distance * ( 3 - 2 * distance)
 		));
-
-	if (step > distance) {
-		return target_pos; // Snap to target so we dont jiggle around it
-	}
 
 	output = current_pos + (direction * step);
 	return output;
@@ -239,6 +262,11 @@ void PointViewControl::update(ObjectUpdateData data) {
 		position = new_pos;
 		return;
 	}
+	
+	bool extended_look = false;
+	if (glfwGetKey(data.window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+		extended_look = true;
+	}
 
 	// Now we actually update the camera based on the mode
 	switch (mode) {
@@ -251,13 +279,13 @@ void PointViewControl::update(ObjectUpdateData data) {
 	case CAMERA_MODE_FOLLOW:
 		// Follow target but smoothly
 		prev_position = position;
-		position = smooth_follow(position, new_pos, new_pos, data.frame_time);
+		position = smooth_follow(position, new_pos, new_pos, data.frame_time, extended_look);
 		break;
 
 	case CAMERA_MODE_GAMEPLAY:
 		// Same as follow cam but we actually supply aim position
 		prev_position = position;
-		position = smooth_follow(position, new_pos, vec2(data.mouse_x, data.mouse_y), data.frame_time);
+		position = smooth_follow(position, new_pos, data.mouse_pos, data.frame_time, extended_look);
 		break;
 	default:
 		io.report_error("PointViewControl: Unknown camera mode.");
@@ -276,5 +304,68 @@ void PointViewControl::set_mode(CameraMode new_mode) {
 void PointViewControl::set_target(std::string targetname) {
 	// Set the target to follow
 	follow_name = targetname;
+	return;
+}
+
+// Possesor
+Possessor::Possessor(json data, ObjectIO& io) : GameObject(json::object(
+	{  // Dummy data that will never change on init
+		{"targetname", "possesor"},
+		{"position", {0, 0}},
+		{"scale", {1, 1}},
+		{"mesh", ""},
+		{"color", 255},
+		{"update_script", "none"}
+
+	}), io) {
+	// Since this is a meta entity, it should only ever be created by the objects habndler
+	// similarly to MouseRenderer
+	victim_name = data["victim"].get_ref<const string&>();
+	return;
+}
+
+void Possessor::update(ObjectUpdateData data) {
+	// If we have no victim, we are not possessing anything
+	if (victim_name.empty()) {
+		return;
+	}
+	// Get the object we are possessing
+	auto obj = io.get_object(victim_name);
+	if (!obj) {
+		io.report_error("Possessor cannot posses '" + victim_name + "' has invisibility cloak");
+		return;
+	}
+	
+	vec2 move = vec2();
+
+	// Handle camera movement
+	if (glfwGetKey(data.window, GLFW_KEY_W) == GLFW_PRESS) {
+		move += vec2(0.0f, 1.0f);
+	}
+	if (glfwGetKey(data.window, GLFW_KEY_S) == GLFW_PRESS) {
+		move += vec2(0.0f, -1.0f);
+	}
+	if (glfwGetKey(data.window, GLFW_KEY_A) == GLFW_PRESS) {
+		move += vec2(-1.0f, 0.0f);
+	}
+	if (glfwGetKey(data.window, GLFW_KEY_D) == GLFW_PRESS) {
+		move += vec2(1.0f, 0.0f);
+	}
+
+	move = move.unit();
+
+	float move_speed = 3.0f * 100.0f;
+
+	move *= move_speed * data.frame_time;
+
+	// Attempt to move
+	obj->move(move);
+
+	return;
+}
+
+void Possessor::set_target(std::string targetname) {
+	// Set the target to possess
+	victim_name = targetname;
 	return;
 }

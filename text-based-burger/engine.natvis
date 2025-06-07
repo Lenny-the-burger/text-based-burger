@@ -18,4 +18,13 @@
       <Item Name="[IO Ref]">io</Item>
     </Expand>
   </Type>
+	<Type Name="vec2">
+		<DisplayString>
+			{x}, {y}
+		</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+		</Expand>
+	</Type>
 </AutoVisualizer>

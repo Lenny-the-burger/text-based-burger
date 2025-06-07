@@ -113,6 +113,8 @@ void processInput(GLFWwindow* window) {
 		ui->rerender_all();
 	}
 
+	// Set vars other systems need to update
+
 	// Mouse position
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
@@ -132,37 +134,6 @@ void processInput(GLFWwindow* window) {
 	// Set time
 	frame_time = glfwGetTime() - last_time;
 	last_time = glfwGetTime();
-
-	float move_x = 0.0f;
-	float move_y = 0.0f;
-
-	// Handle camera movement
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		move_y += 1.0f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		move_y -= 1.0f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		move_x -= 1.0f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		move_x += 1.0f;
-	}
-
-	// Normalize the movement vector
-	float div = sqrt((move_x * move_x) + (move_y * move_y));
-	div = div == 0.0f ? 1.0f : div; // Prevent division by zero
-	move_x /= div;
-	move_y /= div;
-
-	float move_speed = 3.0f * 100.0f;
-
-	move_x *= move_speed * frame_time;
-	move_y *= move_speed * frame_time;
-
-	camera_x += move_x;
-	camera_y += move_y;
 }
 
 void draw_imgui() {
@@ -453,12 +424,10 @@ int main() {
 		ObjectUpdateData update_data;
 		update_data.time = glfwGetTime();
 		update_data.frame_time = frame_time;
-		update_data.mouse_x = native_x;
-		update_data.mouse_y = native_y;
+		update_data.mouse_pos = vec2(native_x, native_y);
 		update_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
 
-		update_data.camera_x = camera_x;
-		update_data.camera_y = camera_y;
+		update_data.camera_pos = vec2(camera_x, camera_y);
 
 		update_data.mapz = mapz;
 		update_data.map_z_fov = map_z_fov;
@@ -466,16 +435,20 @@ int main() {
 		// Should probably not reset this every frame, but its a pointer so whatever
 		update_data.window = window;
 
+		ObjectUpdateReturnData return_data;
+
+		// Call update
+		return_data = objects_handler->update(update_data);
+
+		// Update camera position from ovjects handler
+		update_data.camera_pos = return_data.camera_pos;
+
 		// Render map first
 		map_manager.update(update_data);
 
 		num_lines = map_manager.render(line_verts, line_colors);
 
-		// Call update
-		objects_handler->update(update_data);
-
 		// Render objects
-		// Clear line verts and colors
 		num_lines = objects_handler->render(line_verts, line_colors, num_lines);
 
 

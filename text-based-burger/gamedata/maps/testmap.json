@@ -2,6 +2,7 @@
   "mapname": "testmap",
   "extra_mesh_paths": [],
   "version": 1,
+  "start_controllable": "testobject",
   "entities": [
     {
       "targetname": "testobject",

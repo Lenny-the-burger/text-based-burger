@@ -19,7 +19,7 @@ public:
 	ObjectsHandler(std::string filename);
 
 	// Update the objects
-	void update(ObjectUpdateData data);
+	ObjectUpdateReturnData update(ObjectUpdateData data);
 
 	// Render the objects
 	int render(float* lines_list, uint32_t* colors, int counter);
@@ -32,8 +32,12 @@ private:
 	// The common object io
 	ObjectIO object_io;
 
-	// Render mouse cursor
+	// Meta objects
 	std::unique_ptr<MouseRenderer> mouse_renderer;
+	std::unique_ptr<Possessor> possessor;
+
+	std::vector<std::unique_ptr<PointViewControl>> camera_controllers;
+	int active_camera_controller = 0; // Index of the active camera controller
 
 	// Holds all the game objects. Note that this is just a flat array, and if
 	// you want get objects by targetname you should use the io, as that holds

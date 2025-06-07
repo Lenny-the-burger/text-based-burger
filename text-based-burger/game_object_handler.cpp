@@ -41,6 +41,18 @@ ObjectsHandler::ObjectsHandler(string filename) : object_io() {
 	}
 	json data = json::parse(f);
 
+	possessor = std::make_unique<Possessor>(json::object({ // Dummy data that will never change on init
+			{"victim", data["start_controllable"].get_ref<const string&>()}
+		}), object_io);
+
+	// By default, the handler will create at least one point_viewcontrol. You can create more and switch between them, but we need
+	// at least one to be able to render the map.
+	camera_controllers.push_back(std::make_unique<PointViewControl>(json::object({
+		{"controller_num", 0},
+		{"follow_target", data["start_controllable"].get_ref<const string&>()},
+		{"mode", 2}
+		}), object_io));
+
 	for (auto entity_data : data["entities"]) {
 		objects.push_back(move(object_type_selector(entity_data, object_io)));
 
@@ -53,6 +65,8 @@ ObjectsHandler::ObjectsHandler(string filename) : object_io() {
 		if (find(mesh_files_to_load.begin(), mesh_files_to_load.end(), filename) == mesh_files_to_load.end()) {
 			mesh_files_to_load.push_back(filename);
 		}
+
+		// TODO: Special case for point_viewcontrol, it should also be acessible from the controllers list.
 
 		// Register the object in the io
 		object_io.register_object(entity_data["targetname"].get_ref<const string&>(), objects.back().get());
@@ -91,13 +105,20 @@ ObjectsHandler::ObjectsHandler(string filename) : object_io() {
 	GameObject* test = objects[0].get();
 }
 
-void ObjectsHandler::update(ObjectUpdateData data) {
+ObjectUpdateReturnData ObjectsHandler::update(ObjectUpdateData data) {
 	mouse_renderer->update(data); // Update the mouse renderer
+	possessor->update(data); // Update the possessor
 
 	// Update all the objects
 	for (auto& obj : objects) {
 		obj->update(data);
 	}
+
+	camera_controllers[active_camera_controller]->update(data);
+	ObjectUpdateReturnData ret_data;
+	ret_data.camera_pos = camera_controllers[active_camera_controller]->position;
+
+	return ret_data;
 }
 
 int ObjectsHandler::render(float* lines_list, uint32_t* colors, int offset) {
@@ -108,11 +129,13 @@ int ObjectsHandler::render(float* lines_list, uint32_t* colors, int offset) {
 	int counter = offset * 4;
 
 	// Render mouse cursor first
-	counter = mouse_renderer->render(lines_list, counter, colors);
+	counter = mouse_renderer->render(lines_list, counter, colors, vec2(320.0f, 240.0f));
+
+	vec2 camera_pos = camera_controllers[active_camera_controller]->position;
 
 	int cols_counter = 0;
 	for (std::unique_ptr<GameObject>& obj : objects) {
-		counter = obj->render(lines_list, counter, colors);
+		counter = obj->render(lines_list, counter, colors, camera_pos);
 	}
 
 	return counter / 4; // Return the number of lines rendered

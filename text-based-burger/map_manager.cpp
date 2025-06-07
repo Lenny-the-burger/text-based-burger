@@ -96,8 +96,7 @@ MapManager::MapManager(std::string filename) {
 }
 
 void MapManager::update(ObjectUpdateData data) {
-	camera_x = data.camera_x;
-	camera_y = data.camera_y;
+	camera_pos = data.camera_pos;
 
 	mapz = data.mapz;
 	map_z_fov = data.map_z_fov;
@@ -132,6 +131,10 @@ int MapManager::render(float* lines_list, uint32_t* colors) {
 	float scrn_height = 480.0f;
 
 	int lines_counter = 0;
+
+	// Dont want to refactor all of this itll probably get scrapped anyway
+	float camera_x = camera_pos.x;
+	float camera_y = camera_pos.y;
 
 	for (int i = 0; i < num_lines; i++) {
 		// Get the line coordinates, these are in 32 bit ints

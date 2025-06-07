@@ -53,8 +53,7 @@ private:
 	// Error log
 	std::vector<std::string> error_log;
 
-	double camera_x;
-	double camera_y;
+	vec2 camera_pos;
 
 	float mapz;
 	float map_z_fov;

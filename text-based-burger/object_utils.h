@@ -10,59 +10,6 @@ using json = nlohmann::json;
 #include <string>
 #include <map>
 
-// Forward declaration
-class GameObject;
-
-// Update data struct for the object system
-struct ObjectUpdateData {
-	float time;
-	float frame_time;
-	int mouse_x;
-	int mouse_y;
-	bool is_clicking;
-
-	// Pointer to actual window, do whatever you want with it
-	GLFWwindow* window;
-
-	double camera_x;
-	double camera_y;
-
-	float mapz;
-	float map_z_fov;
-};
-
-// Objects all hold a pointer to an instance of this class and use it to call
-// scripts, report errors etc. Basically the same as the UIComponentIO class but
-// for game objects. Only reason it isnt reused is because of system specific
-// types
-
-class ObjectIO {
-public:
-	ObjectIO();
-	~ObjectIO();
-
-	void report_error(std::string error);
-
-	std::vector<std::string> get_log();
-	std::vector<int> get_repeats();
-
-	void register_object(std::string name, GameObject* object);
-
-	// This should only be used by the script system
-	GameObject* get_object(std::string name);
-
-	// Points to the meshes data. The actual one is held by the handler
-	json* meshes;
-
-private:
-	std::vector<std::string> error_log;
-	std::vector<int> repeats;
-	std::map<std::string, GameObject*> object_registry;
-};
-
-// Split given path along "/" delimiter
-std::vector<std::string> split_file_path(std::string path);
-
 // Include gaurd because vec2 likes to explode
 #ifndef TBB_VEC2
 #define TBB_VEC2
@@ -75,6 +22,8 @@ struct vec2 {
 	vec2(const std::pair<float, float>& p) : x(p.first), y(p.second) {}
 	vec2(int x, int y) : x(static_cast<float>(x)), y(static_cast<float>(y)) {}
 	vec2(const std::pair<int, int>& p) : x(static_cast<float>(p.first)), y(static_cast<float>(p.second)) {}
+	// Truncate duobles to floats but whatever
+	vec2(double x, double y) : x(static_cast<float>(x)), y(static_cast<float>(y)) {}
 
 	vec2(int num) : x(static_cast<float>(num)), y(static_cast<float>(num)) {}
 	vec2(float num) : x(num), y(num) {}
@@ -115,17 +64,45 @@ struct vec2 {
 	vec2 operator-(const vec2& other) const {
 		return vec2(x - other.x, y - other.y);
 	}
+	vec2 operator-=(const vec2& other) {
+		x -= other.x;
+		y -= other.y;
+		return *this; // Return the modified object
+	}
+	vec2 operator-() const {// Negate 
+		return vec2(-x, -y); 
+	}
 	// Overload the * operator for scalar multiplication
 	vec2 operator*(float scalar) const {
 		return vec2(x * scalar, y * scalar);
+	}
+	vec2 operator*=(float scalar) {
+		x *= scalar;
+		y *= scalar;
+		return *this; // Return the modified object
 	}
 	// Overload the * operator for vec2 peicewise multiplication
 	vec2 operator*(const vec2& other) const {
 		return vec2(x * other.x, y * other.y);
 	}
+	vec2 operator*=(const vec2& other) {
+		x *= other.x;
+		y *= other.y;
+		return *this; // Return the modified object
+	}
 	// Overload the / operator for scalar division
 	vec2 operator/(float scalar) const {
 		return vec2(x / scalar, y / scalar);
+	}
+	vec2 operator/=(float scalar) {
+		if (scalar != 0) {
+			x /= scalar;
+			y /= scalar;
+		}
+		else {
+			throw std::invalid_argument("Division by zero in vec2 division");
+		}
+		return *this; // Return the modified object
 	}
 
 	float mag() {
@@ -168,3 +145,60 @@ inline float cross(vec2 a, vec2 b) {
 #else
 // skip this file if already included
 #endif
+
+// Forward declaration
+class GameObject;
+
+// Update data struct for the object system
+struct ObjectUpdateData {
+	float time;
+	float frame_time;
+	vec2 mouse_pos;
+	bool is_clicking;
+
+	// Pointer to actual window, do whatever you want with it
+	GLFWwindow* window;
+
+	vec2 camera_pos;
+
+	float mapz;
+	float map_z_fov;
+};
+
+// Data that gets returned from the object handler once it has updated all
+// objects to be used by other systems.
+struct ObjectUpdateReturnData {
+	vec2 camera_pos; // Camera position after update
+};
+
+// Objects all hold a pointer to an instance of this class and use it to call
+// scripts, report errors etc. Basically the same as the UIComponentIO class but
+// for game objects. Only reason it isnt reused is because of system specific
+// types
+
+class ObjectIO {
+public:
+	ObjectIO();
+	~ObjectIO();
+
+	void report_error(std::string error);
+
+	std::vector<std::string> get_log();
+	std::vector<int> get_repeats();
+
+	void register_object(std::string name, GameObject* object);
+
+	// This should only be used by the script system
+	GameObject* get_object(std::string name);
+
+	// Points to the meshes data. The actual one is held by the handler
+	json* meshes;
+
+private:
+	std::vector<std::string> error_log;
+	std::vector<int> repeats;
+	std::map<std::string, GameObject*> object_registry;
+};
+
+// Split given path along "/" delimiter
+std::vector<std::string> split_file_path(std::string path);

@@ -28,7 +28,13 @@ public:
 	// were rendered the previous frame. The entire array is cleared. For optimization
 	// you should only render if you are within some distance of the camera position
 	// you get from updata data. Note that you should output NDC here not world space.
-	virtual int render(float* lines_list, int offset, uint32_t* colors);
+	virtual int render(float* lines_list, int offset, uint32_t* colors, vec2 camera);
+
+	// Attempt to move in the direction and distance of velocity. note that this
+	// is an attempt to move, you are given the raw desired velocity and it is
+	// up to you to do collision or translate it into some other paramaters if
+	// you are a car for example.
+	virtual void move(vec2 velocity);
 
 	std::string targetname;
 
@@ -136,7 +142,6 @@ public:
 
 protected:
 	std::string victim_name;
-	float move_speed;
 };
 
 // Base npc class. Everything that acts autonomously should inherit from this.
