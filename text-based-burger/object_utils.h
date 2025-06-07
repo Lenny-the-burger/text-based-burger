@@ -15,7 +15,8 @@ class GameObject;
 
 // Update data struct for the object system
 struct ObjectUpdateData {
-	int time;
+	float time;
+	float frame_time;
 	int mouse_x;
 	int mouse_y;
 	bool is_clicking;

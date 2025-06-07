@@ -137,4 +137,144 @@ void MouseRenderer::update(ObjectUpdateData data) {
 
 	return;
 }
+
+// Point view control
+PointViewControl::PointViewControl(json data, ObjectIO& io) : GameObject(data, io) {
+	follow_name = data["follow_target"].get_ref<const string&>();
+	switch (data["mode"].get<int>()) {
+	case 0:
+		mode = CAMERA_MODE_WELD;
+		break;
+	case 1:
+		mode = CAMERA_MODE_FOLLOW;
+		break;
+	case 2:
+		mode = CAMERA_MODE_GAMEPLAY;
+		break;
+	default:
+		// will be using this one most of the time, you dont have to specify it
+		mode = CAMERA_MODE_GAMEPLAY;
+		break;
+	}
+
+	// initialize position to dummy value because the thing we are tracking may
+	// not exist yet. You probably wont ever get to this coordinate naturally,
+	// but if you do it will just snap the camera for a frame
+	prev_position = vec2(0xB00B1E5);
+
+	rotation = 0.0f;
+	return;
+}
+
+static vec2 smooth_follow(vec2 current_pos, vec2 target_pos, vec2 aimpos, float dtime) {
+	// Follow the given target position from the current position with some fake inertia.
+	vec2 output = vec2();
+	vec2 aimdir = aimpos - target_pos;
+
+	// Offset the target in the aim direction, unnormalized. This means that if aimdir is 00
+	// then it will not offset.
+	float max_offset = 10.0f;
+	if (aimdir.mag() > max_offset) {
+		aimdir = aimdir.unit() * max_offset;
+	}
+
+	target_pos += aimdir;
+
+
+	float distance = mag(target_pos - current_pos);
+	if (distance < 0.01f) {
+		return target_pos;
+	}
+
+	vec2 direction = target_pos - current_pos;
+	direction = direction.unit();
+
+	// How far should the camera lag back at most
+	float max_lag = 5.0f;
+	distance = min(distance, max_lag);
+	distance /= max_lag;
+
+	// Equivalent to move speed
+	float stepsize = 3.0f * 100.0f;
+	float step = stepsize * dtime;
+	// The smooth function
+	step *= max(0.0f, min(1.0f, 
+		distance * distance * ( 3 - 2 * distance)
+		));
+
+	if (step > distance) {
+		return target_pos; // Snap to target so we dont jiggle around it
+	}
+
+	output = current_pos + (direction * step);
+	return output;
+}
+
+void PointViewControl::update(ObjectUpdateData data) {
+	// If no follow name we probably arent active. Hopefully you didnt forget to
+	// set a followname and spent an hour chasing a bug to find this comment and
+	// realize your mistake.
+	if (follow_name.empty()) {
+		return;
+	}
+
+	// Get the object we are following
+	auto obj = io.get_object(follow_name);
+	if (!obj) {
+		io.report_error("PointViewControl: Object to follow '" + follow_name + "' does not exist.");
+		return;
+	}
+
+	// Get the position of the object we are following
+	vec2 new_pos = obj->position;
+
+	if (new_pos == prev_position) {
+		// If the position has not changed, we dont need to update anything
+		return;
+	}
+
+	if (prev_position == vec2(0xB00B1E5)) {
+		// If this is the first update just snap the camera
+		prev_position = new_pos;
+		position = new_pos;
+		return;
+	}
+
+	// Now we actually update the camera based on the mode
+	switch (mode) {
+	case CAMERA_MODE_WELD:
+		// Snap follow
+		prev_position = position;
+		position = new_pos;
+		break;
+
+	case CAMERA_MODE_FOLLOW:
+		// Follow target but smoothly
+		prev_position = position;
+		position = smooth_follow(position, new_pos, new_pos, data.frame_time);
+		break;
+
+	case CAMERA_MODE_GAMEPLAY:
+		// Same as follow cam but we actually supply aim position
+		prev_position = position;
+		position = smooth_follow(position, new_pos, vec2(data.mouse_x, data.mouse_y), data.frame_time);
+		break;
+	default:
+		io.report_error("PointViewControl: Unknown camera mode.");
+		return;
+	}
+
+	return;
+}
+
+void PointViewControl::set_mode(CameraMode new_mode) {
+	// Set the camera mode
+	mode = new_mode;
+	return;
+}
+
+void PointViewControl::set_target(std::string targetname) {
+	// Set the target to follow
+	follow_name = targetname;
+	return;
 }
