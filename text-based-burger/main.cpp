@@ -130,7 +130,7 @@ void processInput(GLFWwindow* window) {
 
 	
 	// Set time
-	frame_time = last_time - glfwGetTime();
+	frame_time = glfwGetTime() - last_time;
 	last_time = glfwGetTime();
 
 	float move_x = 0.0f;
@@ -138,16 +138,16 @@ void processInput(GLFWwindow* window) {
 
 	// Handle camera movement
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		move_y -= 1.0f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 		move_y += 1.0f;
 	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		move_y -= 1.0f;
+	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		move_x += 1.0f;
+		move_x -= 1.0f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		move_x -= 1.0f;
+		move_x += 1.0f;
 	}
 
 	// Normalize the movement vector
@@ -156,10 +156,10 @@ void processInput(GLFWwindow* window) {
 	move_x /= div;
 	move_y /= div;
 
-	float move_speed = 1.5f / 10000.0f;
+	float move_speed = 3.0f * 100.0f;
 
-	move_x *= move_speed / frame_time;
-	move_y *= move_speed / frame_time;
+	move_x *= move_speed * frame_time;
+	move_y *= move_speed * frame_time;
 
 	camera_x += move_x;
 	camera_y += move_y;
@@ -451,7 +451,8 @@ int main() {
 
 		// --- update objects ---
 		ObjectUpdateData update_data;
-		update_data.time = (int)glfwGetTime();
+		update_data.time = glfwGetTime();
+		update_data.frame_time = frame_time;
 		update_data.mouse_x = native_x;
 		update_data.mouse_y = native_y;
 		update_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
