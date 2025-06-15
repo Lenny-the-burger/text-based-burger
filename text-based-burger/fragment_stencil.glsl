@@ -10,10 +10,11 @@ uniform float aspectRatioSmall;
 
 void main() {
 	vec2 native_coords = (0.5 * TexCoords * vec2(aspectRatio * aspectRatioSmall, 1)) + vec2(0.5, 0.5);
-	native_coords = native_coords * vec2(640.0, 480.0);
+	native_coords = native_coords * vec2(960.0, 536.0);
 
 	// discard outside of screen bounds
-	if (native_coords.x < 0.0 || native_coords.x > 640.0 || native_coords.y < 0.0 || native_coords.y > 480.0) {
+	// Cut off the bottom 9 lines for ui (9*16 = 144)
+	if (native_coords.x < 0.0 || native_coords.x > 960.0 || native_coords.y < 80.0 || native_coords.y > 536.0) {
 		discard;
 	}
 }

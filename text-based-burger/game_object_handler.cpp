@@ -129,7 +129,7 @@ int ObjectsHandler::render(float* lines_list, uint32_t* colors, int offset) {
 	int counter = offset * 4;
 
 	// Render mouse cursor first
-	counter = mouse_renderer->render(lines_list, counter, colors, vec2(320.0f, 240.0f));
+	counter = mouse_renderer->render(lines_list, counter, colors, vec2(480.0f, 268.0f));
 
 	vec2 camera_pos = camera_controllers[active_camera_controller]->position;
 

@@ -38,8 +38,8 @@ int GameObject::render(float* lines_list, int offset, uint32_t* colors, vec2 cam
 	// updata data. Note that you should output NDC here not world space.
 
 	// Hard coded screen size whatever
-	float scrn_width = 640.0f;
-	float scrn_height = 480.0f;
+	float scrn_width = 960.0f;
+	float scrn_height = 536.0f;
 
 	// TODO: add siatcne to camera check if we need to render at all
 
@@ -132,7 +132,7 @@ MouseRenderer::MouseRenderer(ObjectIO& io) : GameObject(json::object(
 
 void MouseRenderer::update(ObjectUpdateData data) {
 	// TODO: make all pointer meshes point from 0,0 so i dont have to do -19 here.
-	position = vec2(data.mouse_pos.x, 480.0f - data.mouse_pos.y - 0.0f);
+	position = vec2(data.mouse_pos.x, 536.0f - data.mouse_pos.y - 0.0f);
 
 	if (data.is_clicking) {
 		mouse_state = MOUSE_CLICKING;
@@ -195,7 +195,7 @@ PointViewControl::PointViewControl(json data, ObjectIO& io) : GameObject(json::o
 static vec2 smooth_follow(vec2 current_pos, vec2 target_pos, vec2 aimpos, float dtime, bool extended_look) {
 	// Follow the given target position from the current position with some fake inertia.
 	vec2 output = vec2();
-	vec2 aimdir = aimpos - vec2(320, 240); // screen space
+	vec2 aimdir = aimpos - vec2(480, 268); // screen space
 	aimdir *= vec2(1.0f, -1.0f);
 
 	// Offset the target in the aim direction, unnormalized. This means that if aimdir is 00

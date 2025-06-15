@@ -16,7 +16,7 @@ layout(std430, binding = 0) buffer CharacterGrid {
 
 void main() {
 
-    vec2 frag_coord = vec2(gl_FragCoord.x, 480.0 - gl_FragCoord.y);
+    vec2 frag_coord = vec2(gl_FragCoord.x, 536.0 - gl_FragCoord.y + 8.0);
 
     // Where in the character grid are we?
     uvec2 character_position = uvec2( 
@@ -37,7 +37,7 @@ void main() {
     uint block_position = (texel_position.y % 4) * 8 + texel_position.x;
 
     // Get the character data 32 bit uint word from the character grid
-    uint char_word = character_grid[character_position.y * 80 + character_position.x];
+    uint char_word = character_grid[character_position.y * 120 + character_position.x];
 
     // Unpack
     uint charnum = (char_word & 0xFFu);
