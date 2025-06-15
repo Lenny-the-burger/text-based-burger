@@ -156,6 +156,9 @@
     <None Include="gamedata\maps\testmap_temp.json">
       <Filter>Game data\maps</Filter>
     </None>
+    <None Include="fragment_stencil.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imconfig.h">

@@ -168,6 +168,8 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	// No depth buffer only stencil if you crash you are probably on iphone 4
+	glfwWindowHint(GLFW_STENCIL_BITS, 8);
 
 	GLFWwindow* window = glfwCreateWindow(window_width, window_height, WINDOW_TITLE, NULL, NULL);
     if (window == NULL)
@@ -202,8 +204,8 @@ int main() {
 	// Compile shaders
 	Shader raster_shader = Shader("vertex.glsl", "fragment.glsl", std::vector<std::string>(), 460);
 	Shader line_shader = Shader("vertex_lines.glsl", "fragment_lines.glsl", std::vector<std::string>(), 460);
-
 	Shader pass_shader = Shader("vertex.glsl", "fragment_pass.glsl", std::vector<std::string>(), 460);
+	Shader stencil_shader = Shader("vertex.glsl", "fragment_stencil.glsl", std::vector<std::string>(), 460);
 
 #pragma region General loading
 
@@ -403,7 +405,7 @@ int main() {
 
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glViewport(0, 0, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT); // Match the framebuffer size
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the framebuffer
+		glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // Clear the framebuffer
 
 		raster_shader.use();
 
@@ -486,18 +488,40 @@ int main() {
 		glBindVertexArray(VAO);							// Fullscreen quad VAO
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct              // Draw the quad
 
+
+		glEnable(GL_STENCIL_TEST); // Enable stencil test
+
+		// Draw to stencil buffer for lines
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Don't draw colors
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);                  // Always pass stencil test
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);          // Replace stencil with ref=1 on pass
+		glStencilMask(0xFF);
+
+		stencil_shader.use();
+		stencil_shader.setFloat("aspectRatio", aspect_ratio);
+		stencil_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
+
+		// Draw fullscreen quad only the fragement is different so we can use the same VAO
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		// Step 2: Only allow drawing where stencil == 1
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Enable color writes
+		glStencilFunc(GL_EQUAL, 1, 0xFF);                // Pass only where stencil == 1
+		glStencilMask(0x00);                             // Disable writing to stencil
+		
 		// Draw electron beam lines, these are not rasterized so draw them at screen resolution
+
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		glEnable(GL_BLEND);
+		glLineWidth(2.0f); 
+		glEnable(GL_LINE_SMOOTH);
 
 		line_shader.use();
 
 		// Set uniforms
 		line_shader.setFloat("aspectRatio", aspect_ratio);
 		line_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
-
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		glLineWidth(2.0f);
-		glEnable(GL_LINE_SMOOTH);
+		
 
 		// Upload line vertex data
 		glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
@@ -524,6 +548,7 @@ int main() {
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 		glDisable(GL_BLEND); // Disable blending for next draw calls
+		glDisable(GL_STENCIL_TEST);
 
 		// Draw Dear ImGui
 		ImGui::Render();
