@@ -24,8 +24,8 @@
 using namespace std;
 
 // These are not constants 
-int window_width = 1200;
-int window_height = 600;
+int window_width = 1300;
+int window_height = 720;
 
 // Character dimensions
 int CHAR_WIDTH = 8;
@@ -33,8 +33,9 @@ int CHAR_HEIGHT = 16;
 int CHAR_RATIO = CHAR_HEIGHT / CHAR_WIDTH;
 
 // Character columns on screen
-int CHAR_COLS = 80;
-int CHAR_ROWS = (CHAR_COLS / 4) * 3; // 4:3 aspect ratio
+int CHAR_COLS = 120;
+//int CHAR_ROWS = (CHAR_COLS / 16) * 9; // 4:3 aspect ratio
+int CHAR_ROWS = 68;
 
 int SMALL_WINDOW_WIDTH = CHAR_WIDTH * CHAR_COLS;
 int SMALL_WINDOW_HEIGHT = (CHAR_ROWS * CHAR_HEIGHT) / CHAR_RATIO;
@@ -120,8 +121,8 @@ void processInput(GLFWwindow* window) {
 	glfwGetCursorPos(window, &xpos, &ypos);
 
 	// Convert from window space to native space
-	float scale = (float)window_height / 480.0f; // more hard coded numbers oh yeah
-	int offset_x = (window_width - 640 * scale) / 2;
+	float scale = (float)window_height / 536.0f; // more hard coded numbers oh yeah
+	int offset_x = (window_width - 960 * scale) / 2;
 
 	native_x = (xpos - offset_x) / scale;
 	native_y = (ypos - 0) / scale;

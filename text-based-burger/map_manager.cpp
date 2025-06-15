@@ -119,7 +119,7 @@ float project_point(float val, float depth, float scale) {
 
 int MapManager::render(float* lines_list, uint32_t* colors) {
 
-	// To render things, the centre of camera is at 0,0, but that translates to 320, 240 on the actual screen.
+	// To render things, the centre of camera is at 0,0, but that translates to 480, 268 on the actual screen.
 	// The raw camera position is fed to update(), and then update sends it through some function for things like
 	// camera follow inertia, and writes it to camera_x and camera_y. These are the absoulte camera position so dont need to be
 	// transformed. 
@@ -127,8 +127,8 @@ int MapManager::render(float* lines_list, uint32_t* colors) {
 	// For parralax, the camera is at a constant height above 0.
 	float camera_height = 10;
 
-	float scrn_width = 640.0f;
-	float scrn_height = 480.0f;
+	float scrn_width = 960.0f;
+	float scrn_height = 536.0f;
 
 	int lines_counter = 0;
 
