@@ -12,11 +12,13 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+class SystemsController;
+
 class ObjectsHandler {
 
 public:
 	// Constructor
-	ObjectsHandler(std::string filename);
+	ObjectsHandler(std::string filename, SystemsController& new_controller);
 
 	// Update the objects
 	ObjectUpdateReturnData update(ObjectUpdateData data);
@@ -26,6 +28,11 @@ public:
 
 	// Cant just directly render the error log, so just return strings
 	std::vector<std::string> get_error_log();
+
+	// Get the object io
+	ObjectIO* get_io() {
+		return &object_io;
+	}
 
 private:
 

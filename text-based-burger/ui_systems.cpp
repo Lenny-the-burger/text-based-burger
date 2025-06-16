@@ -4,7 +4,7 @@
 using namespace std;
 
 // Error Reporter
-UIComponentIO::UIComponentIO() {
+UIComponentIO::UIComponentIO(SystemsController& new_controller) : controller(new_controller) {
 	// Reporters will always start with an empty log
 	error_log = vector<string>();
 	return;

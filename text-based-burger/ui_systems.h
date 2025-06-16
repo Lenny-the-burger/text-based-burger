@@ -19,12 +19,13 @@ struct UIUpdateData {
 
 // Forward declaration
 class UIComponent;
+class SystemsController;
 
 // Error reporter class
 class UIComponentIO {
 public:
 	// Constructor
-	UIComponentIO();
+	UIComponentIO(SystemsController& controller);
 	// Destructor
 	~UIComponentIO();
 
@@ -43,6 +44,8 @@ private:
 	std::vector<int> repeats;
 
 	std::map<std::string, UIComponent*> component_registry;
+
+	SystemsController& controller;
 };
 
 // Generates a grid fragment from character, bg and fg color

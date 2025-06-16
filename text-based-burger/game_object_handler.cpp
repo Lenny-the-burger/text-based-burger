@@ -5,7 +5,7 @@
 using namespace std;
 
 
-ObjectsHandler::ObjectsHandler(string filename) : object_io() {
+ObjectsHandler::ObjectsHandler(string filename, SystemsController& new_controller) : object_io(new_controller) {
 	// How this works is that when a map is loaded the vdg file is given to the 
 	// map loader, and the partner json file is sent here to load all the
 	// various entities and other things. The map loader also parses the json

@@ -8,14 +8,15 @@
 #include <string>
 #include <map>
 
+class SystemsController;
+
 // This is the ui handler class. It handles ui operations, look drawing, updates, input handling, etc.
 
 class UIHandler {
 
 public:
 	// Constructors
-	UIHandler();
-	UIHandler(std::string filename, int scrn_w, int scrn_h);
+	UIHandler(std::string filename, int scrn_w, int scrn_h, SystemsController& controller);
 
 	// Update the ui
 	void update(UIUpdateData data);
@@ -32,6 +33,10 @@ public:
 	void cls();
 
 	std::vector<std::vector<uint32_t>> get_screen();
+
+	UIComponentIO* get_io() {
+		return &component_io;
+	}
 
 private:
 

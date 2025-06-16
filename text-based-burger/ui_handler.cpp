@@ -5,15 +5,8 @@
 using namespace std;
 using json = nlohmann::json; // for convenience
 
-UIHandler::UIHandler() : component_io(), root(move(UIComponent(component_io))) {
-	// Set error log to empty
-	component_io = UIComponentIO();
-}
-
-UIHandler::UIHandler(string filename, int scrn_w, int scrn_h)
-	: component_io(), root(move(UIComponent(component_io))) {
-	// Set error log to empty
-	component_io = UIComponentIO();
+UIHandler::UIHandler(string filename, int scrn_w, int scrn_h, SystemsController& new_controller)
+	: component_io(new_controller), root(move(UIComponent(component_io))) {
 
 	// Initialize the screen to all 0s
 	screen = vector<vector<uint32_t>>(scrn_h, vector<uint32_t>(scrn_w, 0));

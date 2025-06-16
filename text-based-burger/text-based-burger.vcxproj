@@ -140,6 +140,7 @@
     <ClCompile Include="object_utils.cpp" />
     <ClCompile Include="scripts.cpp" />
     <ClCompile Include="shader.cpp" />
+    <ClCompile Include="systems_controller.cpp" />
     <ClCompile Include="third-party\imgui\imgui.cpp" />
     <ClCompile Include="third-party\imgui\imgui_demo.cpp" />
     <ClCompile Include="third-party\imgui\imgui_draw.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="object_utils.h" />
     <ClInclude Include="scripts.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="systems_controller.h" />
     <ClInclude Include="third-party\glad\glad.h" />
     <ClInclude Include="third-party\imgui\imconfig.h" />
     <ClInclude Include="third-party\imgui\imgui.h" />

@@ -148,6 +148,7 @@ inline float cross(vec2 a, vec2 b) {
 
 // Forward declaration
 class GameObject;
+class SystemsController;
 
 // Update data struct for the object system
 struct ObjectUpdateData {
@@ -178,7 +179,7 @@ struct ObjectUpdateReturnData {
 
 class ObjectIO {
 public:
-	ObjectIO();
+	ObjectIO(SystemsController& controller);
 	~ObjectIO();
 
 	void report_error(std::string error);
@@ -198,6 +199,8 @@ private:
 	std::vector<std::string> error_log;
 	std::vector<int> repeats;
 	std::map<std::string, GameObject*> object_registry;
+
+	SystemsController& controller;
 };
 
 // Split given path along "/" delimiter

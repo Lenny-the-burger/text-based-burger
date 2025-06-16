@@ -12,14 +12,8 @@
 
 #include "shader.h"
 #include "font_loader.h"
-#include "component.h"
-#include "ui_handler.h"
 
-#include "object_utils.h"
-#include "game_object_handler.h"
-#include "game_object.h"
-
-#include "map_manager.h"
+#include "systems_controller.h"
 
 using namespace std;
 
@@ -50,6 +44,8 @@ const char* WINDOW_TITLE = "Text based burger";
 
 float aspect_ratio = (float)window_width / (float)window_height;
 float aspect_ratio_small = (float)SMALL_WINDOW_HEIGHT / (float)SMALL_WINDOW_WIDTH;
+
+unique_ptr<SystemsController> systems_controller;
 
 // Master ui handler
 unique_ptr<UIHandler> ui;
@@ -93,25 +89,6 @@ void processInput(GLFWwindow* window) {
 		else {
 			glfwSetWindowMonitor(window, NULL, 100, 100, window_width, window_height, 0);
 		}
-	}
-
-	// ctrl + f5 reload the ui
-	if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		// Reload the ui
-		ui = make_unique<UIHandler>("test_scene.json", CHAR_COLS, CHAR_ROWS / 2);
-		ui->rerender_all();
-	}
-
-	// ctrl + f6 rerender all components
-	if (glfwGetKey(window, GLFW_KEY_F6) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		ui->rerender_all();
-	}
-
-	// ctrl + f12 to open ui error log
-	if (glfwGetKey(window, GLFW_KEY_F12) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		ui->toggle_error_log();
-		ui->cls();
-		ui->rerender_all();
 	}
 
 	// Set vars other systems need to update
@@ -227,13 +204,17 @@ int main() {
 	// Set the uniform
 	glUniform4uiv(glGetUniformLocation(raster_shader.ID, "glyphs"), 256, font_data_array);
 
+	systems_controller = make_unique<SystemsController>(
+		RenderTargets(),
+		"gamedata\\ui\\test_scene.json"
+	);
 
-	// Load ui
-	ui = make_unique<UIHandler>("gamedata\\ui\\test_scene.json", CHAR_COLS, CHAR_ROWS / 2);
-	ui->rerender_all(); // Initial render
+	//// Load ui
+	//ui = make_unique<UIHandler>("gamedata\\ui\\test_scene.json", CHAR_COLS, CHAR_ROWS / 2);
+	//ui->rerender_all(); // Initial render
 
-	// Load test map
-	objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\testmap.json");
+	//// Load test map
+	//objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\testmap.json");
 
 
 #pragma endregion

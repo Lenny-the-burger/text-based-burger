@@ -6,7 +6,7 @@ using namespace std;
 // This is NOT double work with the ui equivalent, these two classes just happen to behave similrly
 // These two are distnct classes and should not be assumed to have interoperability
 
-ObjectIO::ObjectIO() {
+ObjectIO::ObjectIO(SystemsController& new_controller) : controller(new_controller) {
 	// Reporters will always start with an empty log
 	error_log = vector<string>();
 	return;
