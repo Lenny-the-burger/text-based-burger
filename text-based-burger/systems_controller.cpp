@@ -46,6 +46,28 @@ void SystemsController::handle_misc_inputs(GLFWwindow* window) {
 		// Key released, remove from set
 		key_presses.erase(GLFW_KEY_F11);
 	}
+
+	if(glfwGetKey(window, GLFW_KEY_F6) == GLFW_PRESS) {
+		// Is the key already pressed?
+		if (key_presses.count(GLFW_KEY_F6) > 0) {
+			return; // Key already pressed, do nothing
+		}
+		// Key pressed, add to set
+		key_presses.insert(GLFW_KEY_F6);
+
+		if (error_log_type == ERROR_LOG_TYPE_NONE) {
+			// If no error log is shown, show the UI error log
+			show_error_log(ERROR_LOG_TYPE_MAP);
+		}
+		else {
+			// If an error log is already shown, hide it
+			error_log_type = ERROR_LOG_TYPE_NONE;
+		}
+	}
+	else if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_RELEASE) {
+		// Key released, remove from set
+		key_presses.erase(GLFW_KEY_F6);
+	}
 }
 
 void SystemsController::update(GLFWwindow* window, GlobalUpdateData global_update_data) {
@@ -92,6 +114,13 @@ RenderData SystemsController::render() {
 	
 	if (error_log_type != ERROR_LOG_TYPE_NONE) {
 		render_log();
+		// dont render any lines
+		RenderData return_data;
+		return_data.lines_counter = 0;
+		return_data.stencil_state = 0;
+
+		return return_data;
+
 	} else {
 		vector<vector<uint32_t>> screen = ui_handlers[active_ui_handler]->get_screen();
 		for (int i = 0; i < CHAR_ROWS / 2; i++) {
@@ -100,6 +129,7 @@ RenderData SystemsController::render() {
 			}
 		}
 	}
+
 
 	num_lines = map_manager->render(line_verts, line_colors);
 
@@ -118,6 +148,16 @@ void SystemsController::show_error_log(ErrorLogType type) {
 	error_log_type = type;
 }
 
+string get_error_type_name(ErrorLogType type) {
+	switch (type) {
+	case ERROR_LOG_TYPE_ALL: return "All";
+	case ERROR_LOG_TYPE_NONE: return "None";
+	case ERROR_LOG_TYPE_UI: return "UI";
+	case ERROR_LOG_TYPE_OBJECTS: return "Objects";
+	default: return to_string(type);
+	}
+}
+
 void SystemsController::render_log() {
 	vector<int> all_repeats;
 	vector<string> all_errors;
@@ -134,14 +174,14 @@ void SystemsController::render_log() {
 	default:
 		// Uh oh you set an invalid error log type
 		all_errors = {
-			"Invalid error log type set no." + error_log_type,
+			"Invalid error log type set no." + get_error_type_name(error_log_type),
 			"good job you broke the error reporter idiot" };
 		all_repeats = { 0,0 };
 		break;
 	}
 
 	// Render to temporary screen
-	vector<vector<uint32_t>> screen;
+	vector<vector<uint32_t>> screen = vector<vector<uint32_t>>(CHAR_ROWS / 2, vector<uint32_t>(CHAR_COLS, 0));
 
 	int line = 0;
 	for (string error : all_errors) {
@@ -167,6 +207,17 @@ void SystemsController::render_log() {
 			pos += max_width;
 			line++;
 		}
+	}
+
+	// If no errors print no errors found
+	if (all_errors.empty()) {
+		string no_errors = "No errors reported for type " + get_error_type_name(error_log_type);
+		for (int i = 0; i < no_errors.size(); i++) {
+			int char_num = char2int(no_errors[i]);
+			uint32_t char_packed = gen_frag(char_num, 0, 255);
+			screen[line][i] = char_packed;
+		}
+		line++;
 	}
 
 	// Render out to the char grid
