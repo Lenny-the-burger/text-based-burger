@@ -14,7 +14,7 @@ void main() {
 
 	// discard outside of screen bounds
 	// Cut off the bottom 9 lines for ui (9*16 = 144)
-	if (native_coords.x < 0.0 || native_coords.x > 960.0 || native_coords.y < 80.0 || native_coords.y > 536.0) {
+	if (native_coords.x > 0.0 && native_coords.x < 960.0 && native_coords.y > 80.0 && native_coords.y < 536.0) {
 		discard;
 	}
 }

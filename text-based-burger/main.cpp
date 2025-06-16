@@ -455,7 +455,7 @@ int main() {
 		num_lines = objects_handler->render(line_verts, line_colors, num_lines);
 
 
-		// The amount of data we send to the gpu is only 7.2 kb, if you want to optimize
+		// The amount of data we send to the gpu is only 16.3 kb, if you want to optimize
 		// this then go right ahead if you want another 1 fps over the 1000 you already get
 
 		// Copy the screen to the gpu
@@ -507,7 +507,7 @@ int main() {
 
 		// Step 2: Only allow drawing where stencil == 1
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Enable color writes
-		glStencilFunc(GL_EQUAL, 1, 0xFF);                // Pass only where stencil == 1
+		glStencilFunc(GL_EQUAL, 0, 0xFF);                // Pass only where stencil == 1
 		glStencilMask(0x00);                             // Disable writing to stencil
 		
 		// Draw electron beam lines, these are not rasterized so draw them at screen resolution
