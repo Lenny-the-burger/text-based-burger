@@ -55,6 +55,6 @@ private:
 
 	vec2 camera_pos;
 
-	float mapz;
-	float map_z_fov;
+	float mapz = 0.8f; // Default map z position
+	float map_z_fov = 90.0f; // Default map z fov
 };

@@ -97,9 +97,6 @@ MapManager::MapManager(std::string filename) {
 
 void MapManager::update(ObjectUpdateData data) {
 	camera_pos = data.camera_pos;
-
-	mapz = data.mapz;
-	map_z_fov = data.map_z_fov;
 }
 
 float fov_scale(float fov) {
