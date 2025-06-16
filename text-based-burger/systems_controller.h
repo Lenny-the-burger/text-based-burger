@@ -47,9 +47,9 @@ enum ErrorLogType {
 
 // Pass this to the systems controller to set up where you want it to render stuff to
 struct RenderTargets {
-	float* lines_list; 
-	uint32_t* colors;
 	uint32_t* char_grid;
+	float* line_verts;
+	uint32_t* line_colors;
 };
 
 // Misc data various systems emit for rendering
@@ -78,13 +78,18 @@ struct MiscGameData {
 
 };
 
+struct GlobalUpdateData {
+	vec2 mouse_pos_native; // position in native
+	vec2 mouse_pos_char;
+};
+
 class SystemsController {
 public:
 	// Constructor
 	SystemsController(RenderTargets render_targets, std::string ui_entry);
 
 	// Tell the systems controller to make things update
-	void update(GLFWwindow* window);
+	void update(GLFWwindow* window, GlobalUpdateData global_update_data);
 
 	// Tell systems to render to internal screens
 	RenderData render();
@@ -116,4 +121,17 @@ private:
 
 	// The map manager
 	std::unique_ptr<MapManager> map_manager;
+
+	// Random stuff we need to keep track of
+	vec2 mouse_native_pos, mouse_char_pos = vec2();
+	double last_time, frame_time = 0.0f;
+	int CHAR_COLS = 120;
+	int CHAR_ROWS = 68;
+
+	// Internal render targets, these are actually held in main.cpp
+	uint32_t* char_grid;
+	float* line_verts;
+	uint32_t* line_colors;
+
+	int num_lines = 0;
 };

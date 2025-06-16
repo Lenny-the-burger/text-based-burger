@@ -161,9 +161,6 @@ struct ObjectUpdateData {
 	GLFWwindow* window;
 
 	vec2 camera_pos;
-
-	float mapz;
-	float map_z_fov;
 };
 
 // Data that gets returned from the object handler once it has updated all

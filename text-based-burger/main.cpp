@@ -28,7 +28,6 @@ int CHAR_RATIO = CHAR_HEIGHT / CHAR_WIDTH;
 
 // Character columns on screen
 int CHAR_COLS = 120;
-//int CHAR_ROWS = (CHAR_COLS / 16) * 9; // 4:3 aspect ratio
 int CHAR_ROWS = 68;
 
 int SMALL_WINDOW_WIDTH = CHAR_WIDTH * CHAR_COLS;
@@ -47,20 +46,8 @@ float aspect_ratio_small = (float)SMALL_WINDOW_HEIGHT / (float)SMALL_WINDOW_WIDT
 
 unique_ptr<SystemsController> systems_controller;
 
-// Master ui handler
-unique_ptr<UIHandler> ui;
-
-// Master object handler
-unique_ptr<ObjectsHandler> objects_handler;
-
-// Master map manager
-MapManager map_manager("gamedata\\maps\\testmap_temp.json");
-
 double last_time = 0;
 double frame_time = 0;
-
-double camera_x = 0.0f;
-double camera_y = 0.0f;
 
 float mapz = 0.8f;
 float map_z_fov = 90.0f;
@@ -107,11 +94,6 @@ void processInput(GLFWwindow* window) {
 	// Convert to character space
 	mouse_char_x = (int)(native_x / CHAR_WIDTH);
 	mouse_char_y = (int)(native_y / CHAR_HEIGHT);
-
-	
-	// Set time
-	frame_time = glfwGetTime() - last_time;
-	last_time = glfwGetTime();
 }
 
 void draw_imgui() {
@@ -204,18 +186,23 @@ int main() {
 	// Set the uniform
 	glUniform4uiv(glGetUniformLocation(raster_shader.ID, "glyphs"), 256, font_data_array);
 
+	// Internal render targets
+	int NUM_CHARS = CHAR_COLS * CHAR_ROWS;
+	uint32_t* char_grid = new uint32_t[NUM_CHARS];
+
+	// How many lines do you think youll want to ever draw:
+	int MAX_LINES = 10000;
+	float* line_verts = new float[MAX_LINES * 4 * 2]; // 4 vertices per line, 2 floats per vertex
+	uint32_t* line_colors = new uint32_t[MAX_LINES]; // 1 color per line
+
 	systems_controller = make_unique<SystemsController>(
-		RenderTargets(),
+		RenderTargets{
+			char_grid,
+			line_verts,
+			line_colors
+		},
 		"gamedata\\ui\\test_scene.json"
 	);
-
-	//// Load ui
-	//ui = make_unique<UIHandler>("gamedata\\ui\\test_scene.json", CHAR_COLS, CHAR_ROWS / 2);
-	//ui->rerender_all(); // Initial render
-
-	//// Load test map
-	//objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\testmap.json");
-
 
 #pragma endregion
 
@@ -266,13 +253,6 @@ int main() {
 	// Vertex buffer is just draw elements, unindexed. Monolithic buffer, so lines can be any random
 	// object so no indeces, gldrawarrays(gl_lines)
 	// Color buffer is array of 32 bit uints.
-
-	// How many lines do you think youll want to ever draw:
-	int MAX_LINES = 10000;
-
-	float* line_verts = new float[MAX_LINES * 4 * 2]; // 4 vertices per line, 2 floats per vertex
-
-	uint32_t* line_colors = new uint32_t[MAX_LINES]; // 1 color per line
 
 	// Create line vertex buffer
 	unsigned int line_VBO, line_VAO, line_color_SSBO;
@@ -338,25 +318,6 @@ int main() {
 	// First 8 bits are character, next 8 are color, next 8 are background color, and 8 unused
 	// ordering is done on the cpu to avoid branching.
 
-	int NUM_CHARS = CHAR_COLS * CHAR_ROWS;
-
-	uint32_t* char_grid = new uint32_t[NUM_CHARS];
-
-	//// Run through the grid and set a test pattern
-	//for (int i = 0; i < NUM_CHARS; i++) {
-	//	uint32_t c = 0;
-	//	// Set characters mod 255
-	//	c |= (i % 255);
-
-	//	// Set fg to random color
-	//	c |= (rand() % 255) << 8;
-
-	//	// Set bg to random color
-	//	c |= (rand() % 255) << 16;
-
-	//	char_grid[i] = c;
-	//}
-
 	unsigned int char_grid_buffer;
 
 	glGenBuffers(1, &char_grid_buffer);
@@ -374,11 +335,15 @@ int main() {
 	{
 		processInput(window);
 
-		UIUpdateData frame_data;
-		frame_data.mouse_char_x = mouse_char_x;
-		frame_data.mouse_char_y = mouse_char_y;
-		frame_data.time = (int) glfwGetTime();
-		frame_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
+		GlobalUpdateData global_update_data;
+		global_update_data.mouse_pos_native = vec2(native_x, native_y);
+		global_update_data.mouse_pos_char = vec2(mouse_char_x, mouse_char_y);
+
+		systems_controller->update(window, global_update_data);
+		RenderData render_data = systems_controller->render();
+		num_lines = render_data.lines_counter;
+
 
 		// Rendering starts here
 
@@ -390,51 +355,6 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // Clear the framebuffer
 
 		raster_shader.use();
-
-		// For now just update all the ui and plop the whole screen on the gpu, 
-		// this will eventually happen on a sperate thread (probably)
-		ui->update(frame_data);
-		//ui->rerender_all(); // for now just rerender all
-
-		// For now just blindly copy the screen to the char grid
-		vector<vector<uint32_t>> screen = ui->get_screen();
-		for (int i = 0; i < CHAR_ROWS / 2; i++) {
-			for (int j = 0; j < CHAR_COLS; j++) {
-				char_grid[i * CHAR_COLS + j] = screen[i][j];
-			}
-		}
-
-		// --- update objects ---
-		ObjectUpdateData update_data;
-		update_data.time = glfwGetTime();
-		update_data.frame_time = frame_time;
-		update_data.mouse_pos = vec2(native_x, native_y);
-		update_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
-
-		update_data.camera_pos = vec2(camera_x, camera_y);
-
-		update_data.mapz = mapz;
-		update_data.map_z_fov = map_z_fov;
-
-		// Should probably not reset this every frame, but its a pointer so whatever
-		update_data.window = window;
-
-		ObjectUpdateReturnData return_data;
-
-		// Call update
-		return_data = objects_handler->update(update_data);
-
-		// Update camera position from ovjects handler
-		update_data.camera_pos = return_data.camera_pos;
-
-		// Render map first
-		map_manager.update(update_data);
-
-		num_lines = map_manager.render(line_verts, line_colors);
-
-		// Render objects
-		num_lines = objects_handler->render(line_verts, line_colors, num_lines);
-
 
 		// The amount of data we send to the gpu is only 16.3 kb, if you want to optimize
 		// this then go right ahead if you want another 1 fps over the 1000 you already get
