@@ -62,24 +62,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 void processInput(GLFWwindow* window) {
-	// input handling
-
-	// f1 to show help menu
-
-	// f11 to toggle fullscreen
-	if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS) {
-		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-		if (glfwGetWindowMonitor(window) == NULL) {
-			glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-		}
-		else {
-			glfwSetWindowMonitor(window, NULL, 100, 100, window_width, window_height, 0);
-		}
-	}
-
-	// Set vars other systems need to update
-
 	// Mouse position
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);

@@ -36,6 +36,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <set>
 
 enum ErrorLogType {
 	ERROR_LOG_TYPE_ALL,
@@ -94,21 +95,28 @@ public:
 	// Tell systems to render to internal screens
 	RenderData render();
 
-	// Get raster component for screen. You should probably call render first
-	std::vector<std::vector<uint32_t>> get_raster();
-
-	// Get the vector component for the screen. You should probably call render first
-	int get_lines(float* lines_list, uint32_t* colors, int counter);
-
 	// Render a specific error log instead of what you would normally render.
 	void show_error_log(ErrorLogType type);
 
+	// Unload current map (if there is one) and load a new one
 	void load_map(std::string map_name);
+	 
+	// Unload the current map, if there is one (this also gets called when loading a new map)
+	void unload_map();
+
+	void call_script(std::string script_name, json args);
 
 private:
 
+	// Handles inputs that are not related to anything, global shortcuts.
+	// This probably will not make it into production only really useful for 
+	// debugging.
+	void handle_misc_inputs(GLFWwindow* window);
+	std::set<int> key_presses;
+
 	// Function that actually renders the error log
 	void render_log();
+	ErrorLogType error_log_type = ERROR_LOG_TYPE_NONE;
 
 	// The ui handler
 	std::vector<std::unique_ptr<UIHandler>> ui_handlers;

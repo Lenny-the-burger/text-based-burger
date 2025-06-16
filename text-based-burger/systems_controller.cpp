@@ -22,11 +22,39 @@ SystemsController::SystemsController(RenderTargets render_targets, string ui_ent
 	line_colors = render_targets.line_colors;
 }
 
+void SystemsController::handle_misc_inputs(GLFWwindow* window) {
+
+	// f11 to toggle fullscreen
+	if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS) {
+		// Is the key already pressed?
+		if (key_presses.count(GLFW_KEY_F11) > 0) {
+			return; // Key already pressed, do nothing
+		}
+		// Key pressed, add to set
+		key_presses.insert(GLFW_KEY_F11);
+
+		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+		if (glfwGetWindowMonitor(window) == NULL) {
+			glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+		}
+		else {
+			glfwSetWindowMonitor(window, NULL, 100, 100, 1300, 720, 0);
+		}
+	}
+	else if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_RELEASE) {
+		// Key released, remove from set
+		key_presses.erase(GLFW_KEY_F11);
+	}
+}
+
 void SystemsController::update(GLFWwindow* window, GlobalUpdateData global_update_data) {
 
 	// Set time
 	frame_time = glfwGetTime() - last_time;
 	last_time = glfwGetTime();
+
+	handle_misc_inputs(window); // do this first, this shouldnt have any side effects.
 
 	UIUpdateData frame_data;
 	frame_data.mouse_char_x = global_update_data.mouse_pos_char.x;
@@ -61,11 +89,15 @@ void SystemsController::update(GLFWwindow* window, GlobalUpdateData global_updat
 }
 
 RenderData SystemsController::render() {
-	// For now just blindly copy the screen to the char grid
-	vector<vector<uint32_t>> screen = ui_handlers[active_ui_handler]->get_screen();
-	for (int i = 0; i < CHAR_ROWS / 2; i++) {
-		for (int j = 0; j < CHAR_COLS; j++) {
-			char_grid[i * CHAR_COLS + j] = screen[i][j];
+	
+	if (error_log_type != ERROR_LOG_TYPE_NONE) {
+		render_log();
+	} else {
+		vector<vector<uint32_t>> screen = ui_handlers[active_ui_handler]->get_screen();
+		for (int i = 0; i < CHAR_ROWS / 2; i++) {
+			for (int j = 0; j < CHAR_COLS; j++) {
+				char_grid[i * CHAR_COLS + j] = screen[i][j];
+			}
 		}
 	}
 
@@ -80,4 +112,67 @@ RenderData SystemsController::render() {
 	return_data.stencil_state = 0;
 
 	return return_data;
+}
+
+void SystemsController::show_error_log(ErrorLogType type) {
+	error_log_type = type;
+}
+
+void SystemsController::render_log() {
+	vector<int> all_repeats;
+	vector<string> all_errors;
+
+	switch (error_log_type) {
+	case ERROR_LOG_TYPE_UI:
+		all_errors = ui_handlers[active_ui_handler]->get_io()->get_log();
+		all_repeats = ui_handlers[active_ui_handler]->get_io()->get_repeats();
+		break;
+	case ERROR_LOG_TYPE_OBJECTS:
+		all_errors = objects_io->get_log();
+		all_repeats = objects_io->get_repeats();
+		break;
+	default:
+		// Uh oh you set an invalid error log type
+		all_errors = {
+			"Invalid error log type set no." + error_log_type,
+			"good job you broke the error reporter idiot" };
+		all_repeats = { 0,0 };
+		break;
+	}
+
+	// Render to temporary screen
+	vector<vector<uint32_t>> screen;
+
+	int line = 0;
+	for (string error : all_errors) {
+		// Append repeat count if greater than 0
+		int repeats = all_repeats[line];
+		if (repeats > 0) {
+			error += " x" + to_string(repeats);
+		}
+
+		// Render the error, split across multiple lines if needed
+		size_t max_width = screen[0].size();
+		size_t pos = 0;
+
+		while (pos < error.size()) {
+			string line_error = error.substr(pos, max_width);
+
+			for (int i = 0; i < line_error.size(); i++) {
+				int char_num = char2int(line_error[i]);
+				uint32_t char_packed = gen_frag(char_num, 0, 255);
+				screen[line][i] = char_packed;
+			}
+
+			pos += max_width;
+			line++;
+		}
+	}
+
+	// Render out to the char grid
+	for (int i = 0; i < CHAR_ROWS / 2; i++) {
+		for (int j = 0; j < CHAR_COLS; j++) {
+			char_grid[i * CHAR_COLS + j] = screen[i][j];
+		}
+	}
 }
