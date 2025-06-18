@@ -183,7 +183,7 @@ int main() {
 			line_verts,
 			line_colors
 		},
-		"gamedata\\ui\\test_scene.json"
+		"gamedata\\ui\\gameplay_ui.json"
 	);
 
 #pragma endregion

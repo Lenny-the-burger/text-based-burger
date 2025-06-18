@@ -77,7 +77,7 @@
       "type": "button",
       "position": {
         "x": 30,
-        "y": 10
+        "y": 29
       },
       "text": "Button",
       "style": {

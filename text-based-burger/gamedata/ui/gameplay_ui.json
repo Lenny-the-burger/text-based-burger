@@ -1,0 +1,56 @@
+{
+  "root": [
+    {
+      "targetname": "gameplay seperator",
+      "type": "label",
+      "position": {
+        "x": 0,
+        "y": 29
+      },
+      "text": "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
+      "style": {
+        "fg": 255,
+        "bg": 0
+      }
+    },
+    {
+      "targetname": "character label 1",
+      "type": "label",
+      "position": {
+        "x": 0,
+        "y": 30
+      },
+      "text": "> Red    | 1/1 2/2 | M14 <",
+      "style": {
+        "fg": 255,
+        "bg": 0
+      }
+    },
+    {
+      "targetname": "character label 2",
+      "type": "label",
+      "position": {
+        "x": 0,
+        "y": 31
+      },
+      "text": "> Blue   | 1/1 2/2 | M14",
+      "style": {
+        "fg": 127,
+        "bg": 0
+      }
+    },
+    {
+      "targetname": "character label 3",
+      "type": "label",
+      "position": {
+        "x": 0,
+        "y": 32
+      },
+      "text": "> Yellow | 1/1 2/2 | M14",
+      "style": {
+        "fg": 127,
+        "bg": 0
+      }
+    }
+  ]
+}
