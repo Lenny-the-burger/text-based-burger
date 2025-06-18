@@ -31,25 +31,25 @@ Script get_script(std::string name) {
     }
 }
 
-void test_button_script(json data, UIComponentIO* ui_io, ObjectIO* obj_io) {
+void test_button_script(json data, ScriptHandles handles) {
 	// Dump data to console
 	std::cout << "Test button script called with data:\n" << data.dump() << std::endl;
 
 	return;
 }
 
-void hover_reporter(json data, UIComponentIO* ui_io, ObjectIO* obj_io) {
+void hover_reporter(json data, ScriptHandles handles) {
 	// Dump data to console
 	std::cout << "Hovering over " << data["targetname"] << std::endl;
 	return;
 }
 
-void mouse_pos_shower(json data, UIComponentIO* ui_io, ObjectIO* obj_io) {
+void mouse_pos_shower(json data, ScriptHandles handles) {
 	// Get the caller component from the io
-	DynLabel* lbl = dynamic_cast<DynLabel*>(ui_io->get_component(data["targetname"]));
+	DynLabel* lbl = dynamic_cast<DynLabel*>(handles.ui_io->get_component(data["targetname"]));
 
 	if (lbl == nullptr) {
-		ui_io->report_error("ERROR: Mouse pos shower called on non existant component " + data["targetname"]);
+		handles.ui_io->report_error("ERROR: Mouse pos shower called on non existant component " + data["targetname"]);
 		return;
 	}
 
@@ -81,12 +81,12 @@ void mouse_pos_shower(json data, UIComponentIO* ui_io, ObjectIO* obj_io) {
     return;
 }
 
-void basic_mover(json data, UIComponentIO* ui_io, ObjectIO* obj_io) {
+void basic_mover(json data, ScriptHandles handles) {
 	// Get the caller component from the io
-	GameObject* obj = dynamic_cast<GameObject*>(obj_io->get_object(data["targetname"]));
+	GameObject* obj = dynamic_cast<GameObject*>(handles.obj_io->get_object(data["targetname"]));
 
 	if (obj == nullptr) {
-		ui_io->report_error("ERROR: Basic mover called on non existant object " + data["targetname"]);
+		handles.obj_io->report_error("ERROR: Basic mover called on non existant object " + data["targetname"]);
 		return;
 	}
 	
