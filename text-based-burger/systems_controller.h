@@ -43,7 +43,7 @@ enum ErrorLogType {
 	ERROR_LOG_TYPE_NONE,
 	ERROR_LOG_TYPE_UI,
 	ERROR_LOG_TYPE_OBJECTS,
-	ERROR_LOG_TYPE_MAP
+	ERROR_LOG_TYPE_CONTROLLER
 };
 
 // Pass this to the systems controller to set up where you want it to render stuff to
@@ -84,6 +84,21 @@ struct GlobalUpdateData {
 	vec2 mouse_pos_char;
 };
 
+class ControllerErrorReporter {
+public:
+	// Constructor
+	ControllerErrorReporter();
+	// Report an error
+	void report_error(std::string error);
+	// Get the error log
+	std::vector<std::string> get_log();
+	std::vector<int> get_repeats();
+
+private:
+	std::vector<std::string> error_log;
+	std::vector<int> repeats;
+};
+
 class SystemsController {
 public:
 	// Constructor
@@ -97,6 +112,8 @@ public:
 
 	// Render a specific error log instead of what you would normally render.
 	void show_error_log(ErrorLogType type);
+	
+	void call_script(std::string script_name, json args);
 
 	// Unload current map (if there is one) and load a new one
 	void load_map(std::string map_name);
@@ -104,9 +121,11 @@ public:
 	// Unload the current map, if there is one (this also gets called when loading a new map)
 	void unload_map();
 
-	void call_script(std::string script_name, json args);
-
 private:
+
+	// Controller error reporter, similar to how the handlers have io classes to report to,
+	// but this just reports errors from the controller itself.
+	ControllerErrorReporter error_reporter;
 
 	// Handles inputs that are not related to anything, global shortcuts.
 	// This probably will not make it into production only really useful for 

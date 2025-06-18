@@ -9,7 +9,7 @@ int char2int(char c) {
         case '"': return 34;
         case '#': return 219; // Shorthand for block character
         case '$': return 36;
-        case '%': return 37;
+		case '%': return 223; // Shorthand for upper half block character
         case '&': return 38;
         case '\'': return 39;
         case '(': return 40;

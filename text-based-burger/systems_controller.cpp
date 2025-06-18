@@ -2,7 +2,36 @@
 
 using namespace std;
 
+ControllerErrorReporter::ControllerErrorReporter() {
+	// Reporters will always start with an empty log
+	error_log = vector<string>();
+	return;
+}
+
+void ControllerErrorReporter::report_error(string error) {
+	// Check if the previous reported error is the same as the current one
+	if (!error_log.empty() && error_log.back() == error) {
+		// If it is, increment the repeat counter
+		repeats.back()++;
+		return;
+	}
+	// For now only report string errors
+	error_log.push_back(error);
+	repeats.push_back(0);
+	return;
+}
+
+vector<string> ControllerErrorReporter::get_log() {
+	return error_log;
+}
+
+vector<int> ControllerErrorReporter::get_repeats() {
+	return repeats;
+}
+
 SystemsController::SystemsController(RenderTargets render_targets, string ui_entry) {
+	error_reporter = ControllerErrorReporter();
+
 	// Create the default ui handler
 	ui_handlers.push_back(make_unique<UIHandler>(ui_entry, 120, 34, *this));
 	ui_io.push_back(ui_handlers[0]->get_io());
@@ -57,7 +86,7 @@ void SystemsController::handle_misc_inputs(GLFWwindow* window) {
 
 		if (error_log_type == ERROR_LOG_TYPE_NONE) {
 			// If no error log is shown, show the UI error log
-			show_error_log(ERROR_LOG_TYPE_MAP);
+			show_error_log(ERROR_LOG_TYPE_UI);
 		}
 		else {
 			// If an error log is already shown, hide it
@@ -130,7 +159,6 @@ RenderData SystemsController::render() {
 		}
 	}
 
-
 	num_lines = map_manager->render(line_verts, line_colors);
 
 	// Render objects
@@ -170,6 +198,10 @@ void SystemsController::render_log() {
 	case ERROR_LOG_TYPE_OBJECTS:
 		all_errors = objects_io->get_log();
 		all_repeats = objects_io->get_repeats();
+		break;
+	case ERROR_LOG_TYPE_CONTROLLER:
+		all_errors = error_reporter.get_log();
+		all_repeats = error_reporter.get_repeats();
 		break;
 	default:
 		// Uh oh you set an invalid error log type
@@ -226,4 +258,15 @@ void SystemsController::render_log() {
 			char_grid[i * CHAR_COLS + j] = screen[i][j];
 		}
 	}
+}
+
+void SystemsController::call_script(string script_name, json args) {
+	Script script = get_script(script_name);
+	if (script == nullptr) {
+		error_reporter.report_error("ERROR: " + to_string(args["caller"]) + " tried to call a non existant script " + script_name);
+		return;
+	}
+	// This will behave strangely if an inactive ui component attempts to call
+	// a script but that should never happen.
+	script(args, ScriptHandles{ this, ui_io[active_ui_handler], objects_io });
 }

@@ -333,12 +333,7 @@ void Button::set_hover_script(string script) {
 
 void Button::on_hover() {
 	// Call the hover script
-	Script script = get_script(hover_script_name);
-	if (script == nullptr) {
-		comp_io.report_error("ERROR: Button " + targetname + " tried to call a non existant script " + hover_script_name);
-		return;
-	}
-	script(hover_script_args, &comp_io, nullptr);
+	comp_io.call_script(hover_script_name, hover_script_args);
 	return;
 }
 
@@ -355,14 +350,7 @@ void Button::on_click() {
 	}
 
 	// Call the click script
-	// Get the script from the script system
-	Script script = get_script(click_script_name);
-	if (script == nullptr) {
-		comp_io.report_error("ERROR: Button " + targetname + " tried to call a non existant script " + click_script_name);
-		return;
-	}
-	
-	script(click_script_args, &comp_io, nullptr);
+	comp_io.call_script(click_script_name, click_script_args);
 
 	if (fire_only_once) {
 		have_already_fired = true;
@@ -393,12 +381,7 @@ DynLabel::DynLabel(json data, pair<int, int> offset, UIComponentIO& the_comp_io)
 }
 
 bool DynLabel::update(UIUpdateData data) {
-	// Call the script every frame
-	Script script = get_script(script_name);
-	if (script == nullptr) {
-		comp_io.report_error("ERROR: DynLabel " + targetname + " tried to call a non existant script " + script_name);
-		return false;
-	}
+	
 
 	// Encode update data into json and pass it to the script
 	json data_json = {
@@ -412,6 +395,7 @@ bool DynLabel::update(UIUpdateData data) {
 		{"text", text}
 	};
 
-	script(data_json, &comp_io, nullptr);
+	// Call the script every frame
+	comp_io.call_script(script_name, data_json);
 	return true;
 }

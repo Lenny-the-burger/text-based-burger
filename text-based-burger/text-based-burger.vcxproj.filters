@@ -162,6 +162,9 @@
     <None Include="fragment_stencil.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="gamedata\ui\gameplay_ui.json">
+      <Filter>Game data\ui</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imconfig.h">

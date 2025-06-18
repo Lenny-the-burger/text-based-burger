@@ -1,5 +1,6 @@
 #include "ui_systems.h"
 #include "component.h"
+#include "systems_controller.h"
 
 using namespace std;
 
@@ -72,4 +73,10 @@ uint32_t gen_frag(int character, int bg, int fg) {
 	frag |= bg << 16;
 
 	return frag;
+}
+
+void UIComponentIO::call_script(string script_name, json args) {
+	// Call a script with the given name and arguments
+	controller.call_script(script_name, args);
+	return;
 }

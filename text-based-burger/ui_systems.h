@@ -39,6 +39,8 @@ public:
 
 	// This can only be used by the script system
 	UIComponent* get_component(std::string name);
+
+	void call_script(std::string script_name, json args);
 private:
 	std::vector<std::string> error_log;
 	std::vector<int> repeats;
