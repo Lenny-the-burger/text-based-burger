@@ -13,7 +13,7 @@ public:
 	// Update the map
 	void update(ObjectUpdateData data);
 	// Render the map
-	int render(float* lines_list, uint32_t* colors);
+	int render(float* lines_list, uint32_t* colors, int offset);
 	// Get the error log
 	std::vector<std::string> get_error_log();
 
@@ -30,23 +30,23 @@ public:
 
 	// Coordinates of actual map geometry. Stored as [x1, y1, x2, y2]. Not
 	// indexed. Length should be num_lines * 4.
-	int* lines;
+	std::vector<float> lines;
 
 	// Z components of map geometry. Stored per line as [top_z, bottom_z]. Not
 	// indexed. Length should be num_lines * 2.
-	int* lines_z;
+	std::vector<float> lines_z;
 
 	// Per lines colors. 
-	int* colors;
+	std::vector<float> colors;
 
 	// Per line line types.
-	int* types;
+	std::vector<float> types;
 
 	// Per line misc flags.
-	int* misc_flags;
+	std::vector<float> misc_flags;
 
 	// Per line brush ids. 2^32 means no brush.
-	int* brush_ids;
+	std::vector<float> brush_ids;
 
 private:
 

@@ -152,7 +152,7 @@ int main() {
 #pragma region General loading
 
 	// Load font, this had to be done first and on the main thread
-	vector<uint32_t> font_data = load_font("gamedata\\fonts\\font2.txt"); // Enter your font path here
+	vector<uint32_t> font_data = load_font("gamedata\\fonts\\font.txt"); // Enter your font path here
 
 	// Bind the main shader and set uniform
 	raster_shader.use();
@@ -390,7 +390,6 @@ int main() {
 
 		// Step 2: Only allow drawing where stencil == 1
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Enable color writes
-		glStencilFunc(GL_EQUAL, 0, 0xFF);                // Pass only where stencil == 1
 		glStencilMask(0x00);                             // Disable writing to stencil
 		
 		// Draw electron beam lines, these are not rasterized so draw them at screen resolution
@@ -423,8 +422,16 @@ int main() {
 		// Setup VAO
 		glBindVertexArray(line_VAO);
 
-		// Draw lines, each line has two verts
-		glDrawArrays(GL_LINES, 0, num_lines * 2);
+		// Draw the first 25 lines that are reserved for the cursor without stencil
+		line_shader.setInt("prim_offset", 0);
+		glDrawArrays(GL_LINES, 0, 50);
+
+		// Turn on the stencil finally
+		glStencilFunc(GL_EQUAL, 0, 0xFF);
+
+		// Draw regular lines, each has two verts
+		line_shader.setInt("prim_offset", 25);
+		glDrawArrays(GL_LINES, 50, num_lines * 2);
 
 		// Unbind for cleanliness
 		glBindVertexArray(0);

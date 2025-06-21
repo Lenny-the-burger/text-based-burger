@@ -26,7 +26,8 @@ public:
 	ObjectUpdateReturnData update(ObjectUpdateData data);
 
 	// Render the objects
-	int render(float* lines_list, uint32_t* colors, int counter);
+	// !! this must be the first thing rendered to not screw up cursor rendering !!
+	int render(float* lines_list, uint32_t* colors);
 
 	// Cant just directly render the error log, so just return strings
 	std::vector<std::string> get_error_log();

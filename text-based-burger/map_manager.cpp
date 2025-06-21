@@ -72,27 +72,14 @@ MapManager::MapManager(std::string filename) {
 	}
 	json data = json::parse(f);
 
-	// Allocate space for lines
-	lines = new int[156];
-
 	float map_scale = 2.0f;
 
+	// TODO: This will eventually be replaced with binary files
 	// Loop through the coords and add them to the actual array
-	// More hard coded numbers yayyyyy (this is temporary who care)
-	for (int i = 0; i < 39; i++) {
-		int x1 = data["coords"][i * 4 + 0] * map_scale;
-		int y1 = data["coords"][i * 4 + 1] * map_scale;
-		int x2 = data["coords"][i * 4 + 2] * map_scale;
-		int y2 = data["coords"][i * 4 + 3] * map_scale;
-
-		// Store the coordinates in the lines array
-		lines[i * 4 + 0] = x1; // x1
-		lines[i * 4 + 1] = y1; // y1
-		lines[i * 4 + 2] = x2; // x2
-		lines[i * 4 + 3] = y2; // y2
-
-		num_lines++;
+	for (auto& val : data["coords"]) {
+		lines.push_back(val.get<int>() * map_scale);
 	}
+	num_lines = lines.size() / 4; // Each line has 4 coordinates
 }
 
 void MapManager::update(ObjectUpdateData data) {
@@ -114,7 +101,7 @@ float project_point(float val, float depth, float scale) {
 	return val / (depth * scale);
 }
 
-int MapManager::render(float* lines_list, uint32_t* colors) {
+int MapManager::render(float* lines_list, uint32_t* colors, int offset) {
 
 	// To render things, the centre of camera is at 0,0, but that translates to 480, 268 on the actual screen.
 	// The raw camera position is fed to update(), and then update sends it through some function for things like
@@ -127,7 +114,7 @@ int MapManager::render(float* lines_list, uint32_t* colors) {
 	float scrn_width = 960.0f;
 	float scrn_height = 536.0f;
 
-	int lines_counter = 0;
+	int lines_counter = offset;
 
 	// Dont want to refactor all of this itll probably get scrapped anyway
 	float camera_x = camera_pos.x;

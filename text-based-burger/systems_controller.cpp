@@ -164,10 +164,10 @@ RenderData SystemsController::render() {
 		}
 	}
 
-	num_lines = map_manager->render(line_verts, line_colors);
-
 	// Render objects
-	num_lines = objects_handler->render(line_verts, line_colors, num_lines);
+	num_lines = objects_handler->render(line_verts, line_colors);
+	num_lines = map_manager->render(line_verts, line_colors, num_lines);
+
 
 	RenderData return_data;
 

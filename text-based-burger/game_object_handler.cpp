@@ -121,19 +121,32 @@ ObjectUpdateReturnData ObjectsHandler::update(ObjectUpdateData data) {
 	return ret_data;
 }
 
-int ObjectsHandler::render(float* lines_list, uint32_t* colors, int offset) {
+int ObjectsHandler::render(float* lines_list, uint32_t* colors) {
 	// Render all the objects
-	
-	// Map rendering and object rendering i guess count lines drawn differently.
-	// This is a well designed system!
-	int counter = offset * 4;
+
+	int counter = 0;
 
 	// Render mouse cursor first
-	counter = mouse_renderer->render(lines_list, counter, colors, vec2(480.0f, 268.0f));
+	int mouse_lines = mouse_renderer->render(lines_list, counter, colors, vec2(480.0f, 268.0f));
+	mouse_lines /= 4;
+
+	// Reserve the first 25 lines to be exclusivly used by the mouse. These 25
+	// lines will not be stenciled like normal because we want to always see the
+	// mouse cursor. The mouse cursor can render to any number of lines within
+	// that number, if it uses <25 lines the rest are left empty.
+	int reserved_lines = 25;
+
+	// Set all lines from mouse_lines to reserved_lines to black in case on this frame
+	// we went from a cursor with a lines to b lines where a > b. Dont need to rouch the 
+	// actual vertex data, since it doesnt matter.
+	for (int i = mouse_lines; i < reserved_lines; i++) {
+		colors[i] = 0; // Black color
+	}
+
+	counter = reserved_lines * 4;
 
 	vec2 camera_pos = camera_controllers[active_camera_controller]->position;
 
-	int cols_counter = 0;
 	for (std::unique_ptr<GameObject>& obj : objects) {
 		counter = obj->render(lines_list, counter, colors, camera_pos);
 	}
