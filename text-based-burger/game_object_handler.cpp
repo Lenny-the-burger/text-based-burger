@@ -99,10 +99,10 @@ ObjectsHandler::ObjectsHandler(string filename, SystemsController& new_controlle
 		}
 	}
 
+	// TODO: Traverse all the meshes and put into the mesh map
+
 	// Give the ref for the meshes to the object io
 	object_io.meshes = &meshes;
-
-	GameObject* test = objects[0].get();
 }
 
 ObjectUpdateReturnData ObjectsHandler::update(ObjectUpdateData data) {

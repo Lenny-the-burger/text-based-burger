@@ -5,6 +5,8 @@
 #include "object_utils.h"
 #include "game_object.h"
 
+#include <unordered_dense.h>
+
 #include <string>
 #include <vector>
 #include <map>
@@ -53,4 +55,6 @@ private:
 
 	// Follows file.folder.mesh, like meshes[file][folder][mesh][1...n]
 	json meshes;
+
+	ankerl::unordered_dense::map<std::string, std::vector<int>*> mesh_map;
 };

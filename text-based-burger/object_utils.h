@@ -6,6 +6,8 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+#include <unordered_dense.h>
+
 #include <vector>
 #include <string>
 #include <map>

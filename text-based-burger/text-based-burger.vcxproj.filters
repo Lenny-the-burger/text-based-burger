@@ -156,13 +156,22 @@
     <None Include="vertex_lines.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="gamedata\maps\testmap_temp.json">
+    <None Include="gamedata\maps\testmap_geo.json">
       <Filter>Game data\maps</Filter>
     </None>
     <None Include="fragment_stencil.glsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="gamedata\ui\gameplay_ui.json">
+      <Filter>Game data\ui</Filter>
+    </None>
+    <None Include="gamedata\maps\none_map.json">
+      <Filter>Game data\maps</Filter>
+    </None>
+    <None Include="gamedata\maps\none_map_geo.json">
+      <Filter>Game data\maps</Filter>
+    </None>
+    <None Include="gamedata\ui\map_selector.json">
       <Filter>Game data\ui</Filter>
     </None>
   </ItemGroup>

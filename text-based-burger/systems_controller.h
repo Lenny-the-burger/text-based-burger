@@ -38,6 +38,8 @@
 #include <map>
 #include <set>
 
+using json = nlohmann::json;
+
 enum ErrorLogType {
 	ERROR_LOG_TYPE_ALL,
 	ERROR_LOG_TYPE_NONE,
@@ -123,8 +125,8 @@ public:
 
 private:
 
-	// Controller error reporter, similar to how the handlers have io classes to report to,
-	// but this just reports errors from the controller itself.
+	// Controller error reporter, similar to how the handlers have io classes to
+	// report to, but this just reports errors from the controller itself.
 	ControllerErrorReporter error_reporter;
 
 	// Handles inputs that are not related to anything, global shortcuts.

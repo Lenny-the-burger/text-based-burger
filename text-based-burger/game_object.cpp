@@ -43,6 +43,8 @@ int GameObject::render(float* lines_list, int offset, uint32_t* colors, vec2 cam
 
 	// TODO: add siatcne to camera check if we need to render at all
 
+	// TODO: Eventually this will use just a flat map
+
 	// Get the mesh from the io using json pointer
 	json::json_pointer p("/" + mesh);
 
