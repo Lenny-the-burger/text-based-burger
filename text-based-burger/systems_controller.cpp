@@ -33,7 +33,7 @@ SystemsController::SystemsController(RenderTargets render_targets, string ui_ent
 	error_reporter = ControllerErrorReporter();
 
 	// Create the default ui handler
-	ui_handlers.push_back(make_unique<UIHandler>(ui_entry, 120, 34, *this));
+	ui_handlers.push_back(make_unique<UIHandler>("gamedata\\ui\\map_selector.json", 120, 34, *this));
 	ui_io.push_back(ui_handlers[0]->get_io());
 
 	// Load the none map by default
@@ -44,11 +44,11 @@ SystemsController::SystemsController(RenderTargets render_targets, string ui_ent
 	// Normally we wouldnt create an objects handler, that would be handled by a script called from the
 	// ui.
 	// TODO: create actual behavior
-	objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\testmap.json", *this);
-	objects_io = objects_handler->get_io();
+	//objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\testmap.json", *this);
+	//objects_io = objects_handler->get_io();
 
 	// same thing with the map manager
-	map_manager = make_unique<MapManager>("gamedata\\maps\\testmap_geo.json");
+	//map_manager = make_unique<MapManager>("gamedata\\maps\\testmap_geo.json");
 
 	// set render targets
 	char_grid = render_targets.char_grid;
@@ -91,7 +91,7 @@ void SystemsController::handle_misc_inputs(GLFWwindow* window) {
 
 		if (error_log_type == ERROR_LOG_TYPE_NONE) {
 			// If no error log is shown, show the UI error log
-			show_error_log(ERROR_LOG_TYPE_UI);
+			show_error_log(ERROR_LOG_TYPE_ALL);
 		}
 		else {
 			// If an error log is already shown, hide it
@@ -111,6 +111,11 @@ void SystemsController::update(GLFWwindow* window, GlobalUpdateData global_updat
 	last_time = glfwGetTime();
 
 	handle_misc_inputs(window); // do this first, this shouldnt have any side effects.
+
+	// If we have an error log open then dont update anything else
+	if (error_log_type != ERROR_LOG_TYPE_NONE) {
+		return;
+	}
 
 	UIUpdateData frame_data;
 	frame_data.mouse_char_x = global_update_data.mouse_pos_char.x;
@@ -195,10 +200,30 @@ void SystemsController::render_log() {
 	vector<int> all_repeats;
 	vector<string> all_errors;
 
+	auto temp_log = ui_handlers[active_ui_handler]->get_io()->get_log();
+	auto temp_repeats = ui_handlers[active_ui_handler]->get_io()->get_repeats();
+
 	switch (error_log_type) {
+	case ERROR_LOG_TYPE_ALL:
+		all_errors = temp_log;
+		all_repeats = temp_repeats;
+
+		temp_log = objects_io->get_log();
+		temp_repeats = objects_io->get_repeats();
+
+		all_errors.insert(all_errors.end(), temp_log.begin(), temp_log.end());
+		all_repeats.insert(all_repeats.end(), temp_repeats.begin(), temp_repeats.end());
+
+		temp_log = error_reporter.get_log();
+		temp_repeats = error_reporter.get_repeats();
+
+		all_errors.insert(all_errors.end(), temp_log.begin(), temp_log.end());
+		all_repeats.insert(all_repeats.end(), temp_repeats.begin(), temp_repeats.end());
+
+		break;
 	case ERROR_LOG_TYPE_UI:
-		all_errors = ui_handlers[active_ui_handler]->get_io()->get_log();
-		all_repeats = ui_handlers[active_ui_handler]->get_io()->get_repeats();
+		all_errors = temp_log;
+		all_repeats = temp_repeats;
 		break;
 	case ERROR_LOG_TYPE_OBJECTS:
 		all_errors = objects_io->get_log();
@@ -274,4 +299,29 @@ void SystemsController::call_script(string script_name, json args) {
 	// This will behave strangely if an inactive ui component attempts to call
 	// a script but that should never happen.
 	script(args, ScriptHandles{ this, ui_io[active_ui_handler], objects_io });
+}
+
+void SystemsController::unload_map() {
+	// Not actually unloads the map, just loads the none map
+	objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\none_map.json", *this);
+	objects_io = objects_handler->get_io();
+
+	map_manager = make_unique<MapManager>("gamedata\\maps\\none_map_geo.json");
+
+	active_ui_handler = UI_HANDLER_ENTRY;
+}
+
+void SystemsController::load_map(string map_name) {
+	// Unload current map
+	unload_map();
+	// Load new map
+	objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\" + map_name + ".json", *this);
+	objects_io = objects_handler->get_io();
+	map_manager = make_unique<MapManager>("gamedata\\maps\\" + map_name + "_geo.json");
+
+	// Load gameplay ui
+	ui_handlers.push_back(make_unique<UIHandler>("gamedata\\ui\\gameplay_ui.json", 120, 34, *this));
+	ui_io.push_back(ui_handlers[UI_HANDLER_GAMEPLAY]->get_io());
+
+	active_ui_handler = UI_HANDLER_GAMEPLAY;
 }

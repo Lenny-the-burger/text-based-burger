@@ -429,9 +429,12 @@ int main() {
 		// Turn on the stencil finally
 		glStencilFunc(GL_EQUAL, 0, 0xFF);
 
-		// Draw regular lines, each has two verts
-		line_shader.setInt("prim_offset", 25);
-		glDrawArrays(GL_LINES, 50, num_lines * 2);
+		// Only bother drawing any other lines if we have more than 25 lines
+		// so we dont waste time dispatching a shader and random bugginess
+		if (num_lines > 25) {
+			line_shader.setInt("prim_offset", 25);
+			glDrawArrays(GL_LINES, 50, num_lines * 2);
+		}
 
 		// Unbind for cleanliness
 		glBindVertexArray(0);

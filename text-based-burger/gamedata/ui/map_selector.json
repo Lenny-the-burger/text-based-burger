@@ -20,7 +20,29 @@
         "x": 1,
         "y": 2
       },
-      "children": []
+      "children": [
+        {
+          "targetname": "map lodaer button 1",
+          "type": "button",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "text": "testmap",
+          "style": {
+            "fg": 255,
+            "bg": 50
+          },
+          "bbox": "text",
+          "fire_only_once": true,
+          "click_script": "map_loader",
+          "click_script_args": {
+            "map_name": "testmap"
+          },
+          "hover_script": "",
+          "hover_args": {}
+        }
+      ]
     }
   ]
 }

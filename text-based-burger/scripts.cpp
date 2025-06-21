@@ -8,6 +8,8 @@
 #include "game_object.h"
 #include "game_object_handler.h"
 
+#include "systems_controller.h"
+
 #include <iostream>
 #include "json.hpp"
 
@@ -18,7 +20,9 @@ Script get_script(std::string name) {
         {"button_test", test_button_script},
 		{"hover_reporter", hover_reporter},
 		{"mousepos", mouse_pos_shower},
-		{"basic_mover", basic_mover}
+		{"basic_mover", basic_mover},
+		{"map_loader", map_loader},
+		{"map_unloader", map_unloader}
     };
 
     auto it = script_map.find(name);
@@ -94,5 +98,19 @@ void basic_mover(json data, ScriptHandles handles) {
 		data["x"].get<float>(),
 		data["y"].get<float>()
 	);
+	return;
+}
+
+void map_loader(json data, ScriptHandles handles) {
+	// Get the map name from the data
+	std::string map_name = data["map_name"].get<std::string>();
+	// Load the map
+	handles.controller->load_map(map_name);
+	return;
+}
+
+void map_unloader(json data, ScriptHandles handles) {
+	// Unload the current map
+	handles.controller->unload_map();
 	return;
 }

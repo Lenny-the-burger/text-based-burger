@@ -16,7 +16,7 @@ UIComponent::UIComponent(UIComponentIO& the_comp_io) : comp_io(the_comp_io) {
 };
 
 UIComponent::UIComponent(json data,pair<int, int> offset, UIComponentIO& the_comp_io) : comp_io(the_comp_io) {
-	targetname = to_string(data["targetname"]); // This should always return a string targetname im not error checking
+	targetname = data["targetname"].get<std::string>(); // This should always return a string targetname im not error checking
 	position = make_pair(data["position"]["x"], data["position"]["y"]);
 	comp_io.register_component(targetname, this);
 
@@ -243,6 +243,9 @@ Button::Button(json data, pair<int, int> offset, UIComponentIO& the_comp_io)
 	click_script_args = data["click_script_args"];
 	hover_script_args = data["hover_script_args"];
 
+	click_script_args["caller"] = targetname;
+	hover_script_args["caller"] = targetname;
+
 	is_click_start_inside = false;
 
 	// Weather we want button to fire only once per click or repeatedly every frame
@@ -333,7 +336,9 @@ void Button::set_hover_script(string script) {
 
 void Button::on_hover() {
 	// Call the hover script
-	comp_io.call_script(hover_script_name, hover_script_args);
+	if (!hover_script_name.empty()) {
+		comp_io.call_script(hover_script_name, hover_script_args);
+	}
 	return;
 }
 
@@ -350,6 +355,10 @@ void Button::on_click() {
 	}
 
 	// Call the click script
+	if (click_script_name.empty()) {
+		comp_io.report_error("ERROR: Button " + targetname + " has no click script set. You should use a label instead");
+		return;
+	}
 	comp_io.call_script(click_script_name, click_script_args);
 
 	if (fire_only_once) {

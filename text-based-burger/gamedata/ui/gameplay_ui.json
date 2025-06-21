@@ -51,6 +51,25 @@
         "fg": 127,
         "bg": 0
       }
+    },
+    {
+      "targetname": "map unloader button",
+      "type": "button",
+      "position": {
+        "x": 100,
+        "y": 30
+      },
+      "text": "Exit map",
+      "style": {
+        "fg": 255,
+        "bg": 50
+      },
+      "bbox": "text",
+      "fire_only_once": true,
+      "click_script": "map_unloader",
+      "click_script_args": {},
+      "hover_script": "",
+      "hover_args": {}
     }
   ]
 }

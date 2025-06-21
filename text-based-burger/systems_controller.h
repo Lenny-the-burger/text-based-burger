@@ -40,6 +40,10 @@
 
 using json = nlohmann::json;
 
+// Reserved ui handler spots
+#define UI_HANDLER_ENTRY 0
+#define UI_HANDLER_GAMEPLAY 1
+
 enum ErrorLogType {
 	ERROR_LOG_TYPE_ALL,
 	ERROR_LOG_TYPE_NONE,
@@ -117,11 +121,11 @@ public:
 	
 	void call_script(std::string script_name, json args);
 
-	// Unload current map (if there is one) and load a new one
-	void load_map(std::string map_name);
-	 
 	// Unload the current map, if there is one (this also gets called when loading a new map)
 	void unload_map();
+
+	// Unload current map (if there is one) and load a new one
+	void load_map(std::string map_name);
 
 private:
 
@@ -142,7 +146,7 @@ private:
 	// The ui handler
 	std::vector<std::unique_ptr<UIHandler>> ui_handlers;
 	std::vector<UIComponentIO*> ui_io;
-	int active_ui_handler = 0;
+	int active_ui_handler = UI_HANDLER_ENTRY;
 
 	// The objects handler
 	std::unique_ptr<ObjectsHandler> objects_handler;

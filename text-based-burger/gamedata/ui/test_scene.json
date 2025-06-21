@@ -91,7 +91,7 @@
         "targetname": "text1",
         "text": "Hello, World!"
       },
-      "hover_script": "fart",
+      "hover_script": "",
       "hover_args": {
         "fg": 20,
         "bg": 20,
