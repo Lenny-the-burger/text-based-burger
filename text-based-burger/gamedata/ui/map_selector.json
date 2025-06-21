@@ -1,0 +1,26 @@
+{
+  "root": [
+    {
+      "targetname": "title",
+      "type": "label",
+      "position": {
+        "x": 1,
+        "y": 1
+      },
+      "text": "Select map",
+      "style": {
+        "fg": 255,
+        "bg": 0
+      }
+    },
+    {
+      "targetname": "maps list container",
+      "type": "container",
+      "position": {
+        "x": 1,
+        "y": 2
+      },
+      "children": []
+    }
+  ]
+}

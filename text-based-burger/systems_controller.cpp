@@ -36,6 +36,11 @@ SystemsController::SystemsController(RenderTargets render_targets, string ui_ent
 	ui_handlers.push_back(make_unique<UIHandler>(ui_entry, 120, 34, *this));
 	ui_io.push_back(ui_handlers[0]->get_io());
 
+	// Load the none map by default
+	objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\none_map.json", *this);
+	objects_io = objects_handler->get_io();
+	map_manager = make_unique<MapManager>("gamedata\\maps\\none_map_geo.json");
+
 	// Normally we wouldnt create an objects handler, that would be handled by a script called from the
 	// ui.
 	// TODO: create actual behavior
@@ -43,7 +48,7 @@ SystemsController::SystemsController(RenderTargets render_targets, string ui_ent
 	objects_io = objects_handler->get_io();
 
 	// same thing with the map manager
-	map_manager = make_unique<MapManager>("gamedata\\maps\\testmap_temp.json");
+	map_manager = make_unique<MapManager>("gamedata\\maps\\testmap_geo.json");
 
 	// set render targets
 	char_grid = render_targets.char_grid;
