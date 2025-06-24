@@ -37,16 +37,16 @@ public:
 	std::vector<float> lines_z;
 
 	// Per lines colors. 
-	std::vector<float> colors;
+	std::vector<int> colors;
 
 	// Per line line types.
-	std::vector<float> types;
+	std::vector<int> types;
 
 	// Per line misc flags.
-	std::vector<float> misc_flags;
+	std::vector<int> misc_flags;
 
 	// Per line brush ids. 2^32 means no brush.
-	std::vector<float> brush_ids;
+	std::vector<int> brush_ids;
 
 private:
 

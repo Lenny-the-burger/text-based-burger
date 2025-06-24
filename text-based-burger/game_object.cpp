@@ -133,8 +133,7 @@ MouseRenderer::MouseRenderer(ObjectIO& io) : GameObject(json::object(
 }
 
 void MouseRenderer::update(ObjectUpdateData data) {
-	// TODO: make all pointer meshes point from 0,0 so i dont have to do -19 here.
-	position = vec2(data.mouse_pos.x, 536.0f - data.mouse_pos.y - 0.0f);
+	position = vec2(data.mouse_pos.x, 536.0f - data.mouse_pos.y);
 
 	if (data.is_clicking) {
 		mouse_state = MOUSE_CLICKING;
