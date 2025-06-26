@@ -32,14 +32,23 @@ vector<int> ControllerErrorReporter::get_repeats() {
 SystemsController::SystemsController(RenderTargets render_targets, string ui_entry) {
 	error_reporter = ControllerErrorReporter();
 
-	// Create the default ui handler
-	ui_handlers.push_back(make_unique<UIHandler>("gamedata\\ui\\map_selector.json", 120, 34, *this));
+	//// Create the default ui handler
+	//ui_handlers.push_back(make_unique<UIHandler>("gamedata\\ui\\map_selector.json", 120, 34, *this));
+	//ui_io.push_back(ui_handlers[0]->get_io());
+
+	//// Load the none map by default
+	//objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\none_map.json", *this);
+	//objects_io = objects_handler->get_io();
+	//map_manager = make_unique<MapManager>("gamedata\\maps\\none_map_geo.json");
+
+	// TEMP: Load testmap for quadtree development instead of usual nonemap
+	ui_handlers.push_back(make_unique<UIHandler>("gamedata\\ui\\gameplay_ui.json", 120, 34, *this));
 	ui_io.push_back(ui_handlers[0]->get_io());
 
-	// Load the none map by default
-	objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\none_map.json", *this);
+	// Load the test map
+	objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\testmap.json", *this);
 	objects_io = objects_handler->get_io();
-	map_manager = make_unique<MapManager>("gamedata\\maps\\none_map_geo.json");
+	map_manager = make_unique<MapManager>("gamedata\\maps\\testmap_geo.json");
 
 	// set render targets
 	char_grid = render_targets.char_grid;
