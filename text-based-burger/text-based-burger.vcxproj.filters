@@ -126,6 +126,9 @@
     <ClCompile Include="systems_controller.cpp">
       <Filter>src\misc\source</Filter>
     </ClCompile>
+    <ClCompile Include="map_utils.cpp">
+      <Filter>src\misc\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -243,6 +246,12 @@
       <Filter>src\world\header</Filter>
     </ClInclude>
     <ClInclude Include="systems_controller.h">
+      <Filter>src\misc\header</Filter>
+    </ClInclude>
+    <ClInclude Include="map_utils.h">
+      <Filter>src\misc\header</Filter>
+    </ClInclude>
+    <ClInclude Include="math_utils.h">
       <Filter>src\misc\header</Filter>
     </ClInclude>
   </ItemGroup>

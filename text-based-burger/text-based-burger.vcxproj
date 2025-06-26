@@ -140,6 +140,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map_manager.cpp" />
+    <ClCompile Include="map_utils.cpp" />
     <ClCompile Include="object_utils.cpp" />
     <ClCompile Include="scripts.cpp" />
     <ClCompile Include="shader.cpp" />
@@ -182,6 +183,8 @@
     <ClInclude Include="hash_fnv1a.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="map_manager.h" />
+    <ClInclude Include="map_utils.h" />
+    <ClInclude Include="math_utils.h" />
     <ClInclude Include="object_utils.h" />
     <ClInclude Include="scripts.h" />
     <ClInclude Include="shader.h" />
