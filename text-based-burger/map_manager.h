@@ -6,6 +6,18 @@
 
 #include "object_utils.h"
 
+// Lightweight struct to pass when someone wants access to the map geometry
+struct MapGeometry {
+	int num_lines;
+
+	std::vector<float>* lines;
+	std::vector<float>* lines_z;
+	std::vector<int>* colors;
+	std::vector<int>* types;
+	std::vector<int>* misc_flags;
+	std::vector<int>* brush_ids;
+};
+
 class MapManager {
 public:
 	// Constructor
@@ -17,9 +29,9 @@ public:
 	// Get the error log
 	std::vector<std::string> get_error_log();
 
-	// There should probably be a more elegant solution to acessing map geometry
-	// information, but map_manager.lines[n] is probably fine and im not writing
-	// 10 different getters. were only passing around pointers anyway.
+	MapGeometry get_geometry();
+
+private:
 
 	// Master line counter
 	int num_lines;
@@ -47,8 +59,6 @@ public:
 
 	// Per line brush ids. 2^32 means no brush.
 	std::vector<int> brush_ids;
-
-private:
 
 	// Error log
 	std::vector<std::string> error_log;

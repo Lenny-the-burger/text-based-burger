@@ -2,35 +2,15 @@
 
 using namespace std;
 
-ControllerErrorReporter::ControllerErrorReporter() {
-	// Reporters will always start with an empty log
-	error_log = vector<string>();
-	return;
-}
-
-void ControllerErrorReporter::report_error(string error) {
-	// Check if the previous reported error is the same as the current one
-	if (!error_log.empty() && error_log.back() == error) {
-		// If it is, increment the repeat counter
-		repeats.back()++;
-		return;
-	}
-	// For now only report string errors
-	error_log.push_back(error);
-	repeats.push_back(0);
-	return;
-}
-
-vector<string> ControllerErrorReporter::get_log() {
-	return error_log;
-}
-
-vector<int> ControllerErrorReporter::get_repeats() {
-	return repeats;
-}
-
 SystemsController::SystemsController(RenderTargets render_targets, string ui_entry) {
-	error_reporter = ControllerErrorReporter();
+	// You get an error reporter and you get an error reporter, everybody gets an error reporter!
+	controller_error_reporter = ErrorReporter();
+	script_error_reporter = ErrorReporter();
+	threading_error_reporter = ErrorReporter();
+
+	// Init threading stuff, this should probably be in the initializer list
+	// instead of unique ptrs but whatever
+	long_thread_controller = make_unique<LongThreadController>(threading_error_reporter);
 
 	//// Create the default ui handler
 	//ui_handlers.push_back(make_unique<UIHandler>("gamedata\\ui\\map_selector.json", 120, 34, *this));
@@ -145,8 +125,9 @@ void SystemsController::update(GLFWwindow* window, GlobalUpdateData global_updat
 	// Update camera position from ovjects handler
 	update_data.camera_pos = return_data.camera_pos;
 
-	// Render map first
 	map_manager->update(update_data);
+
+	long_thread_controller->update();
 }
 
 RenderData SystemsController::render() {
@@ -214,13 +195,26 @@ void SystemsController::render_log() {
 		all_errors.insert(all_errors.end(), temp_log.begin(), temp_log.end());
 		all_repeats.insert(all_repeats.end(), temp_repeats.begin(), temp_repeats.end());
 
-		temp_log = error_reporter.get_log();
-		temp_repeats = error_reporter.get_repeats();
+		temp_log = controller_error_reporter.get_log();
+		temp_repeats = controller_error_reporter.get_repeats();
+
+		all_errors.insert(all_errors.end(), temp_log.begin(), temp_log.end());
+		all_repeats.insert(all_repeats.end(), temp_repeats.begin(), temp_repeats.end());
+
+		temp_log = script_error_reporter.get_log();
+		temp_repeats = script_error_reporter.get_repeats();
+
+		all_errors.insert(all_errors.end(), temp_log.begin(), temp_log.end());
+		all_repeats.insert(all_repeats.end(), temp_repeats.begin(), temp_repeats.end());
+
+		temp_log = threading_error_reporter.get_log();
+		temp_repeats = threading_error_reporter.get_repeats();
 
 		all_errors.insert(all_errors.end(), temp_log.begin(), temp_log.end());
 		all_repeats.insert(all_repeats.end(), temp_repeats.begin(), temp_repeats.end());
 
 		break;
+
 	case ERROR_LOG_TYPE_UI:
 		all_errors = temp_log;
 		all_repeats = temp_repeats;
@@ -230,8 +224,8 @@ void SystemsController::render_log() {
 		all_repeats = objects_io->get_repeats();
 		break;
 	case ERROR_LOG_TYPE_CONTROLLER:
-		all_errors = error_reporter.get_log();
-		all_repeats = error_reporter.get_repeats();
+		all_errors = controller_error_reporter.get_log();
+		all_repeats = controller_error_reporter.get_repeats();
 		break;
 	default:
 		// Uh oh you set an invalid error log type
@@ -293,12 +287,18 @@ void SystemsController::render_log() {
 void SystemsController::call_script(string script_name, json args) {
 	Script script = get_script(script_name);
 	if (script == nullptr) {
-		error_reporter.report_error("ERROR: " + to_string(args["caller"]) + " tried to call a non existant script " + script_name);
+		controller_error_reporter.report_error("ERROR: " + to_string(args["caller"]) + " tried to call a non existant script " + script_name);
 		return;
 	}
 	// This will behave strangely if an inactive ui component attempts to call
-	// a script but that should never happen.
-	script(args, ScriptHandles{ this, ui_io[active_ui_handler], objects_io });
+	// a script but that should not be possible.
+	script(args, ScriptHandles{ 
+		this, 
+		ui_io[active_ui_handler], 
+		objects_io, 
+		map_manager.get(),
+		long_thread_controller.get()
+	});
 }
 
 void SystemsController::unload_map() {
@@ -324,4 +324,8 @@ void SystemsController::load_map(string map_name) {
 	ui_io.push_back(ui_handlers[UI_HANDLER_GAMEPLAY]->get_io());
 
 	active_ui_handler = UI_HANDLER_GAMEPLAY;
+}
+
+void SystemsController::clean_up_threads() {
+	long_thread_controller->clean_up_threads();
 }

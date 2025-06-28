@@ -452,6 +452,7 @@ int main() {
 		glfwPollEvents();
 	}
 
+	systems_controller->clean_up_threads();
 	glfwTerminate();
 	return 0;
 

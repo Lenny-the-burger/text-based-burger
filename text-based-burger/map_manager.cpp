@@ -1,7 +1,7 @@
 #include "map_manager.h"
 
 #include "json.hpp"
-#include <fstream> // Include this header to use ifstream
+#include <fstream> // Include this header to use ifstream 
 
 using namespace std;
 using json = nlohmann::json; // for convenience
@@ -85,6 +85,20 @@ MapManager::MapManager(std::string filename) {
 
 void MapManager::update(ObjectUpdateData data) {
 	camera_pos = data.camera_pos;
+}
+
+MapGeometry MapManager::get_geometry() {
+	MapGeometry geom;
+
+	geom.num_lines = num_lines;
+	geom.lines = &lines;
+	geom.lines_z = &lines_z;
+	geom.colors = &colors;
+	geom.types = &types;
+	geom.misc_flags = &misc_flags;
+	geom.brush_ids = &brush_ids;
+
+	return geom;
 }
 
 float fov_scale(float fov) {

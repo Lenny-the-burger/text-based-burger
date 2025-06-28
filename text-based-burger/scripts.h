@@ -7,6 +7,10 @@ using json = nlohmann::json;
 #include <string>
 #include <unordered_map>
 
+// Includes for script only interfaces. This includes basically everything that
+// doesnt run on the main thread.
+#include "map_utils.h"
+
 // Various things that scripts might need
 class UIComponent;
 class UIComponentIO;
@@ -15,13 +19,20 @@ class UIHandler;
 class GameObject;
 class ObjectsHandler;
 class ObjectIO;
+class MapManager;
 
 class SystemsController;
 
+class LongThreadController;
+
 struct ScriptHandles {
 	SystemsController* controller;
+
 	UIComponentIO* ui_io;
 	ObjectIO* obj_io;
+	MapManager* map_manager;
+
+	LongThreadController* long_thread_controller;
 };
 
 // Scripts are statically registered C++ functions that act as generic, global subroutines.
@@ -44,10 +55,17 @@ struct ScriptHandles {
 //
 // The 'data' parameter is an arbitrary JSON payload that the caller provides,
 // allowing for flexible argument passing without requiring a fixed function interface.
+//
+// When calling scripts you usually call some call_script() function on your
+// local io class, so you dont need to worry about assigning the handler
+// yourself, this is done by the systems controller.
 using Script = void(*)(const json data, ScriptHandles handles);
 
 // Get the function pointer for the given script name
 Script get_script(std::string name);
+
+// If a script needs to call another script, or send off a lambda to a thread
+void call_script(std::string script_name, json args, ScriptHandles handles);
 
 void test_button_script(json data, ScriptHandles handles);
 void hover_reporter(json data, ScriptHandles handles);
@@ -58,3 +76,6 @@ void basic_mover(json data, ScriptHandles handles);
 
 void map_loader(json data, ScriptHandles handles);
 void map_unloader(json data, ScriptHandles handles);
+
+void build_bvh(json data, ScriptHandles handles);
+void bvh_build_done(json data, ScriptHandles handles);

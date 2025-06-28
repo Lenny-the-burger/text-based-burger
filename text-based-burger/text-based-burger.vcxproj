@@ -152,6 +152,7 @@
     <ClCompile Include="third-party\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="third-party\imgui\imgui_tables.cpp" />
     <ClCompile Include="third-party\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="threading_utils.cpp" />
     <ClCompile Include="ui_handler.cpp" />
     <ClCompile Include="ui_systems.cpp" />
   </ItemGroup>
@@ -178,6 +179,7 @@
   <ItemGroup>
     <ClInclude Include="char_lut.h" />
     <ClInclude Include="component.h" />
+    <ClInclude Include="error_reporter.hpp" />
     <ClInclude Include="font_loader.h" />
     <ClInclude Include="game_object_handler.h" />
     <ClInclude Include="hash_fnv1a.h" />
@@ -199,6 +201,7 @@
     <ClInclude Include="third-party\imgui\imstb_rectpack.h" />
     <ClInclude Include="third-party\imgui\imstb_textedit.h" />
     <ClInclude Include="third-party\imgui\imstb_truetype.h" />
+    <ClInclude Include="threading_utils.h" />
     <ClInclude Include="ui_handler.h" />
     <ClInclude Include="ui_systems.h" />
   </ItemGroup>

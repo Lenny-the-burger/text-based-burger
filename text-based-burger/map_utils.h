@@ -4,6 +4,8 @@
 
 #include <vector>
 
+struct LongThreadState;
+
 // Map utils, this is mostly used for building the map in the editor.
 
 enum LineTypes {
@@ -32,9 +34,12 @@ enum BVHType {
 	BVH_COSMETIC,
 };
 
+// Functions running on long threads can only have one input
+struct BVInput {
+	std::vector<float>* lines; // Coordinates of the lines
+	std::vector<int>* types; // Types of the lines
+	BVHType build_type; // Type of BVH to build
+};
+
 // Build bvh for given lines.
-std::vector<MapBvNode> buildBVH(
-	const std::vector<float>& line_coords,
-	std::vector<int> types,
-	BVHType build_type
-);
+std::vector<MapBvNode> buildBVH(BVInput input, LongThreadState& tstate);

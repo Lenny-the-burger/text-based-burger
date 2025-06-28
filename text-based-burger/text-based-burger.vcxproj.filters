@@ -129,6 +129,9 @@
     <ClCompile Include="map_utils.cpp">
       <Filter>src\misc\source</Filter>
     </ClCompile>
+    <ClCompile Include="threading_utils.cpp">
+      <Filter>src\misc\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -252,6 +255,12 @@
       <Filter>src\misc\header</Filter>
     </ClInclude>
     <ClInclude Include="math_utils.h">
+      <Filter>src\misc\header</Filter>
+    </ClInclude>
+    <ClInclude Include="threading_utils.h">
+      <Filter>src\misc\header</Filter>
+    </ClInclude>
+    <ClInclude Include="error_reporter.hpp">
       <Filter>src\misc\header</Filter>
     </ClInclude>
   </ItemGroup>

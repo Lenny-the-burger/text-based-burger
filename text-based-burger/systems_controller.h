@@ -22,11 +22,14 @@
 // ui handler it should be done with a script.
 
 // Include everything
+#include "error_reporter.hpp"
+
 #include "ui_handler.h"
 #include "ui_systems.h"
 #include "game_object_handler.h"
 #include "object_utils.h"
 #include "map_manager.h"
+#include "threading_utils.h"
 
 #include "scripts.h"
 
@@ -49,7 +52,8 @@ enum ErrorLogType {
 	ERROR_LOG_TYPE_NONE,
 	ERROR_LOG_TYPE_UI,
 	ERROR_LOG_TYPE_OBJECTS,
-	ERROR_LOG_TYPE_CONTROLLER
+	ERROR_LOG_TYPE_CONTROLLER,
+	ERROR_LOG_TYPE_THREAD
 };
 
 // Pass this to the systems controller to set up where you want it to render stuff to
@@ -90,21 +94,6 @@ struct GlobalUpdateData {
 	vec2 mouse_pos_char;
 };
 
-class ControllerErrorReporter {
-public:
-	// Constructor
-	ControllerErrorReporter();
-	// Report an error
-	void report_error(std::string error);
-	// Get the error log
-	std::vector<std::string> get_log();
-	std::vector<int> get_repeats();
-
-private:
-	std::vector<std::string> error_log;
-	std::vector<int> repeats;
-};
-
 class SystemsController {
 public:
 	// Constructor
@@ -127,11 +116,17 @@ public:
 	// Unload current map (if there is one) and load a new one
 	void load_map(std::string map_name);
 
+	// This is public so scripts can acess it as they are not managed by anything
+	ErrorReporter script_error_reporter;
+
+	// End all threads on window close
+	void clean_up_threads();
+
 private:
 
 	// Controller error reporter, similar to how the handlers have io classes to
 	// report to, but this just reports errors from the controller itself.
-	ControllerErrorReporter error_reporter;
+	ErrorReporter controller_error_reporter;
 
 	// Handles inputs that are not related to anything, global shortcuts.
 	// This probably will not make it into production only really useful for 
@@ -167,4 +162,10 @@ private:
 	uint32_t* line_colors;
 
 	int num_lines = 0;
+
+	// The threading error reporter
+	ErrorReporter threading_error_reporter;
+
+	// Long thread controller
+	std::unique_ptr<LongThreadController> long_thread_controller;
 };

@@ -53,21 +53,44 @@
       }
     },
     {
-      "targetname": "map unloader button",
+      "targetname": "test bton",
       "type": "button",
       "position": {
         "x": 100,
         "y": 30
       },
-      "text": "Exit map",
+      "text": "Build BVH",
       "style": {
         "fg": 255,
         "bg": 50
       },
       "bbox": "text",
       "fire_only_once": true,
-      "click_script": "map_unloader",
-      "click_script_args": {},
+      "click_script": "build_bvh",
+      "click_script_args": {
+        "type": "collision"
+      },
+      "hover_script": "",
+      "hover_args": {}
+    },
+    {
+      "targetname": "test bton2",
+      "type": "button",
+      "position": {
+        "x": 100,
+        "y": 31
+      },
+      "text": "Build BVH 2",
+      "style": {
+        "fg": 255,
+        "bg": 50
+      },
+      "bbox": "text",
+      "fire_only_once": true,
+      "click_script": "build_bvh",
+      "click_script_args": {
+        "type": "cosmetic"
+      },
       "hover_script": "",
       "hover_args": {}
     }
