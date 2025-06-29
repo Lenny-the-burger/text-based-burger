@@ -171,7 +171,6 @@
     <None Include="gamedata\ui\gameplay_ui.json" />
     <None Include="gamedata\ui\map_selector.json" />
     <None Include="gamedata\ui\test_scene.json" />
-    <None Include="LISCENCE" />
     <None Include="packages.config" />
     <None Include="vertex.glsl" />
     <None Include="vertex_lines.glsl" />
@@ -206,8 +205,10 @@
     <ClInclude Include="ui_systems.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\LICENSE.txt" />
     <Text Include="gamedata\fonts\font.txt" />
     <Text Include="gamedata\fonts\font2.txt" />
+    <Text Include="thid_party_licenses.txt" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="engine.natvis" />

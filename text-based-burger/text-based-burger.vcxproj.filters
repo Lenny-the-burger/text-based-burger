@@ -135,7 +135,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="LISCENCE" />
     <None Include="..\README.MD" />
     <None Include="..\.gitignore" />
     <None Include="fragment.glsl">
@@ -271,6 +270,8 @@
     <Text Include="gamedata\fonts\font2.txt">
       <Filter>Game data\fonts</Filter>
     </Text>
+    <Text Include="thid_party_licenses.txt" />
+    <Text Include="..\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="engine.natvis" />
