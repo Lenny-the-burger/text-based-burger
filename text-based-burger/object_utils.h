@@ -59,6 +59,8 @@ public:
 	// Points to the meshes data. The actual one is held by the handler
 	json* meshes;
 
+	ankerl::unordered_dense::map<std::string, std::vector<int>*>* mesh_map;
+
 private:
 	std::vector<std::string> error_log;
 	std::vector<int> repeats;

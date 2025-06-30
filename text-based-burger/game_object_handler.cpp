@@ -99,7 +99,7 @@ ObjectsHandler::ObjectsHandler(string filename, SystemsController& new_controlle
 		}
 	}
 
-	// TODO: Traverse all the meshes and put into the mesh map
+	// TODO: Use the hash map instead
 
 	// Give the ref for the meshes to the object io
 	object_io.meshes = &meshes;
