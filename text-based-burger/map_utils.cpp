@@ -70,6 +70,7 @@ int buildBVH(BVInput& input, LongThreadState& tstate) {
 		MapBvNode new_node;
 		new_node.from = maxv(cur_node->from, min_node->from);
 		new_node.to = minv(cur_node->to, min_node->to);
+		new_node.mid = midv(new_node.from, new_node.to);
 		new_node.l_child = cur_idx;
 		new_node.r_child = min_area_idx;
 		new_node.layer = max(cur_node->layer, min_node->layer) + 1;
