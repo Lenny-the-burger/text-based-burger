@@ -2,6 +2,7 @@
 
 #include "json.hpp"
 #include <fstream> // Include this header to use ifstream 
+#include <iostream>
 
 using namespace std;
 using json = nlohmann::json; // for convenience
@@ -81,24 +82,27 @@ MapManager::MapManager(std::string filename) {
 		lines.push_back(val.get<int>() * map_scale);
 	}
 	num_lines = lines.size() / 4; // Each line has 4 coordinates
+
+	geometry = MapGeometry();
+
+	geometry.num_lines = num_lines;
+	geometry.lines = &lines;
+	geometry.lines_z = &lines_z;
+	geometry.colors = &colors;
+	geometry.types = &types;
+	geometry.misc_flags = &misc_flags;
+	geometry.brush_ids = &brush_ids;
+
+	geometry.bvh_collision_nodes = &bvh_collision_nodes;
+	geometry.bvh_cosmetic_nodes = &bvh_cosmetic_nodes;
 }
 
 void MapManager::update(ObjectUpdateData data) {
 	camera_pos = data.camera_pos;
 }
 
-MapGeometry MapManager::get_geometry() {
-	MapGeometry geom;
-
-	geom.num_lines = num_lines;
-	geom.lines = &lines;
-	geom.lines_z = &lines_z;
-	geom.colors = &colors;
-	geom.types = &types;
-	geom.misc_flags = &misc_flags;
-	geom.brush_ids = &brush_ids;
-
-	return geom;
+MapGeometry* MapManager::get_geometry() {
+	return &geometry;
 }
 
 float fov_scale(float fov) {
@@ -230,4 +234,60 @@ int MapManager::render(float* lines_list, uint32_t* colors, int offset) {
 	// because not the entire map may be rendered at once, but also because of
 	// parralax lines.
 	return lines_counter;
+}
+
+void MapManager::toggle_render_bvh() {
+	draw_bvh = !draw_bvh;
+	std::cout << "Toggled draw bvh to " << (draw_bvh ? "true" : "false") << std::endl;
+}
+
+int MapManager::render_bvh(float* lines_list, uint32_t* colors, int offset) {
+	if (!draw_bvh) {
+		return offset; // Nothing to render
+	}
+	int lines_counter = offset;
+	// Render collision BVH
+	for (const auto& node : bvh_collision_nodes) {
+		// Draw the bounds of the node
+		vec2 from = node.from - camera_pos;
+		vec2 to = node.to - camera_pos;
+
+		// Right vertical
+		lines_list[lines_counter * 4 + 0] = to.x;
+		lines_list[lines_counter * 4 + 1] = from.y;
+		lines_list[lines_counter * 4 + 2] = to.x;
+		lines_list[lines_counter * 4 + 3] = to.y;
+		colors[lines_counter++] = 255;
+
+		// Bottom horizontal
+		lines_list[lines_counter * 4 + 0] = to.x;
+		lines_list[lines_counter * 4 + 1] = from.y;
+		lines_list[lines_counter * 4 + 2] = from.x;
+		lines_list[lines_counter * 4 + 3] = from.y;
+		colors[lines_counter++] = 255;
+
+		// Left vertical
+		lines_list[lines_counter * 4 + 0] = from.x;
+		lines_list[lines_counter * 4 + 1] = from.y;
+		lines_list[lines_counter * 4 + 2] = from.x;
+		lines_list[lines_counter * 4 + 3] = to.y;
+		colors[lines_counter++] = 255;
+
+		// Top horizontal
+		lines_list[lines_counter * 4 + 0] = from.x;
+		lines_list[lines_counter * 4 + 1] = to.y;
+		lines_list[lines_counter * 4 + 2] = to.x;
+		lines_list[lines_counter * 4 + 3] = to.y;
+		colors[lines_counter++] = 255;
+	}
+
+	/*for (int i = 0; i < lines_counter / 2; i++) {
+		std::cout <<
+			lines_list[i * 4 + 0] << "," <<
+			lines_list[i * 4 + 1] << "," << "\n" <<
+			lines_list[i * 4 + 2] << "," <<
+			lines_list[i * 4 + 3] << "," << "\n";
+	}*/
+
+	return lines_counter; // Return how many lines we rendered
 }

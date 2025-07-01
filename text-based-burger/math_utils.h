@@ -138,6 +138,18 @@ inline float dot(vec2 a, vec2 b) {
 inline float cross(vec2 a, vec2 b) {
 	return a.cross(b);
 }
+// Peicewise min
+inline vec2 minv(vec2 a, vec2 b) {
+	return vec2(std::min(a.x, b.x), std::min(a.y, b.y));
+}
+// Peicewise max
+inline vec2 maxv(vec2 a, vec2 b) {
+	return vec2(std::max(a.x, b.x), std::max(a.y, b.y));
+}
+inline vec2 midv(vec2 a, vec2 b) {
+	// Midpoint
+	return vec2((a.x + b.x) / 2.0f, (a.y + b.y) / 2.0f);
+}
 
 
 

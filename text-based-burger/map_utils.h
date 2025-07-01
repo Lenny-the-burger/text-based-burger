@@ -3,6 +3,7 @@
 #include "math_utils.h"
 
 #include <vector>
+#include <set>
 
 struct LongThreadState;
 
@@ -19,7 +20,6 @@ struct MapBvNode {
 	// Bounds
 	vec2 from;
 	vec2 to;
-	vec2 centre;
 
 	int r_child = -1;
 	int l_child = -1;
@@ -36,10 +36,13 @@ enum BVHType {
 
 // Functions running on long threads can only have one input
 struct BVInput {
-	std::vector<float>* lines; // Coordinates of the lines
-	std::vector<int>* types; // Types of the lines
-	BVHType build_type; // Type of BVH to build
+	std::vector<float>* lines;
+	std::vector<int>* types;
+	BVHType build_type;
+
+	// Set this to what you want to work on
+	std::vector<MapBvNode>* bvh_nodes;
 };
 
 // Build bvh for given lines.
-std::vector<MapBvNode> buildBVH(BVInput input, LongThreadState& tstate);
+int buildBVH(BVInput& input, LongThreadState& tstate);

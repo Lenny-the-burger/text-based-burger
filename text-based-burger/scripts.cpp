@@ -26,7 +26,8 @@ Script get_script(std::string name) {
 		{"map_loader", map_loader},
 		{"map_unloader", map_unloader},
 		{"build_bvh", build_bvh},
-		{"bvh_build_done", bvh_build_done}
+		{"bvh_build_done", bvh_build_done},
+		{"toggle_show_bvh", toggle_show_bvh},
     };
 
     auto it = script_map.find(name);
@@ -131,11 +132,11 @@ void map_unloader(json data, ScriptHandles handles) {
 void build_bvh(json data, ScriptHandles handles) {
 	// Compile inputs
 	BVInput input;
-	MapGeometry map_geom = handles.map_manager->get_geometry();
+	MapGeometry* map_geom = handles.map_manager->get_geometry();
 
 	// We should realy just pass the MapGeometry directly but whatever
-	input.lines = map_geom.lines;
-	input.types = map_geom.types;
+	input.lines = map_geom->lines;
+	input.types = map_geom->types;
 
 	std::unordered_map<std::string, BVHType> bvh_type_map = {
 		{"collision", BVH_COLLISION},
@@ -149,6 +150,15 @@ void build_bvh(json data, ScriptHandles handles) {
 	else {
 		handles.controller->script_error_reporter.report_error("ERROR: Requested invalid BVH type to build '" + type_str + "'");
 		return;
+	}
+
+	switch (input.build_type) {
+	case BVH_COLLISION:
+		input.bvh_nodes = map_geom->bvh_collision_nodes;
+		break;
+	case BVH_COSMETIC:
+		input.bvh_nodes = map_geom->bvh_cosmetic_nodes;
+		break;
 	}
 
 	// Launch a long thread to build the bvh using map utils buildBVH()
@@ -174,5 +184,11 @@ void bvh_build_done(json data, ScriptHandles handles) {
 	// We did it
 	std::cout << "BVH build done for type: " << data["type"].get<std::string>() << std::endl;
 
+	return;
+}
+
+void toggle_show_bvh(json data, ScriptHandles handles) {
+	// Toggle the draw bvh flag in the map manager
+	handles.map_manager->toggle_render_bvh();
 	return;
 }

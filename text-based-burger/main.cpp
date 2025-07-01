@@ -69,11 +69,11 @@ void processInput(GLFWwindow* window) {
 	int offset_x = (window_width - 960 * scale) / 2;
 
 	native_x = (xpos - offset_x) / scale;
-	native_y = (ypos - 0) / scale;
+	native_y = (ypos - 0)        / scale;
 
 	// Convert to character space
 	mouse_char_x = (int)(native_x / CHAR_WIDTH);
-	mouse_char_y = (int)(native_y / CHAR_HEIGHT);
+	mouse_char_y = (int)((native_y + 8) / CHAR_HEIGHT); // shader offset
 }
 
 void draw_imgui() {

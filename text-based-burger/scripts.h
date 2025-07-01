@@ -79,3 +79,4 @@ void map_unloader(json data, ScriptHandles handles);
 
 void build_bvh(json data, ScriptHandles handles);
 void bvh_build_done(json data, ScriptHandles handles);
+void toggle_show_bvh(json data, ScriptHandles handles);

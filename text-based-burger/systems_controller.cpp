@@ -153,6 +153,9 @@ RenderData SystemsController::render() {
 	// Render objects
 	num_lines = objects_handler->render(line_verts, line_colors);
 	num_lines = map_manager->render(line_verts, line_colors, num_lines);
+	
+	// Render the bvh if needed
+	num_lines = map_manager->render_bvh(line_verts, line_colors, num_lines);
 
 
 	RenderData return_data;

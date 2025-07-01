@@ -126,11 +126,11 @@
     <ClCompile Include="systems_controller.cpp">
       <Filter>src\misc\source</Filter>
     </ClCompile>
-    <ClCompile Include="map_utils.cpp">
-      <Filter>src\misc\source</Filter>
-    </ClCompile>
     <ClCompile Include="threading_utils.cpp">
       <Filter>src\misc\source</Filter>
+    </ClCompile>
+    <ClCompile Include="map_utils.cpp">
+      <Filter>src\world\source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -250,9 +250,6 @@
     <ClInclude Include="systems_controller.h">
       <Filter>src\misc\header</Filter>
     </ClInclude>
-    <ClInclude Include="map_utils.h">
-      <Filter>src\misc\header</Filter>
-    </ClInclude>
     <ClInclude Include="math_utils.h">
       <Filter>src\misc\header</Filter>
     </ClInclude>
@@ -261,6 +258,9 @@
     </ClInclude>
     <ClInclude Include="error_reporter.hpp">
       <Filter>src\misc\header</Filter>
+    </ClInclude>
+    <ClInclude Include="map_utils.h">
+      <Filter>src\world\header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

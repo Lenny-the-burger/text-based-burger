@@ -80,19 +80,33 @@
         "x": 100,
         "y": 31
       },
-      "text": "Build BVH 2",
+      "text": "Show bvh",
       "style": {
         "fg": 255,
         "bg": 50
       },
       "bbox": "text",
       "fire_only_once": true,
-      "click_script": "build_bvh",
+      "click_script": "toggle_show_bvh",
       "click_script_args": {
         "type": "cosmetic"
       },
       "hover_script": "",
       "hover_args": {}
+    },
+    {
+      "targetname": "mouseposshower",
+      "type": "dynlabel",
+      "position": {
+        "x": 90,
+        "y": 30
+      },
+      "text": "000,000",
+      "style": {
+        "fg": 255,
+        "bg": 0
+      },
+      "script": "mousepos"
     }
   ]
 }

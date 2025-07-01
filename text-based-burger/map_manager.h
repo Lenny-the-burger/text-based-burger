@@ -5,6 +5,7 @@
 // collision is handled by scripts.
 
 #include "object_utils.h"
+#include "map_utils.h"
 
 // Lightweight struct to pass when someone wants access to the map geometry
 struct MapGeometry {
@@ -16,6 +17,9 @@ struct MapGeometry {
 	std::vector<int>* types;
 	std::vector<int>* misc_flags;
 	std::vector<int>* brush_ids;
+
+	std::vector<MapBvNode>* bvh_collision_nodes; // BVH for collision lines
+	std::vector<MapBvNode>* bvh_cosmetic_nodes; // BVH for cosmetic lines
 };
 
 class MapManager {
@@ -29,9 +33,17 @@ public:
 	// Get the error log
 	std::vector<std::string> get_error_log();
 
-	MapGeometry get_geometry();
+	MapGeometry* get_geometry();
+
+	void toggle_render_bvh();
+
+	int render_bvh(float* lines_list, uint32_t* colors, int offset);
 
 private:
+
+	bool draw_bvh = false;
+
+	MapGeometry geometry;
 
 	// Master line counter
 	int num_lines;
@@ -59,6 +71,9 @@ private:
 
 	// Per line brush ids. 2^32 means no brush.
 	std::vector<int> brush_ids;
+
+	std::vector<MapBvNode> bvh_collision_nodes; // BVH for collision lines
+	std::vector<MapBvNode> bvh_cosmetic_nodes; // BVH for cosmetic lines
 
 	// Error log
 	std::vector<std::string> error_log;
