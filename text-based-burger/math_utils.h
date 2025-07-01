@@ -61,6 +61,9 @@ struct vec2 {
 	vec2 operator-(const vec2& other) const {
 		return vec2(x - other.x, y - other.y);
 	}
+	vec2 operator-(const float scalar) const {
+		return vec2(x - scalar, y - scalar);
+	}
 	vec2 operator-=(const vec2& other) {
 		x -= other.x;
 		y -= other.y;
@@ -95,6 +98,16 @@ struct vec2 {
 		if (scalar != 0) {
 			x /= scalar;
 			y /= scalar;
+		}
+		else {
+			throw std::invalid_argument("Division by zero in vec2 division");
+		}
+		return *this; // Return the modified object
+	}
+	vec2 operator/=(vec2 other) {
+		if (other.x != 0 && other.y != 0) {
+			x /= other.x;
+			y /= other.y;
 		}
 		else {
 			throw std::invalid_argument("Division by zero in vec2 division");

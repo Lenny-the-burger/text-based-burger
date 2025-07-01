@@ -25,6 +25,8 @@ struct MapBvNode {
 	int l_child = -1;
 	int parent = -1;
 
+	int layer = 0;
+
 	// Only if we are a leaf node
 	int line_idx = -1;
 };

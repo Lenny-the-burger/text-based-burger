@@ -431,7 +431,7 @@ int main() {
 		// so we dont waste time dispatching a shader and random bugginess
 		if (num_lines > 25) {
 			line_shader.setInt("prim_offset", 25);
-			glDrawArrays(GL_LINES, 50, num_lines * 2);
+			glDrawArrays(GL_LINES, 50, (num_lines * 2) - 50);
 		}
 
 		// Unbind for cleanliness

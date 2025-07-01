@@ -202,6 +202,11 @@ int MapManager::render(float* lines_list, uint32_t* colors, int offset) {
 		colors[lines_counter] = 200;
 		lines_counter++;
 
+		// if we are drawing bvh dont tesselate
+		if (draw_bvh) {
+			continue; // Skip the rest of the lines
+		}
+
 		// Top:
 		lines_list[lines_counter * 4 + 0] = z_x1; // x1
 		lines_list[lines_counter * 4 + 1] = z_y1; // y1
@@ -238,7 +243,6 @@ int MapManager::render(float* lines_list, uint32_t* colors, int offset) {
 
 void MapManager::toggle_render_bvh() {
 	draw_bvh = !draw_bvh;
-	std::cout << "Toggled draw bvh to " << (draw_bvh ? "true" : "false") << std::endl;
 }
 
 int MapManager::render_bvh(float* lines_list, uint32_t* colors, int offset) {
@@ -246,39 +250,62 @@ int MapManager::render_bvh(float* lines_list, uint32_t* colors, int offset) {
 		return offset; // Nothing to render
 	}
 	int lines_counter = offset;
+
+	float scrn_width = 960.0f;
+	float scrn_height = 536.0f;
+
 	// Render collision BVH
 	for (const auto& node : bvh_collision_nodes) {
+
 		// Draw the bounds of the node
 		vec2 from = node.from - camera_pos;
 		vec2 to = node.to - camera_pos;
 
+		float x1 = from.x;
+		float y1 = from.y;
+		float x2 = to.x;
+		float y2 = to.y;
+
+		// Move lines to centre of screen
+		from += vec2(scrn_width, scrn_height) / 2.0f;
+		to += vec2(scrn_width, scrn_height) / 2.0f;
+
+		// Normalize to ndc
+		from /= vec2(scrn_width, scrn_height);
+		to /= vec2(scrn_width, scrn_height);
+
+		from = (from * 2.0f) - 1.0f;
+		to = (to * 2.0f) - 1.0f;
+
+		int col = 127;
+
 		// Right vertical
-		lines_list[lines_counter * 4 + 0] = to.x;
-		lines_list[lines_counter * 4 + 1] = from.y;
-		lines_list[lines_counter * 4 + 2] = to.x;
-		lines_list[lines_counter * 4 + 3] = to.y;
-		colors[lines_counter++] = 255;
+		lines_list[lines_counter * 4 + 0] = to.x; // x1
+		lines_list[lines_counter * 4 + 1] = from.y; // y1
+		lines_list[lines_counter * 4 + 2] = to.x; // x2
+		lines_list[lines_counter * 4 + 3] = to.y; // y2
+		colors[lines_counter++] = col;
 
 		// Bottom horizontal
 		lines_list[lines_counter * 4 + 0] = to.x;
 		lines_list[lines_counter * 4 + 1] = from.y;
 		lines_list[lines_counter * 4 + 2] = from.x;
 		lines_list[lines_counter * 4 + 3] = from.y;
-		colors[lines_counter++] = 255;
+		colors[lines_counter++] = col;
 
 		// Left vertical
 		lines_list[lines_counter * 4 + 0] = from.x;
 		lines_list[lines_counter * 4 + 1] = from.y;
 		lines_list[lines_counter * 4 + 2] = from.x;
 		lines_list[lines_counter * 4 + 3] = to.y;
-		colors[lines_counter++] = 255;
+		colors[lines_counter++] = col;
 
 		// Top horizontal
 		lines_list[lines_counter * 4 + 0] = from.x;
 		lines_list[lines_counter * 4 + 1] = to.y;
 		lines_list[lines_counter * 4 + 2] = to.x;
 		lines_list[lines_counter * 4 + 3] = to.y;
-		colors[lines_counter++] = 255;
+		colors[lines_counter++] = col;
 	}
 
 	/*for (int i = 0; i < lines_counter / 2; i++) {

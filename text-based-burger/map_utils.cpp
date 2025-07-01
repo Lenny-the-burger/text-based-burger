@@ -3,7 +3,10 @@
 #include "threading_utils.h"
 
 #include <iostream>
+#include <chrono>
+#include <thread>
 
+using namespace std::chrono_literals;
 using namespace std;
 
 float bvArea(const MapBvNode& node) {
@@ -65,6 +68,7 @@ int buildBVH(BVInput& input, LongThreadState& tstate) {
 		new_node.to = minv(cur_node->to, min_node->to);
 		new_node.l_child = cur_idx;
 		new_node.r_child = min_area_idx;
+		new_node.layer = max(cur_node->layer, min_node->layer) + 1;
 
 		cur_node->parent = input.bvh_nodes->size();
 		min_node->parent = input.bvh_nodes->size();
@@ -85,7 +89,8 @@ int buildBVH(BVInput& input, LongThreadState& tstate) {
 
 		tstate.progress++;
 
-		cout << "Progress: " << tstate.progress << "/" << work_q.size() << "\n";
+		cout << "Progress: " << tstate.progress << "/" << work_q.size() << " at layer " << new_node.layer << "\n";
+		std::this_thread::sleep_for(0.5s);
 	}
 
 	cout << "Total size: " << input.bvh_nodes->size() << " nodes" << endl;
