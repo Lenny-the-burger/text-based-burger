@@ -34,9 +34,11 @@ int buildBVH(BVInput& input, LongThreadState& tstate) {
 		MapBvNode node;
 		node.from = maxv(v1, v2);
 		node.to = minv(v1, v2);
+		node.mid = midv(node.from, node.to);
 		node.line_idx = i;
 		input.bvh_nodes->push_back(node);
 		work_q.push_back(i);
+		std::this_thread::sleep_for(0.2s);
 	}
 
 	tstate.progress = 0;
@@ -54,7 +56,9 @@ int buildBVH(BVInput& input, LongThreadState& tstate) {
 
 		for (int i : work_q) {
 			MapBvNode* candidate_node = &input.bvh_nodes->at(i);
-			float area = bvArea(*cur_node) + bvArea(*candidate_node);
+			//float area = bvArea(*cur_node) + bvArea(*candidate_node);
+			// For now use distance
+			float area = distance(cur_node->mid, candidate_node->mid);
 			if (area < min_area) {
 				min_area = area;
 				min_area_idx = i;
@@ -90,7 +94,7 @@ int buildBVH(BVInput& input, LongThreadState& tstate) {
 		tstate.progress++;
 
 		cout << "Progress: " << tstate.progress << "/" << work_q.size() << " at layer " << new_node.layer << "\n";
-		std::this_thread::sleep_for(0.5s);
+		std::this_thread::sleep_for(0.2s);
 	}
 
 	cout << "Total size: " << input.bvh_nodes->size() << " nodes" << endl;

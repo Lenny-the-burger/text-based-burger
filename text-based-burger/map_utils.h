@@ -20,6 +20,7 @@ struct MapBvNode {
 	// Bounds
 	vec2 from;
 	vec2 to;
+	vec2 mid;
 
 	int r_child = -1;
 	int l_child = -1;

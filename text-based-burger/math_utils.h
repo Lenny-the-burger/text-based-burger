@@ -163,7 +163,10 @@ inline vec2 midv(vec2 a, vec2 b) {
 	// Midpoint
 	return vec2((a.x + b.x) / 2.0f, (a.y + b.y) / 2.0f);
 }
-
+inline float distance(vec2 a, vec2 b) {
+	// Euclidean distance
+	return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+}
 
 
 #else

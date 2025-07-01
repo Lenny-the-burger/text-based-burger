@@ -204,6 +204,7 @@ int MapManager::render(float* lines_list, uint32_t* colors, int offset) {
 
 		// if we are drawing bvh dont tesselate
 		if (draw_bvh) {
+			colors[lines_counter - 1] = 50;
 			continue; // Skip the rest of the lines
 		}
 
@@ -277,7 +278,7 @@ int MapManager::render_bvh(float* lines_list, uint32_t* colors, int offset) {
 		from = (from * 2.0f) - 1.0f;
 		to = (to * 2.0f) - 1.0f;
 
-		int col = 127;
+		int col = 70;
 
 		// Right vertical
 		lines_list[lines_counter * 4 + 0] = to.x; // x1
