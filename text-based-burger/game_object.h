@@ -4,6 +4,8 @@
 using json = nlohmann::json;
 
 #include "object_utils.h"
+#include "math_utils.h"
+#include "npc_behaviors.hpp"
 
 #include <vector>
 #include <string>
@@ -209,62 +211,31 @@ protected:
 // Here, each A is worth two rockets, so an rpg with four shots and a pistol.
 // Seems like a fine setup to blow stuff up
 
-enum TypeOfGuy {
-	// Civilian, just walks around
-	GUY_CIVILIAN,
-	// Usually on our side
-	GUY_FOUNDATION,
-	// Usually not on our side
-	GUY_CHAOS,
-	GUY_GOC,
-
-	// Doesnt really do anything, just stands (or sits) there and spews dialogue.
-	// Identical to civilian but has dialogue, multiple skins, and can follow a path.
-	GUY_BUREUCRAT
-};
-
-enum GuyState {
-	// Chilling
-	GUY_STATE_IDLE,
-
-	GUY_STATE_PANIC,
-	GUY_STATE_FLEE,
-	GUY_STATE_ATTACK,
-	GUY_STATE_IN_CAR
-};
-
-// threat to guy that guy knows about
-struct GuyThreat {
-	std::string threatname;
-	bool can_see_threat;
-	// If we cant see the threat right now then we go off last known information.
-	std::pair<float, float> prev_position;
-	float prev_agression;
-	bool prev_is_targeting_me;
-
-	// Threats if not seen decay. If we cant find him for a while we assume he
-	// moved on somewhere, but still remain worried.
-	double time_seen;
-};
-
-// NPC_Guy is a guy. Can be civillian, mtf agent, whatever
-class NPC_Guy : public NPC {
+// Base npc class
+class NPC : public GameObject {
 public:
-	NPC_Guy(json data, ObjectIO& io);
+	NPC(json data, ObjectIO& io);
 
 	virtual void update(ObjectUpdateData data) override;
+	virtual void move(vec2 velocity) override;
 	
-	virtual void move(std::pair<float, float> direction, float distance) override;
-	virtual void aim(std::pair<float, float> direction) override;
-	virtual void attack() override;
+	virtual void aim(vec2 direction);
+	virtual void attack();
 
 	void give_weapon(std::string weapon_name);
-	void take_weapon(std::string weapon_name);
+	void steal_weapon(std::string weapon_name);
+
+	// Remember to set this to false or hes gonna be braindead
+	void set_possessed(bool possessed) {
+		is_possessed = possessed;
+	}
 
 protected:
 	std::vector<std::string> weapons;
-	TypeOfGuy type_of_guy;
-	GuyState state;
+	NPCFaction faction;
+
+	// Dont try to move if your possessed (unless your into that)
+	bool is_possessed = false;
 
 	// How likely are we going to try to fight back. 0 being always flee 1 being
 	// juggernaut.
@@ -274,8 +245,8 @@ protected:
 	// fully concealed. No sneaking around with stingers sorry boys.
 	bool weapon_holstered;
 
-	std::pair<float, float> aim_direction;
-	std::pair<float, float> move_direction;
+	vec2 aim_direction;
+	vec2 move_velocity;
 
 	// Depending on bravery and enemy's agression we either flee this guy as
 	// much as we can or seek him out. Mortal enemies only happen if the enemy

@@ -370,3 +370,43 @@ void Possessor::set_target(std::string targetname) {
 	victim_name = targetname;
 	return;
 }
+
+NPC::NPC(json data, ObjectIO& io) : GameObject(data, io) {
+
+	return;
+}
+
+void NPC::update(ObjectUpdateData data) {
+
+	// Try to move
+	if (!move_velocity.is_zero()) {
+		io.call_script("npc_move", {
+			{"caller", targetname + " update"},
+			{"targetname", targetname},
+			{"x", move_velocity.x},
+			{"y", move_velocity.y}
+			});
+		move_velocity.blank();
+	}
+
+	return;
+}
+
+void NPC::move(vec2 velocity) {
+	// All we do here is actually just set the velocity, the actual moving is
+	// handled in the update function, its safe to assume that npcs will be
+	// moving on most update ticks.
+	move_velocity = velocity;
+
+	return;
+}
+
+void NPC::aim(vec2 direction) {
+
+	return;
+}
+
+void NPC::attack() {
+
+	return;
+}
