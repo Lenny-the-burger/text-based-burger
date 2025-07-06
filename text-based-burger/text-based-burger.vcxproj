@@ -186,6 +186,7 @@
     <ClInclude Include="map_manager.h" />
     <ClInclude Include="map_utils.h" />
     <ClInclude Include="math_utils.h" />
+    <ClInclude Include="npc_behaviors.hpp" />
     <ClInclude Include="object_utils.h" />
     <ClInclude Include="scripts.h" />
     <ClInclude Include="shader.h" />

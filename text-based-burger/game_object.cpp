@@ -18,8 +18,12 @@ GameObject::GameObject(json data, ObjectIO& io) : io(io) {
 	position = vec2(data["position"]);
 
 	//rotation = data["rotation"];
-	render_scale = make_pair(data["scale"][0], data["scale"][1]);
+	render_scale = vec2(data["scale"][0].get<int>(), data["scale"][1]);
 	color = data["color"];
+
+	// None by default
+	collision_type = COLLISION_TYPE_NONE;
+
 	return;
 }
 
@@ -62,12 +66,12 @@ int GameObject::render(float* lines_list, int offset, uint32_t* colors, vec2 cam
 		// It goes x, y, x, y so if offset % 2 == 0 then we are at x
 		if (offset % 2 == 0) {
 			// Transform the x coordinate
-			number = (number * render_scale.first) + screen_position.x;
+			number = (number * render_scale.x) + screen_position.x;
 			number = number / scrn_width; // Normalize to screen width
 		}
 		else {
 			// Transform the y coordinate
-			number = (number * render_scale.second) + screen_position.y;
+			number = (number * render_scale.y) + screen_position.y;
 			number = number / scrn_height; // Normalize to screen height
 		}
 		// Normalize to full screen ndc -1 to 1
@@ -102,8 +106,11 @@ std::unique_ptr<GameObject> object_type_selector(json data, ObjectIO& io) {
 		{"point_view_control", [](json data, ObjectIO& io) { 
 			return std::make_unique<PointViewControl>(data, io); 
 		}},
+		{"npc", [](json data, ObjectIO& io) {
+			return std::make_unique<NPC>(data, io);
+		}},
 
-		// Add more game object types here
+		// Dont add types that shouldnt be spawned by the user like mouse renderer
 	};
 
 	auto it = factory_map.find(data["type"].get_ref<const string&>());
@@ -127,6 +134,8 @@ MouseRenderer::MouseRenderer(ObjectIO& io) : GameObject(json::object(
 		{"update_script", "none"}
 
 	}), io) {
+
+	collision_type = COLLISION_TYPE_NONE;
 
 	mouse_state = MOUSE_NORMAL;
 	return;

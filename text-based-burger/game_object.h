@@ -14,6 +14,12 @@ using json = nlohmann::json;
 // This is all the game objects. Game objects are responcible for their own
 // interaction and submitting their own rendering data to the handler.
 
+enum CollisionType {
+	COLLISION_TYPE_NONE = 0, // No collision
+	COLLISION_TYPE_AABB = 1, // Axis aligned bounding box collision
+	COLLISION_TYPE_CIRCLE = 2 // Circle collision
+};
+
 class GameObject {
 public:
 	// Game objects only have once constructor because they dont need
@@ -54,11 +60,21 @@ public:
 	// Safe to assume all objects have a world space position
 	vec2 position;
 
-	// This is the rotation of the object in radians
+	// This is the rotation of the object in radians. This should only be used
+	// for rendering, you should not have rotating collision, use a circle to
+	// approximate the collision front instead.
 	float rotation;
 
 	// This is the scale of the object
-	std::pair<float, float> render_scale;
+	vec2 render_scale;
+
+	CollisionType collision_type;
+
+	// Radius if you are COLLISION_TYPE_CIRCLE 
+	float radius;
+
+	// AABB if you are COLLISION_TYPE_AABB
+	vec2 aabb_from, aabb_to;
 
 protected:
 	// For now everything is publically acessible becasuse getters and setters are a waste of time a lot of the time
@@ -146,31 +162,6 @@ protected:
 	std::string victim_name;
 };
 
-// Base npc class. Everything that acts autonomously should inherit from this.
-class NPC : public GameObject {
-public:
-	NPC(json data, ObjectIO& io);
-
-	virtual void update(ObjectUpdateData data) override;
-
-	// Attempt to move in given direction by distance.
-	virtual void move(std::pair<float, float> direction, float distance);
-	virtual void aim(std::pair<float, float> direction);
-	virtual void attack();
-
-	// Remember to set this to false or hes gonna be braindead
-	void set_possessed(bool possessed) {
-		is_possessed = possessed;
-	}
-
-protected:
-	// unnormnalized velocity
-	std::pair<float, float> velocity;
-
-	// Dont try to move if your possessed (unless your into that)
-	bool is_possessed = false;
-};
-
 // How the agression mechanic works:
 // Certian weapons and actions impact your agression level. For example, even
 // walking around with an M249 will very quickly increase your agression level.
@@ -218,7 +209,7 @@ public:
 
 	virtual void update(ObjectUpdateData data) override;
 	virtual void move(vec2 velocity) override;
-	
+
 	virtual void aim(vec2 direction);
 	virtual void attack();
 

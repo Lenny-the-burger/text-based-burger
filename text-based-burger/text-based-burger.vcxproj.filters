@@ -262,6 +262,7 @@
     <ClInclude Include="map_utils.h">
       <Filter>src\world\header</Filter>
     </ClInclude>
+    <ClInclude Include="npc_behaviors.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="gamedata\fonts\font.txt">

@@ -5,7 +5,6 @@ using json = nlohmann::json;
 
 #include <vector>
 
-
 // A header only math library for various math things the engine uses.
 
 #ifndef ENGINE_MATH
@@ -136,6 +135,13 @@ struct vec2 {
 			return vec2(); // Return zero vector if magnitude is zero
 		}
 	}
+	bool is_zero() const {
+		return fabs(x) < 1e-6f && fabs(y) < 1e-6f; // Check if both components are close to zero
+	}
+	void blank() {
+		x = 0.0f;
+		y = 0.0f;
+	}
 };
 
 // If you want to use them as globals
@@ -165,9 +171,8 @@ inline vec2 midv(vec2 a, vec2 b) {
 }
 inline float distance(vec2 a, vec2 b) {
 	// Euclidean distance
-	return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+	return (float)sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 }
-
 
 #else
 // skip this file if already included

@@ -18,8 +18,8 @@
 
 Script get_script(std::string name) {
     // Come get your scripts
-    static const std::unordered_map<std::string, Script> script_map = {
-        {"button_test", test_button_script},
+	static const std::unordered_map<std::string, Script> script_map = {
+		{"button_test", test_button_script},
 		{"hover_reporter", hover_reporter},
 		{"mousepos", mouse_pos_shower},
 		{"basic_mover", basic_mover},
@@ -28,6 +28,7 @@ Script get_script(std::string name) {
 		{"build_bvh", build_bvh},
 		{"bvh_build_done", bvh_build_done},
 		{"toggle_show_bvh", toggle_show_bvh},
+		{"npc_move", npc_move}
     };
 
     auto it = script_map.find(name);
@@ -161,6 +162,9 @@ void build_bvh(json data, ScriptHandles handles) {
 		break;
 	}
 
+	// Dont collide while building
+	handles.map_manager->has_collision_bvh = false;
+
 	// Launch a long thread to build the bvh using map utils buildBVH()
 	handles.long_thread_controller->launch("compile_quadtree_" + type_str, input,
 		[](LongThreadState& state) {
@@ -183,6 +187,7 @@ void build_bvh(json data, ScriptHandles handles) {
 void bvh_build_done(json data, ScriptHandles handles) {
 	// We did it
 	std::cout << "BVH build done for type: " << data["type"].get<std::string>() << std::endl;
+	handles.map_manager->has_collision_bvh = true;
 
 	return;
 }
@@ -191,4 +196,45 @@ void toggle_show_bvh(json data, ScriptHandles handles) {
 	// Toggle the draw bvh flag in the map manager
 	handles.map_manager->toggle_render_bvh();
 	return;
+}
+
+void npc_move(json data, ScriptHandles handles) {
+	// This
+	std::string name = data["targetname"].get<std::string>();
+	NPC* npc = dynamic_cast<NPC*>(handles.obj_io->get_object(name));
+	if (npc == nullptr) {
+		handles.obj_io->report_error("ERROR: NPC move called on non existant npc " + name + " by " + data["caller"].get<std::string>());
+		return;
+	}
+	vec2 move_vel = vec2(data); // vec2 can hoover up any json object with x and y
+
+	// if bvh does not exist dont collide with anything
+	if (!handles.map_manager->has_collision_bvh) {
+		// No collision, just move
+		npc->position += move_vel;
+		return;
+	}
+
+	// NPCs should always be 16*16
+	vec2 npc_from = npc->position - 16;
+	vec2 npc_to = npc->position + 16;
+
+	// Aspirational position
+	npc_from += move_vel;
+	npc_to += move_vel;
+
+	vec2 normal_force = collide_aabb_geometry(
+		npc_from, npc_to,
+		handles.map_manager->get_geometry()->bvh_collision_nodes,
+		handles.map_manager->get_geometry()->lines
+	);
+
+	bool temp = normal_force.is_zero();
+
+	normal_force *= 10.0f;
+
+	move_vel += normal_force;
+
+	// Set new position
+	npc->position += move_vel;
 }

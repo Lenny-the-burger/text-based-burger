@@ -157,13 +157,12 @@ RenderData SystemsController::render() {
 	// Render the bvh if needed
 	num_lines = map_manager->render_bvh(line_verts, line_colors, num_lines);
 
-	float renderscale = 0.3f;
+	//float renderscale = 0.3f;
 
-	// scale the non cursor line
-	for (int i = 50; i < num_lines * 4; i++) {
-		line_verts[i] *= renderscale;
-	}
-
+	//// scale the non cursor line
+	//for (int i = 50; i < num_lines * 4; i++) {
+	//	line_verts[i] *= renderscale;
+	//}
 
 	RenderData return_data;
 
@@ -302,6 +301,7 @@ void SystemsController::call_script(string script_name, json args) {
 	}
 	// This will behave strangely if an inactive ui component attempts to call
 	// a script but that should not be possible.
+	int temp = sizeof(args);
 	script(args, ScriptHandles{ 
 		this, 
 		ui_io[active_ui_handler], 

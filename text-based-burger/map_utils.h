@@ -22,6 +22,9 @@ struct MapBvNode {
 	vec2 to;
 	vec2 mid;
 
+	float outer_rad;
+	float inner_rad;
+
 	int r_child = -1;
 	int l_child = -1;
 	int parent = -1;
@@ -49,3 +52,31 @@ struct BVInput {
 
 // Build bvh for given lines.
 int buildBVH(BVInput& input, LongThreadState& tstate);
+
+// Various collision
+
+bool collide_aabb(
+	MapBvNode& node,
+	vec2& from, vec2& to
+);
+
+// Cohen–Sutherland algorithm
+typedef int OutCode;
+
+const int INSIDE = 0b0000;
+const int LEFT = 0b0001;
+const int RIGHT = 0b0010;
+const int BOTTOM = 0b0100;
+const int TOP = 0b1000;
+
+OutCode ComputeOutCode(double x, double y, vec2& clip_from, vec2& clip_to);
+
+bool CohenSutherlandLineClip(double& x0, double& y0, double& x1, double& y1, vec2& clip_from, vec2& clip_to);
+
+// Collide given aabb with map geometry. Returns the normal force expereinced if
+// there is a collision. 
+vec2 collide_aabb_geometry(
+	vec2& from, vec2& to,
+	std::vector<MapBvNode>* bvh_nodes,
+	std::vector<float>* lines
+);

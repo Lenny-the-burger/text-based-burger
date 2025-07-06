@@ -39,6 +39,8 @@ public:
 
 	int render_bvh(float* lines_list, uint32_t* colors, int offset);
 
+	bool has_collision_bvh = false; // If we have a collision BVH
+
 private:
 
 	bool draw_bvh = false;
