@@ -56,6 +56,8 @@ public:
 	// This should only be used by the script system
 	GameObject* get_object(std::string name);
 
+	void call_script(std::string script_name, json args);
+
 	// Points to the meshes data. The actual one is held by the handler
 	json* meshes;
 

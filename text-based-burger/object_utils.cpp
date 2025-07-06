@@ -1,5 +1,6 @@
 #include "object_utils.h"
 #include "game_object.h"
+#include "systems_controller.h"
 
 using namespace std;
 
@@ -72,4 +73,10 @@ vector<string> split_file_path(string path) {
 	}
 	result.push_back(path);
 	return result;
+}
+
+void ObjectIO::call_script(string script_name, json args) {
+	// Call a script with the given name and arguments
+	controller.call_script(script_name, args);
+	return;
 }
