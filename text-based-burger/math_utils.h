@@ -91,26 +91,23 @@ struct vec2 {
 	}
 	// Overload the / operator for scalar division
 	vec2 operator/(float scalar) const {
-		return vec2(x / scalar, y / scalar);
-	}
-	vec2 operator/=(float scalar) {
 		if (scalar != 0) {
-			x /= scalar;
-			y /= scalar;
+			return vec2(x / scalar, y / scalar);
 		}
 		else {
-			throw std::invalid_argument("Division by zero in vec2 division");
+			// Division by zero results in +infty
+			return vec2(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
 		}
+	}
+	// division by 0 will result in +infinity
+	vec2 operator/=(float scalar) {
+		x /= scalar;
+		y /= scalar;
 		return *this; // Return the modified object
 	}
 	vec2 operator/=(vec2 other) {
-		if (other.x != 0 && other.y != 0) {
-			x /= other.x;
-			y /= other.y;
-		}
-		else {
-			throw std::invalid_argument("Division by zero in vec2 division");
-		}
+		x /= other.x;
+		y /= other.y;
 		return *this; // Return the modified object
 	}
 
@@ -143,6 +140,11 @@ struct vec2 {
 		y = 0.0f;
 	}
 };
+
+// Operators we need to declare outside
+inline vec2 operator/(float scalar, const vec2& v) {
+	return vec2(scalar / v.x, scalar / v.y);
+}
 
 // If you want to use them as globals
 inline float mag(vec2 v) {

@@ -229,10 +229,6 @@ void npc_move(json data, ScriptHandles handles) {
 		handles.map_manager->get_geometry()->lines
 	);
 
-	bool temp = normal_force.is_zero();
-
-	normal_force *= 10.0f;
-
 	move_vel += normal_force;
 
 	// Set new position

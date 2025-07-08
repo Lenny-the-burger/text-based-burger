@@ -218,6 +218,7 @@ vec2 collide_aabb_geometry(
 	vec2 normal_force = vec2();
 	vector<int> work_stack;
 	vector<int> lines_to_check;
+	vec2 mid = midv(from, to);
 
 	// Root
 	work_stack.push_back(bvh_nodes->size() - 1);
@@ -244,8 +245,8 @@ vec2 collide_aabb_geometry(
 		}
 	}
 
-	vec2 collision_srs = vec2();
-	int collision_count = 0;
+	vec2 aabb_scale = (to - from);
+	vec2 aabb_scale1 = 1.0f / aabb_scale;
 
 	// Check the lines for actual collision
 	while (!lines_to_check.empty()) {
@@ -262,20 +263,44 @@ vec2 collide_aabb_geometry(
 
 		// Check if the line intersects with the AABB
 		if (CohenSutherlandLineClip(x0, y0, x1, y1, from, to)) {
-			collision_srs += midv(vec2(x0, y0), vec2(x1, y1));
-			collision_count++;
+			// Instead of checking each end point, only check the midpoint. This
+			// works just as well in all cases. In the simple case where one
+			// point juts into the aabb its not perfect and lets you clip a bit
+			// into it, but in general this should not happen as you should
+			// collide with lines end point forward. Its not a lot, and the end
+			// point gets treated as circular so its fine. Jut avoid exposed end
+			// points in general. In the case where you intersect with a line
+			// flat on (how you usually should) both points are on the borders
+			// of the aabb and so would not generate any normal force. Using the
+			// midpoint mitigates this and instead being bounced around left or
+			// right randomly, you just get pushes away from the surface.
+			//
+			// See: https://www.desmos.com/geometry/mlmur2j8lh
+
+			vec2 v0 = vec2(x0, y0);
+			vec2 v1 = vec2(x1, y1);
+			vec2 v_mid = midv(v0, v1);
+
+			v_mid -= mid;
+
+			v_mid *= aabb_scale1;
+
+			v_mid *= 2.0f;
+
+			// Use chebushev distance
+			vec2 v_mid_square = v_mid / max(abs(v_mid.x), abs(v_mid.y));
+
+			v_mid_square = v_mid - v_mid_square;
+			
+			v_mid_square *= aabb_scale;
+			
+			// Assign normal force based on magnitude 
+			normal_force = normal_force.mag() < v_mid_square.mag() ? v_mid_square : normal_force;
 		}
 	}
 
-	if (collision_count == 0) {
-		return vec2(); // No collision
-	}
-
-	collision_srs /= collision_count;
-	normal_force = collision_srs - midv(from, to);
-
-	// Inverse square for normal force
-	normal_force *= 1.0f / pow(normal_force.mag(), 2);
+	// Scale it up a bit so it clears you
+	normal_force *= 1.01f;
 
 	return normal_force;
 }
