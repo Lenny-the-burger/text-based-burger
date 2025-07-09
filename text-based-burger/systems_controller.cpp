@@ -92,11 +92,6 @@ void SystemsController::update(GLFWwindow* window, GlobalUpdateData global_updat
 
 	handle_misc_inputs(window); // do this first, this shouldnt have any side effects.
 
-	// If we have an error log open then dont update anything else
-	if (error_log_type != ERROR_LOG_TYPE_NONE) {
-		return;
-	}
-
 	UIUpdateData frame_data;
 	frame_data.mouse_char_x = global_update_data.mouse_pos_char.x;
 	frame_data.mouse_char_y = global_update_data.mouse_pos_char.y;
@@ -131,22 +126,6 @@ void SystemsController::update(GLFWwindow* window, GlobalUpdateData global_updat
 }
 
 RenderData SystemsController::render() {
-	
-	RenderData return_data;
-
-	if (error_log_type != ERROR_LOG_TYPE_NONE) {
-		render_log();
-		// stencil away the entire screen so we dont draw the map
-		return_data.stencil_regions = { vec2(0, 0), vec2(960, 536) };
-
-	} else {
-		vector<vector<uint32_t>> screen = ui_handlers[active_ui_handler]->get_screen();
-		for (int i = 0; i < CHAR_ROWS / 2; i++) {
-			for (int j = 0; j < CHAR_COLS; j++) {
-				char_grid[i * CHAR_COLS + j] = screen[i][j];
-			}
-		}
-	}
 
 	// Render objects
 	num_lines = objects_handler->render(line_verts, line_colors);
@@ -162,11 +141,29 @@ RenderData SystemsController::render() {
 	//	line_verts[i] *= renderscale;
 	//}
 
+	RenderData return_data;
+
 	return_data.lines_counter = num_lines;
 
 	// Stencil regions should really only ever be uints as they are pixel coordinates
 	return_data.stencil_regions = ui_handlers[active_ui_handler]->get_stencil_regions();
 	return_data.stencil_state = ui_handlers[active_ui_handler]->get_stencil_state();
+
+	if (error_log_type != ERROR_LOG_TYPE_NONE) {
+		render_log();
+		// stencil away the entire screen so we dont draw the map
+		return_data.stencil_regions = { };
+		return_data.stencil_state = 0; // stencil in
+
+	}
+	else {
+		vector<vector<uint32_t>> screen = ui_handlers[active_ui_handler]->get_screen();
+		for (int i = 0; i < CHAR_ROWS / 2; i++) {
+			for (int j = 0; j < CHAR_COLS; j++) {
+				char_grid[i * CHAR_COLS + j] = screen[i][j];
+			}
+		}
+	}
 
 	return return_data;
 }

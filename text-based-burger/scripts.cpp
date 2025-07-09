@@ -77,6 +77,10 @@ void mouse_pos_shower(json data, ScriptHandles handles) {
 	// Ignore negative values
 	int mouse_x = abs(data["mouse_char_x"].get<int>());
 	int mouse_y = abs(data["mouse_char_y"].get<int>());
+	
+	// So it doesnt freak out when you minimize the window
+	mouse_x = std::min(mouse_x, 999);
+	mouse_y = std::min(mouse_y, 999);
 
 	// Pad with 0s
 	if (mouse_x < 100) {
@@ -109,10 +113,7 @@ void basic_mover(json data, ScriptHandles handles) {
 		return;
 	}
 	
-	obj->position = vec2(
-		data["x"].get<float>(),
-		data["y"].get<float>()
-	);
+	obj->position = vec2(data);
 	return;
 }
 

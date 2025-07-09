@@ -349,7 +349,7 @@ int main() {
 
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glViewport(0, 0, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT); // Match the framebuffer size
-		glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // Clear the framebuffer
+		glClear(GL_COLOR_BUFFER_BIT); // Clear the framebuffer
 
 		raster_shader.use();
 
@@ -456,6 +456,11 @@ int main() {
 			line_shader.setInt("prim_offset", 25);
 			glDrawArrays(GL_LINES, 50, (num_lines * 2) - 50);
 		}
+
+		// Clear the stencil right away (why doesnt it clear when you try to
+		// clear it at the same time as the color buffer?)
+		glStencilMask(0xFF);
+		glClear(GL_STENCIL_BUFFER_BIT);
 
 		// Unbind for cleanliness
 		glBindVertexArray(0);
