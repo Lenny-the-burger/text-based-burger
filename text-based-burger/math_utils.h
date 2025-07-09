@@ -12,8 +12,8 @@ using json = nlohmann::json;
 
 // vec2 helper struct
 struct vec2 {
-	float x;
-	float y;
+	float x, y;
+
 	vec2(float x = 0.0f, float y = 0.0f) : x(x), y(y) {}
 	vec2(const std::pair<float, float>& p) : x(p.first), y(p.second) {}
 	vec2(int x, int y) : x(static_cast<float>(x)), y(static_cast<float>(y)) {}

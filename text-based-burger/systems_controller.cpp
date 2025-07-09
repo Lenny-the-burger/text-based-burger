@@ -132,14 +132,12 @@ void SystemsController::update(GLFWwindow* window, GlobalUpdateData global_updat
 
 RenderData SystemsController::render() {
 	
+	RenderData return_data;
+
 	if (error_log_type != ERROR_LOG_TYPE_NONE) {
 		render_log();
-		// dont render any lines
-		RenderData return_data;
-		return_data.lines_counter = 0;
-		return_data.stencil_state = 0;
-
-		return return_data;
+		// stencil away the entire screen so we dont draw the map
+		return_data.stencil_regions = { vec2(0, 0), vec2(960, 536) };
 
 	} else {
 		vector<vector<uint32_t>> screen = ui_handlers[active_ui_handler]->get_screen();
@@ -164,10 +162,11 @@ RenderData SystemsController::render() {
 	//	line_verts[i] *= renderscale;
 	//}
 
-	RenderData return_data;
-
 	return_data.lines_counter = num_lines;
-	return_data.stencil_state = 0;
+
+	// Stencil regions should really only ever be uints as they are pixel coordinates
+	return_data.stencil_regions = ui_handlers[active_ui_handler]->get_stencil_regions();
+	return_data.stencil_state = ui_handlers[active_ui_handler]->get_stencil_state();
 
 	return return_data;
 }

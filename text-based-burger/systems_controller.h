@@ -73,7 +73,7 @@ struct RenderData {
 
 	// Regions that are stenciled out (discarded) when rendering lines. Mouse cursor is
 	// not stenciled ever. [x1, y1, x2, y2] coordinates in native space.
-	std::vector<glm::vec4> stencil_regions;
+	std::vector<vec2> stencil_regions;
 
 	// glStencilFunc(GL_EQUAL, stencil_state, 0xFF);
 	// By default 0, meaning we only render things within a perscribed render region.

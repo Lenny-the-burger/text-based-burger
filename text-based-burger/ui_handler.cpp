@@ -28,7 +28,27 @@ UIHandler::UIHandler(string filename, int scrn_w, int scrn_h, SystemsController&
 		root.contains(move(component_type_selector(child, make_pair(0, 0), component_io)));
 	}
 
-	// Set the root component
+	// Read the stencil regions if they exist
+	if (data.contains("stencil_regions")) {
+		json stencil_data = data["stencil_regions"];
+		for (const auto& region : stencil_data) {
+			// stencils should be stored as an array of 2 number arrays
+			stencil_regions.push_back(vec2(region)); // vec2 eat json nom nom
+		}
+		try {
+			// If the stencil state is not present, default to 1 (stencil out)
+			stencil_state = data["stencil_state"].get<int>();
+		}
+		catch (const json::exception& e) {
+			// you probably meant stencil in
+			stencil_state = 0;
+		}
+	}
+	else {
+		// stencil the entire screen by default
+		stencil_regions = {};
+		stencil_state = 1; // set mode to stencil out so everything passes
+	}
 }
 
 void UIHandler::update(UIUpdateData data) {

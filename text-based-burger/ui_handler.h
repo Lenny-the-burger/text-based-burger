@@ -3,6 +3,7 @@
 #include "component.h"
 #include "char_lut.h"
 #include "ui_systems.h"
+#include "math_utils.h"
 
 #include <vector>
 #include <string>
@@ -31,6 +32,14 @@ public:
 
 	std::vector<std::vector<uint32_t>> get_screen();
 
+	std::vector<vec2>& get_stencil_regions() {
+		return stencil_regions;
+	}
+
+	int& get_stencil_state() {
+		return stencil_state;
+	}
+
 	UIComponentIO* get_io() {
 		return &component_io;
 	}
@@ -39,7 +48,9 @@ private:
 
 	// New screen to draw
 	std::vector<std::vector<uint32_t>> screen;
-	std::vector<std::vector<bool>> should_update;
+
+	std::vector<vec2> stencil_regions;
+	int stencil_state;
 
 	UIComponentIO component_io;
 	

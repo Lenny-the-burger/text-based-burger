@@ -1,4 +1,9 @@
 {
+  "stencil_regions": [
+    [ 0, 80 ],
+    [ 960, 536 ]
+  ],
+  "stencil_state": 0,
   "root": [
     {
       "targetname": "gameplay seperator",

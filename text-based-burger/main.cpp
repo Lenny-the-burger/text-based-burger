@@ -296,7 +296,6 @@ int main() {
 	// Holds CHAR_COLS by CHAR_ROWS characters
 	// Stores uints for character and color
 	// First 8 bits are character, next 8 are color, next 8 are background color, and 8 unused
-	// ordering is done on the cpu to avoid branching.
 
 	unsigned int char_grid_buffer;
 
@@ -304,6 +303,21 @@ int main() {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, char_grid_buffer);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, NUM_CHARS * sizeof(uint32_t), char_grid, GL_DYNAMIC_COPY);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, char_grid_buffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+#define MAX_STENCIL_REGIONS 16
+	// Stencil regions buffer
+	// Holds 4 * sizof(float) * MAX_STENCIL_REGIONS bytes
+	// Each region is two vec2s [x1, y1], [x2, y2] in native space
+	float* stencil_regions = new float[MAX_STENCIL_REGIONS * 4]; // 4 floats per region (2 vec2s)
+	int region_count = 0;
+
+	unsigned int stencil_regions_buffer;
+
+	glGenBuffers(1, &stencil_regions_buffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, stencil_regions_buffer);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_STENCIL_REGIONS * 4 * sizeof(float), stencil_regions, GL_DYNAMIC_COPY);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, stencil_regions_buffer);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 
@@ -324,6 +338,9 @@ int main() {
 		RenderData render_data = systems_controller->render();
 		num_lines = render_data.lines_counter;
 
+		// vec2s are just float x, y; so you can cast them directly
+		stencil_regions = reinterpret_cast<float*>(render_data.stencil_regions.data());
+		region_count = render_data.stencil_regions.size() / 2; // each region is two vec2s
 
 		// Rendering starts here
 
@@ -349,7 +366,7 @@ int main() {
 
 
 		// Finally unbind the small framebuffer
-		// ---- ALL IN SOFTWARE RAsTER ELEMENTS MUST BE DRAWN ABOVE THIS LINE ----
+		// ---- ALL IN SOFTWARE RASTER ELEMENTS MUST BE DRAWN ABOVE THIS LINE ----
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
@@ -382,6 +399,12 @@ int main() {
 		stencil_shader.use();
 		stencil_shader.setFloat("aspectRatio", aspect_ratio);
 		stencil_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
+		stencil_shader.setInt("zone_count", region_count); // whatever
+
+		// Upload stencil regions to the shader
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, stencil_regions_buffer);
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, MAX_STENCIL_REGIONS * 4 * sizeof(float), stencil_regions);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 		// Draw fullscreen quad only the fragement is different so we can use the same VAO
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -425,7 +448,7 @@ int main() {
 		glDrawArrays(GL_LINES, 0, 50);
 
 		// Turn on the stencil finally
-		glStencilFunc(GL_EQUAL, 0, 0xFF);
+		glStencilFunc(GL_EQUAL, render_data.stencil_state, 0xFF);
 
 		// Only bother drawing any other lines if we have more than 25 lines
 		// so we dont waste time dispatching a shader and random bugginess
