@@ -134,12 +134,12 @@ RenderData SystemsController::render() {
 	// Render the bvh if needed
 	num_lines = map_manager->render_bvh(line_verts, line_colors, num_lines);
 
-	//float renderscale = 0.3f;
+	float renderscale = 0.8f;
 
-	//// scale the non cursor line
-	//for (int i = 50; i < num_lines * 4; i++) {
-	//	line_verts[i] *= renderscale;
-	//}
+	// scale the non cursor line
+	for (int i = 100; i < num_lines * 4; i++) {
+		line_verts[i] *= renderscale;
+	}
 
 	RenderData return_data;
 

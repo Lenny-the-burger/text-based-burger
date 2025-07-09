@@ -232,7 +232,7 @@ static vec2 smooth_follow(vec2 current_pos, vec2 target_pos, vec2 aimpos, float 
 	distance /= max_lag;
 
 	// Equivalent to move speed
-	float stepsize = 3.0f * 100.0f;
+	float stepsize = 4.5f * 100.0f;
 	float step = stepsize * dtime;
 	// The smooth function
 	step *= max(0.0f, min(1.0f, 
@@ -274,7 +274,7 @@ void PointViewControl::update(ObjectUpdateData data) {
 	}
 	
 	bool extended_look = false;
-	if (glfwGetKey(data.window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+	if (glfwGetKey(data.window, GLFW_KEY_B) == GLFW_PRESS) { // bzoom
 		extended_look = true;
 	}
 
@@ -364,7 +364,12 @@ void Possessor::update(ObjectUpdateData data) {
 
 	move = move.unit();
 
-	float move_speed = 3.0f * 100.0f;
+	float move_speed = 4.0f * 100.0f;
+
+	// are we crouching
+	if (glfwGetKey(data.window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+		move_speed *= 0.4f; // Crouch speed
+	}
 
 	move *= move_speed * data.frame_time;
 
