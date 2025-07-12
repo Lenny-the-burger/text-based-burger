@@ -59,9 +59,7 @@ public:
 	void call_script(std::string script_name, json args);
 
 	// Points to the meshes data. The actual one is held by the handler
-	json* meshes;
-
-	ankerl::unordered_dense::map<std::string, std::vector<int>*>* mesh_map;
+	ankerl::unordered_dense::map<std::string, std::vector<float>>* meshes;
 
 private:
 	std::vector<std::string> error_log;

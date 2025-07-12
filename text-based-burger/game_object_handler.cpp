@@ -23,16 +23,10 @@ ObjectsHandler::ObjectsHandler(string filename, SystemsController& new_controlle
 	// game objects for bullets that come from a gun, just do the calculation
 	// in a script and render the visuals.
 
-	// As we build objects add the files that meshes they need are stored in
-	// and then at the end read them all in at once.
-	vector<string> mesh_files_to_load;
+	
 
 	// Create the mouse renderer object
 	mouse_renderer = std::make_unique<MouseRenderer>(object_io);
-
-	// Push back gen props file to files we should load as this should never be missing.
-	// This may be renamed in the future to like util_meshes or something
-	mesh_files_to_load.push_back("gen_props");
 
 	// Load the json file
 	ifstream f(filename);
@@ -56,21 +50,17 @@ ObjectsHandler::ObjectsHandler(string filename, SystemsController& new_controlle
 	for (auto entity_data : data["entities"]) {
 		objects.push_back(move(object_type_selector(entity_data, object_io)));
 
-		// Check the object mesh and if we dont have the filename already
-		// add it to the list. 
-		// Mesh names are file/folder/mesh with any number of folders possible
-		// "/" as a delimiter was not chosen by me it is what the fuckass json pointers use
-		string filename = split_file_path(entity_data["mesh"].get_ref<const string&>())[0];
-
-		if (find(mesh_files_to_load.begin(), mesh_files_to_load.end(), filename) == mesh_files_to_load.end()) {
-			mesh_files_to_load.push_back(filename);
-		}
-
-		// TODO: Special case for point_viewcontrol, it should also be acessible from the controllers list.
+		// TODO: point_viewcontrols should probably be specially acessible
 
 		// Register the object in the io
 		object_io.register_object(entity_data["targetname"].get_ref<const string&>(), objects.back().get());
 	}
+
+	vector<string> mesh_files_to_load;
+
+	// Push back gen props file to files we should load as this should never be missing.
+	// This may be renamed in the future to like util_meshes or something
+	mesh_files_to_load.push_back("gen_props");
 
 	// By default looks for meshes in the directory /gamedata/meshes/[filename].json
 	// You can also specify a special search path in the map json file with "extra_mesh_paths"
@@ -94,12 +84,15 @@ ObjectsHandler::ObjectsHandler(string filename, SystemsController& new_controlle
 			else if (!f.is_open()) {
 				continue; // Try the next path
 			}
+
+			// Loop over every mesh (they should be flat packed). Meshes follow format
+			// "name": [1, 2, 3, 4] // where each two numbers are a vertex
 			json mesh_data = json::parse(f);
-			meshes[mesh_file] = mesh_data;
+			for (auto& mesh : mesh_data.items()) {
+				meshes[mesh.key()] = mesh.value().get<std::vector<float>>();
+			}
 		}
 	}
-
-	// TODO: Use the hash map instead
 
 	// Give the ref for the meshes to the object io
 	object_io.meshes = &meshes;

@@ -54,8 +54,5 @@ private:
 	// the object registry.
 	std::vector<std::unique_ptr<GameObject>> objects;
 
-	// Follows file.folder.mesh, like meshes[file][folder][mesh][1...n]
-	json meshes;
-
-	ankerl::unordered_dense::map<std::string, std::vector<int>> mesh_map;
+	ankerl::unordered_dense::map<std::string, std::vector<float>> meshes;
 };

@@ -7,6 +7,9 @@ using json = nlohmann::json;
 #include <string>
 #include <unordered_map>
 
+#include <unordered_dense.h>
+#include <any>
+
 // Includes for script only interfaces. This includes basically everything that
 // doesnt run on the main thread.
 #include "map_utils.h"
@@ -60,6 +63,10 @@ struct ScriptHandles {
 // local io class, so you dont need to worry about assigning the handler
 // yourself, this is done by the systems controller.
 using Script = void(*)(const json data, ScriptHandles handles);
+
+// TODO: Migrate from json data to unordered_dence<std::string, std::any> data
+// You should be able to interact with it in the same exact way so things
+// shouldnt break. We dont use nested args anyway.
 
 // Get the function pointer for the given script name
 Script get_script(std::string name);

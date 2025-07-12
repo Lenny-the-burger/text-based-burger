@@ -45,23 +45,20 @@ int GameObject::render(float* lines_list, int offset, uint32_t* colors, vec2 cam
 	float scrn_width = 960.0f;
 	float scrn_height = 536.0f;
 
-	// TODO: add siatcne to camera check if we need to render at all
-
-	// TODO: Eventually this will use just a flat map
-
-	// Get the mesh from the io using json pointer
-	json::json_pointer p("/" + mesh);
-
-	json arr = io.meshes->at(p);
+	// TODO: add distance to camera check if we need to render at all
 
 	vec2 screen_position = position - camera; // Offset the position by the camera position
 	// Centre the position on the screen
 	screen_position.x += scrn_width / 2.0f;
 	screen_position.y += scrn_height / 2.0f;
 
+	int vert_count = io.meshes->at(mesh).size();
+
 	// Loop over the mesh array of coordinates and transform and copy to lines list until done
-	for (json num: arr) {
-		float number = num.get<float>();
+	for (int i = 0; i < vert_count; i++) {
+
+		// This should probably be a vec2 instead of one float at a time, but whatever
+		float number = (*io.meshes)[mesh][i];
 		
 		// It goes x, y, x, y so if offset % 2 == 0 then we are at x
 		if (offset % 2 == 0) {
@@ -154,11 +151,11 @@ void MouseRenderer::update(ObjectUpdateData data) {
 	// Mouse state switcher. Modify mouse state to change the mesh.
 	switch (mouse_state) {
 		case MOUSE_NORMAL:
-			mesh = "gen_props/pointers/aim";
+			mesh = "pointer_aim";
 			break;
 	
 		case MOUSE_CLICKING:
-			mesh = "gen_props/pointers/click";
+			mesh = "pointer_click";
 			break;
 	}
 

@@ -8,12 +8,11 @@
       "targetname": "testobject",
       "type": "npc",
       "update_script": "none",
-      "mesh": "gen_props/npc_icons/foundation",
+      "mesh": "npc_foundation",
       "position": [ 320, 240 ],
       "scale": [ 16, 16 ],
       "color": 255
     }
-
   ],
   "brushes": []
 }
