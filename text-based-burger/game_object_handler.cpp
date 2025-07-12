@@ -70,6 +70,9 @@ ObjectsHandler::ObjectsHandler(string filename, SystemsController& new_controlle
 		paths.push_back(path);
 	}
 
+	// empty mesh
+	meshes[""] = std::vector<float>();
+
 	// Now load the meshes
 	for (auto mesh_file : mesh_files_to_load) {
 		// Load the mesh file

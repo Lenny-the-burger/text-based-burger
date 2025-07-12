@@ -91,15 +91,11 @@ struct vec2 {
 	}
 	// Overload the / operator for scalar division
 	vec2 operator/(float scalar) const {
-		if (scalar != 0) {
-			return vec2(x / scalar, y / scalar);
-		}
-		else {
-			// Division by zero results in +infty
-			return vec2(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
-		}
+		return vec2(x / scalar, y / scalar);
 	}
-	// division by 0 will result in +infinity
+	vec2 operator/(const vec2& other) const {
+		return vec2(x / other.x, y / other.y);
+	}
 	vec2 operator/=(float scalar) {
 		x /= scalar;
 		y /= scalar;

@@ -179,6 +179,12 @@
     <None Include="gamedata\ui\map_selector.json">
       <Filter>Game data\ui</Filter>
     </None>
+    <None Include="gamedata\maps\mesh_editor.json">
+      <Filter>Game data\maps</Filter>
+    </None>
+    <None Include="gamedata\ui\mesh_editor_ui.json">
+      <Filter>Game data\ui</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imconfig.h">

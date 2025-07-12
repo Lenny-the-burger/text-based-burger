@@ -92,6 +92,7 @@ struct MiscGameData {
 struct GlobalUpdateData {
 	vec2 mouse_pos_native; // position in native
 	vec2 mouse_pos_char;
+	vec2 scroll_delta;
 };
 
 class SystemsController {
@@ -116,6 +117,9 @@ public:
 	// Unload current map (if there is one) and load a new one
 	void load_map(std::string map_name);
 
+	// Load a map but do not load any geometry only entities. Used for like editors
+	void load_metamap(std::string map_name);
+
 	// This is public so scripts can acess it as they are not managed by anything
 	ErrorReporter script_error_reporter;
 
@@ -133,6 +137,7 @@ private:
 	// debugging.
 	void handle_misc_inputs(GLFWwindow* window);
 	std::set<int> key_presses;
+	float scroll_x = 0.0f, scroll_y = 0.0f;
 
 	// Function that actually renders the error log
 	void render_log();

@@ -23,6 +23,7 @@ struct ObjectUpdateData {
 	float frame_time;
 	vec2 mouse_pos;
 	bool is_clicking;
+	vec2 scroll_delta;
 
 	// Pointer to actual window, do whatever you want with it
 	GLFWwindow* window;

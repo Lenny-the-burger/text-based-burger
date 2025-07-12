@@ -35,6 +35,8 @@ int SMALL_WINDOW_HEIGHT = (CHAR_ROWS * CHAR_HEIGHT) / CHAR_RATIO;
 int mouse_char_x = 0;
 int mouse_char_y = 0;
 
+float scroll_x = 0.0f, scroll_y = 0.0f;
+
 int native_x, native_y = 0;
 
 const char* WINDOW_TITLE = "Text based burger";
@@ -57,6 +59,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	window_height = height;
 
 	aspect_ratio = (float)window_width / (float)window_height;
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+	scroll_x += (float)xoffset;
+	scroll_y += (float)yoffset;
 }
 
 void processInput(GLFWwindow* window) {
@@ -122,6 +129,8 @@ int main() {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 	glfwSwapInterval(0); // Disable vsync
+
+	glfwSetScrollCallback(window, scroll_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -333,6 +342,7 @@ int main() {
 		GlobalUpdateData global_update_data;
 		global_update_data.mouse_pos_native = vec2(native_x, native_y);
 		global_update_data.mouse_pos_char = vec2(mouse_char_x, mouse_char_y);
+		global_update_data.scroll_delta = vec2(scroll_x, scroll_y);
 
 		systems_controller->update(window, global_update_data);
 		RenderData render_data = systems_controller->render();

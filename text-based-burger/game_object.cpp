@@ -106,6 +106,9 @@ std::unique_ptr<GameObject> object_type_selector(json data, ObjectIO& io) {
 		{"npc", [](json data, ObjectIO& io) {
 			return std::make_unique<NPC>(data, io);
 		}},
+		{"line_canvas", [](json data, ObjectIO& io) {
+			return std::make_unique<LineCanvas>(data, io);
+		}},
 
 		// Dont add types that shouldnt be spawned by the user like mouse renderer
 	};
@@ -420,4 +423,126 @@ void NPC::aim(vec2 direction) {
 void NPC::attack() {
 
 	return;
+}
+
+LineCanvas::LineCanvas(json data, ObjectIO& io) : GameObject(json::object(
+	{  // Dummy data that will never change on init
+		{"targetname", "line_canvas"},
+		{"position", {0, 0}},
+		{"scale", {1, 1}},
+		{"mesh", ""},
+		{"color", 255},
+		{"update_script", "none"}
+	}), io) {
+	collision_type = COLLISION_TYPE_NONE;
+	return;
+}
+
+void LineCanvas::update(ObjectUpdateData data) {
+	data.mouse_pos.y = 536.0f - data.mouse_pos.y;
+
+	// for now draw on the entire screen
+	bool within_bbox = true;
+
+	// Click tracking logic
+	if (data.is_clicking) {
+		if (!is_clicking && within_bbox) {
+			is_clicking = true;
+			is_click_start_inside = true;
+
+			have_already_fired = false;
+
+			on_press(data);
+		}
+		if (are_drawing) {
+			// if we are mid draw update the last element in the canvas_lines vector
+			canvas_lines[canvas_lines.size() - 1] = data.mouse_pos;
+		}
+	}
+	else {
+		if (is_clicking) {
+			// Only count as a full click if press and release both happen inside
+			if (is_click_start_inside && within_bbox) {
+				on_click(data);
+			}
+			else {
+				on_release(data);
+			}
+			is_clicking = false;
+			is_click_start_inside = false;
+		}
+	}
+	
+	return;
+}
+
+void LineCanvas::on_press(ObjectUpdateData data) {
+	// Start drawing
+	are_drawing = true;
+
+	// add the initial points to the canvas
+	canvas_lines.push_back(data.mouse_pos);
+	canvas_lines.push_back(data.mouse_pos);
+
+	canvas_colors.push_back(256);
+
+	return;
+}
+
+void LineCanvas::on_click(ObjectUpdateData data) {
+	// We are done drawing
+	are_drawing = false;
+	return;
+}
+
+void LineCanvas::on_release(ObjectUpdateData data) {
+	// We are done drawing but we have cancelled the draw so remove the last two points
+	if (canvas_lines.size() >= 2) {
+		canvas_lines.pop_back(); // Remove the last point
+		canvas_lines.pop_back(); // Remove the second last point
+		canvas_colors.pop_back(); // Remove the last color
+	}
+	return;
+}
+
+int LineCanvas::render(float* lines_list, int offset, uint32_t* colors, vec2 camera) {
+	// Render function is called every frame. You are given a pointer to an array
+	// and should append yourself to it if you need to be rendered. Not appending
+	// yourself will cause you to not be rendered, even if you were rendered the
+	// previous frame. The entire array is cleared. For optimization you should only
+	// render if you are within some distance of the camera position you get from
+	// updata data. Note that you should output NDC here not world space.
+
+	// Hard coded screen size whatever;
+	vec2 screen_size = vec2(960, 536);
+
+	vec2 screen_position = position - camera; // Offset the position by the camera position
+	// Centre the position on the screen
+	screen_position += screen_size / 2.0f;
+
+	int vert_count = canvas_lines.size();
+
+	// Loop over the mesh array of coordinates and transform and copy to lines list until done
+	for (int i = 0; i < vert_count; i++) {
+
+		vec2 vertex = canvas_lines[i];
+
+		vertex = vertex * render_scale;
+		vertex = vertex / screen_size;
+
+		// Normalize to full screen ndc -1 to 1
+		vertex = (vertex * 2.0f) - 1.0f; // Convert to NDC space
+
+		lines_list[offset] = vertex.x;
+		offset++;
+		lines_list[offset] = vertex.y;
+		offset++;
+
+		// Every 2nd nmuber is a complete line so add new color
+		if (i % 2 == 0) {
+			colors[offset / 4] = canvas_colors[i / 2];
+		}
+	}
+
+	return offset; // Return the new offset
 }

@@ -163,6 +163,7 @@
     <None Include="fragment_lines.glsl" />
     <None Include="fragment_pass.glsl" />
     <None Include="fragment_stencil.glsl" />
+    <None Include="gamedata\maps\mesh_editor.json" />
     <None Include="gamedata\maps\none_map.json" />
     <None Include="gamedata\maps\none_map_geo.json" />
     <None Include="gamedata\maps\testmap.json" />
@@ -170,6 +171,7 @@
     <None Include="gamedata\meshes\gen_props.json" />
     <None Include="gamedata\ui\gameplay_ui.json" />
     <None Include="gamedata\ui\map_selector.json" />
+    <None Include="gamedata\ui\mesh_editor_ui.json" />
     <None Include="gamedata\ui\test_scene.json" />
     <None Include="packages.config" />
     <None Include="vertex.glsl" />

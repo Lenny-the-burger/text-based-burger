@@ -12,28 +12,26 @@ SystemsController::SystemsController(RenderTargets render_targets, string ui_ent
 	// instead of unique ptrs but whatever
 	long_thread_controller = make_unique<LongThreadController>(threading_error_reporter);
 
-	//// Create the default ui handler
-	//ui_handlers.push_back(make_unique<UIHandler>("gamedata\\ui\\map_selector.json", 120, 34, *this));
-	//ui_io.push_back(ui_handlers[0]->get_io());
+	// reserve at least 2 spots in the ui handlers for the standard handler slots
+	ui_handlers.resize(2);
+	ui_io.resize(2);
 
-	//// Load the none map by default
-	//objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\none_map.json", *this);
-	//objects_io = objects_handler->get_io();
-	//map_manager = make_unique<MapManager>("gamedata\\maps\\none_map_geo.json");
+	// Create the default ui handler
+	ui_handlers[UI_HANDLER_ENTRY] = make_unique<UIHandler>("gamedata\\ui\\map_selector.json", 120, 34, *this);
+	ui_io[UI_HANDLER_ENTRY] = ui_handlers[0]->get_io();
 
-	// TEMP: Load testmap for quadtree development instead of usual nonemap
-	ui_handlers.push_back(make_unique<UIHandler>("gamedata\\ui\\gameplay_ui.json", 120, 34, *this));
-	ui_io.push_back(ui_handlers[0]->get_io());
-
-	// Load the test map
-	objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\testmap.json", *this);
+	// Load the none map by default
+	objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\none_map.json", *this);
 	objects_io = objects_handler->get_io();
-	map_manager = make_unique<MapManager>("gamedata\\maps\\testmap_geo.json");
+	map_manager = make_unique<MapManager>("gamedata\\maps\\none_map_geo.json");
 
 	// set render targets
 	char_grid = render_targets.char_grid;
 	line_verts = render_targets.line_verts;
 	line_colors = render_targets.line_colors;
+
+	// TEMP: for testing
+	load_metamap("mesh_editor");
 }
 
 void SystemsController::handle_misc_inputs(GLFWwindow* window) {
@@ -108,6 +106,7 @@ void SystemsController::update(GLFWwindow* window, GlobalUpdateData global_updat
 	update_data.frame_time = frame_time;
 	update_data.mouse_pos = global_update_data.mouse_pos_native;
 	update_data.is_clicking = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+	update_data.scroll_delta = global_update_data.scroll_delta;
 
 	// Should probably not reset this every frame, but its a pointer so whatever
 	update_data.window = window;
@@ -134,12 +133,12 @@ RenderData SystemsController::render() {
 	// Render the bvh if needed
 	num_lines = map_manager->render_bvh(line_verts, line_colors, num_lines);
 
-	float renderscale = 0.8f;
+	//float renderscale = 1.0f;
 
-	// scale the non cursor line
-	for (int i = 100; i < num_lines * 4; i++) {
-		line_verts[i] *= renderscale;
-	}
+	//// scale the non cursor line
+	//for (int i = 100; i < num_lines * 4; i++) {
+	//	line_verts[i] *= renderscale;
+	//}
 
 	RenderData return_data;
 
@@ -326,9 +325,25 @@ void SystemsController::load_map(string map_name) {
 	map_manager = make_unique<MapManager>("gamedata\\maps\\" + map_name + "_geo.json");
 
 	// Load gameplay ui
-	ui_handlers.push_back(make_unique<UIHandler>("gamedata\\ui\\gameplay_ui.json", 120, 34, *this));
-	ui_io.push_back(ui_handlers[UI_HANDLER_GAMEPLAY]->get_io());
+	ui_handlers[UI_HANDLER_GAMEPLAY] = (make_unique<UIHandler>("gamedata\\ui\\gameplay_ui.json", 120, 34, *this));
+	ui_io[UI_HANDLER_GAMEPLAY] = (ui_handlers[UI_HANDLER_GAMEPLAY]->get_io());
 
+	active_ui_handler = UI_HANDLER_GAMEPLAY;
+}
+
+void SystemsController::load_metamap(string map_name) {
+	// Unload current map
+	unload_map();
+	// Load new map
+	objects_handler = make_unique<ObjectsHandler>("gamedata\\maps\\" + map_name + ".json", *this);
+	objects_io = objects_handler->get_io();
+
+	// no map geometry
+	map_manager = make_unique<MapManager>("gamedata\\maps\\none_map_geo.json");
+
+	// metamaps should have custom ui aswell
+	ui_handlers[UI_HANDLER_GAMEPLAY] = (make_unique<UIHandler>("gamedata\\ui\\" + map_name + "_ui.json", 120, 34, *this));
+	ui_io[UI_HANDLER_GAMEPLAY] = (ui_handlers[UI_HANDLER_GAMEPLAY]->get_io());
 	active_ui_handler = UI_HANDLER_GAMEPLAY;
 }
 

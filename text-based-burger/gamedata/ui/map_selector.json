@@ -41,6 +41,27 @@
           },
           "hover_script": "",
           "hover_args": {}
+        },
+        {
+          "targetname": "map lodaer button 2",
+          "type": "button",
+          "position": {
+            "x": 0,
+            "y": 1
+          },
+          "text": "mesh editor",
+          "style": {
+            "fg": 255,
+            "bg": 50
+          },
+          "bbox": "text",
+          "fire_only_once": true,
+          "click_script": "metamap_loader",
+          "click_script_args": {
+            "map_name": "mesh_editor"
+          },
+          "hover_script": "",
+          "hover_args": {}
         }
       ]
     }

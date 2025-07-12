@@ -82,6 +82,7 @@ void mouse_pos_shower(json data, ScriptHandles handles);
 void basic_mover(json data, ScriptHandles handles);
 
 void map_loader(json data, ScriptHandles handles);
+void metamap_loader(json data, ScriptHandles handles);
 void map_unloader(json data, ScriptHandles handles);
 
 void build_bvh(json data, ScriptHandles handles);

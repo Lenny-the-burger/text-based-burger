@@ -12,6 +12,10 @@ using namespace std;
 UIComponent::UIComponent(UIComponentIO& the_comp_io) : comp_io(the_comp_io) {
 	targetname = "root";
 	position = make_pair(0, 0); // This constructor should only be used for the root component
+
+	// Init children to empty
+	children.clear();
+
 	return;
 };
 
@@ -29,6 +33,8 @@ UIComponent::UIComponent(json data,pair<int, int> offset, UIComponentIO& the_com
 	// Add the offset to the position
 	position.first += offset.first;
 	position.second += offset.second;
+
+	children.clear();
 
 	// Recursivly build the tree
 	for (json child : data["children"]) {

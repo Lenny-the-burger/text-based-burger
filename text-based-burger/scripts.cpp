@@ -24,6 +24,7 @@ Script get_script(std::string name) {
 		{"mousepos", mouse_pos_shower},
 		{"basic_mover", basic_mover},
 		{"map_loader", map_loader},
+		{"metamap_loader", metamap_loader},
 		{"map_unloader", map_unloader},
 		{"build_bvh", build_bvh},
 		{"bvh_build_done", bvh_build_done},
@@ -122,6 +123,14 @@ void map_loader(json data, ScriptHandles handles) {
 	std::string map_name = data["map_name"].get<std::string>();
 	// Load the map
 	handles.controller->load_map(map_name);
+	return;
+}
+
+void metamap_loader(json data, ScriptHandles handles) {
+	// Get the map name from the data
+	std::string map_name = data["map_name"].get<std::string>();
+	// Load the metamap
+	handles.controller->load_metamap(map_name);
 	return;
 }
 
