@@ -1,7 +1,98 @@
 {
-  "stencil_regions": [],
-  "stencil_state": 1,
+  "stencil_regions": [
+    [ 80, 0 ],
+    [ 960, 520 ]
+  ],
+  "stencil_state": 0,
   "root": [
-
+    {
+      "targetname": "toolbar",
+      "type": "container",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "bg_empty": 70,
+      "bbox": [
+        [ 0, 0 ],
+        [ 119, 0 ]
+      ],
+      "children": [
+        {
+          "targetname": "file dropdown",
+          "type": "button",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "text": "File",
+          "style": {
+            "fg": 255,
+            "bg": 30
+          },
+          "bbox": "text",
+          "fire_only_once": true,
+          "click_script": "file_dropdown",
+          "click_script_args": {},
+          "hover_script": "",
+          "hover_args": {}
+        },
+        {
+          "targetname": "edit dropdown",
+          "type": "button",
+          "position": {
+            "x": 5,
+            "y": 0
+          },
+          "text": "Edit",
+          "style": {
+            "fg": 255,
+            "bg": 30
+          },
+          "bbox": "text",
+          "fire_only_once": true,
+          "click_script": "edit_dropdown",
+          "click_script_args": {},
+          "hover_script": "",
+          "hover_args": {}
+        }
+      ]
+    },
+    {
+      "targetname": "canvas tool panel",
+      "type": "container",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "bg_empty": 70,
+      "bbox": [
+        [ 0, 1 ],
+        [ 9, 33 ]
+      ],
+      "children": [
+        {
+          "targetname": "tool button draw",
+          "type": "button",
+          "position": {
+            "x": 0,
+            "y": 4
+          },
+          "text": "Draw",
+          "style": {
+            "fg": 255,
+            "bg": 30
+          },
+          "bbox": "text",
+          "fire_only_once": true,
+          "click_script": "set_canvas_tool",
+          "click_script_args": {
+            "type": "draw"
+          },
+          "hover_script": "",
+          "hover_args": {}
+        }
+      ]
+    }
   ]
 }

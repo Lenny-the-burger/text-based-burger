@@ -4,7 +4,9 @@
 using json = nlohmann::json;
 
 #include "ui_systems.h"
+#include "math_utils.h"
 
+#include <algorithm>
 #include <vector>
 #include <string>
 
@@ -67,6 +69,14 @@ std::unique_ptr<UIComponent> component_type_selector(json data, std::pair<int, i
 class Container : public UIComponent {
 public:
 	Container(json data, std::pair<int, int> offset, UIComponentIO& the_comp_io);
+
+	virtual void render(std::vector<std::vector<uint32_t>>& screen) override;
+
+protected:
+	bool colored_container = false;
+	int bg_color = 0;
+	vec2 bbox_from;
+	vec2 bbox_to;
 };
 
 

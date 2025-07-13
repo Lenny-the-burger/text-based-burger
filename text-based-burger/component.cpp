@@ -127,7 +127,45 @@ std::unique_ptr<UIComponent> component_type_selector(json data, std::pair<int, i
 
 Container::Container(json data, pair<int, int> offset, UIComponentIO& the_comp_io) 
 	: UIComponent(data, offset, the_comp_io) {
+
+	for (auto& key : data.items()) {
+		if (key.key() == "bg_empty") {
+			colored_container = true;
+		}
+	}
+
+	// See if there is a empty_bg key in the data
+	if (!colored_container) {
+		// Regular container
+		return;
+	}
+	else {
+		colored_container = true;
+		bg_color = data["bg_empty"].get<int>();
+		bbox_from = vec2(data["bbox"][0]);
+		bbox_to = vec2(data["bbox"][1]);
+	}
+
 	return;
+}
+
+void Container::render(std::vector<std::vector<uint32_t>>& screen) {
+	// We only need to render if we need to color the background
+	if (!colored_container) {
+		return;
+	}
+
+	for (int x = (int)bbox_from.x; x < (int)bbox_to.x + 1; x++) {
+		for (int y = (int)bbox_from.y; y < (int)bbox_to.y + 1; y++) {
+			// Render the background color
+			try {
+				screen.at(position.second + y).at(position.first + x) = gen_frag(0, bg_color, 0);
+			}
+			catch (out_of_range) {
+				comp_io.report_error("WARN: Container " + targetname + " tried to render out of bounds at " + to_string(x) + "," + to_string(y));
+			}
+		}
+	}
 }
 
 // LABEL

@@ -477,32 +477,45 @@ void LineCanvas::update(ObjectUpdateData data) {
 }
 
 void LineCanvas::on_press(ObjectUpdateData data) {
-	// Start drawing
-	are_drawing = true;
+	switch (tool) {
+	case CANVAS_TOOL_DRAW_LINE:
+		// Start drawing
+		are_drawing = true;
 
-	// add the initial points to the canvas
-	canvas_lines.push_back(data.mouse_pos);
-	canvas_lines.push_back(data.mouse_pos);
+		// add the initial points to the canvas
+		canvas_lines.push_back(data.mouse_pos);
+		canvas_lines.push_back(data.mouse_pos);
 
-	canvas_colors.push_back(256);
+		canvas_colors.push_back(active_color);
 
-	return;
+		active_line = canvas_colors.size() - 1;
+
+		return;
+	}
 }
 
 void LineCanvas::on_click(ObjectUpdateData data) {
-	// We are done drawing
-	are_drawing = false;
-	return;
+	switch (tool) {
+	case CANVAS_TOOL_DRAW_LINE:
+		// We are done drawing
+		are_drawing = false;
+		active_line = -1;
+		return;
+	}
 }
 
 void LineCanvas::on_release(ObjectUpdateData data) {
-	// We are done drawing but we have cancelled the draw so remove the last two points
-	if (canvas_lines.size() >= 2) {
-		canvas_lines.pop_back(); // Remove the last point
-		canvas_lines.pop_back(); // Remove the second last point
-		canvas_colors.pop_back(); // Remove the last color
+	switch (tool) {
+	case CANVAS_TOOL_DRAW_LINE:
+		// We are done drawing but we have cancelled the draw so remove the last two points
+		if (canvas_lines.size() >= 2) {
+			canvas_lines.pop_back(); // Remove the last point
+			canvas_lines.pop_back(); // Remove the second last point
+			canvas_colors.pop_back(); // Remove the last color
+			active_line = -1; // Reset the active line
+		}
+		return;
 	}
-	return;
 }
 
 int LineCanvas::render(float* lines_list, int offset, uint32_t* colors, vec2 camera) {

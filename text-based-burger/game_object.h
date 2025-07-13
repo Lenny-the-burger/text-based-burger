@@ -249,6 +249,12 @@ protected:
 	std::string outfit;
 };
 
+enum CanvasTool {
+	CANVAS_TOOL_SELECT,
+	CANVAS_TOOL_DRAW_LINE,
+	CANVAS_TOOL_EDIT
+};
+
 // Line canvas is a special object that lets you draw lines on the screen. Used for mesh and map editors.
 class LineCanvas : public GameObject {
 public:
@@ -259,12 +265,22 @@ public:
 	// Canvas renders in a special way
 	virtual int render(float* lines_list, int offset, uint32_t* colors, vec2 camera);
 
+	void set_active_tool(CanvasTool new_tool) {
+		tool = new_tool;
+	}
+
 protected:
 	void on_press(ObjectUpdateData data);
 	void on_click(ObjectUpdateData data);
 	void on_release(ObjectUpdateData data);
 
 	bool are_drawing = false;
+
+	// This is mostly used when editing for holding what line we are editing
+	int active_line = 0;
+	int active_color = 256;
+	
+	CanvasTool tool = CANVAS_TOOL_DRAW_LINE;
 
 	std::vector<vec2> canvas_lines;
 	std::vector<int> canvas_colors;
