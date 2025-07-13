@@ -148,6 +148,8 @@ RenderData SystemsController::render() {
 	return_data.stencil_regions = ui_handlers[active_ui_handler]->get_stencil_regions();
 	return_data.stencil_state = ui_handlers[active_ui_handler]->get_stencil_state();
 
+	ui_handlers[active_ui_handler]->rerender_all();
+
 	if (error_log_type != ERROR_LOG_TYPE_NONE) {
 		render_log();
 		// stencil away the entire screen so we dont draw the map
@@ -268,8 +270,8 @@ void SystemsController::render_log() {
 				int char_num = char2int(line_error[i]);
 				uint32_t char_packed = gen_frag(char_num, 0, 255);
 				try {
-				screen[line][i] = char_packed;
-			}
+					screen[line][i] = char_packed;
+				}
 				catch (const out_of_range& e) {
 					// If we try to write out of bounds, just skip this character
 					controller_error_reporter.report_error("ERROR: Ran out of lines for errors (what did you do???)");
