@@ -240,6 +240,12 @@ void SystemsController::render_log() {
 		break;
 	}
 
+	// Check if we overflow the screen with errors, in that case only keep the last CHAR_ROWS errors
+	if (all_errors.size() > CHAR_ROWS / 2) {
+		all_errors.erase(all_errors.begin(), all_errors.end() - (CHAR_ROWS / 2));
+		all_repeats.erase(all_repeats.begin(), all_repeats.end() - (CHAR_ROWS / 2));
+	}
+
 	// Render to temporary screen
 	vector<vector<uint32_t>> screen = vector<vector<uint32_t>>(CHAR_ROWS / 2, vector<uint32_t>(CHAR_COLS, 0));
 
@@ -261,7 +267,14 @@ void SystemsController::render_log() {
 			for (int i = 0; i < line_error.size(); i++) {
 				int char_num = char2int(line_error[i]);
 				uint32_t char_packed = gen_frag(char_num, 0, 255);
+				try {
 				screen[line][i] = char_packed;
+			}
+				catch (const out_of_range& e) {
+					// If we try to write out of bounds, just skip this character
+					controller_error_reporter.report_error("ERROR: Ran out of lines for errors (what did you do???)");
+					continue;
+				}
 			}
 
 			pos += max_width;

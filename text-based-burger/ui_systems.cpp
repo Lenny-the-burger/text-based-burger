@@ -27,6 +27,14 @@ void UIComponentIO::report_error(string error) {
 	// For now only report string errors
 	error_log.push_back(error);
 	repeats.push_back(0);
+
+	// If we have reached 50 unique error start deleting the oldest ones
+	if (error_log.size() > 50) {
+		error_log.erase(error_log.begin());
+		repeats.erase(repeats.begin());
+		report_error("ERROR: Component io running out of error slots!");
+	}
+
 	return;
 }
 
