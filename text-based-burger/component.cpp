@@ -82,14 +82,13 @@ vector<UIComponent*> iterate_leaves(UIComponent* component) {
 
 		vector<UIComponent*> children = current->get_children();
 
-		if (children.empty()) {
-			leaves.push_back(current);
-		}
-		else {
+		if (!children.empty()) {
 			for (UIComponent* child : children) {
 				queue.push_back(child);
 			}
 		}
+
+		leaves.push_back(current);
 	}
 
 	return leaves;
