@@ -150,11 +150,20 @@ int main() {
 
 	glViewport(0, 0, window_width, window_height);
 
+	// Name            || Samples from   || Writes to
+	// 
+	// raster_shader   || ---			 || nativeFBO
+	// scanline_shader || nativeTex      || compositeFBO 
+	// stencil_shader  || ---            || compositeFBO
+	// line_shader     || ---		     || compositeFBO
+	// crt_shader	   || compositeFBO   || default
+
 	// Compile shaders
 	Shader raster_shader = Shader("vertex.glsl", "fragment.glsl", std::vector<std::string>(), 460);
-	Shader line_shader = Shader("vertex_lines.glsl", "fragment_lines.glsl", std::vector<std::string>(), 460);
-	Shader pass_shader = Shader("vertex.glsl", "fragment_pass.glsl", std::vector<std::string>(), 460);
+	Shader scanline_shader = Shader("vertex.glsl", "fragment_pass.glsl", std::vector<std::string>(), 460);
 	Shader stencil_shader = Shader("vertex.glsl", "fragment_stencil.glsl", std::vector<std::string>(), 460);
+	Shader line_shader = Shader("vertex_lines.glsl", "fragment_lines.glsl", std::vector<std::string>(), 460);
+	// crt shader
 
 #pragma region General loading
 
@@ -194,6 +203,7 @@ int main() {
 	);
 
 #pragma endregion
+#pragma region Vertex Buffers
 
 	// Vertex is simple we only render a screen quad
 
@@ -270,21 +280,24 @@ int main() {
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, line_color_SSBO); // Binding = 1, match in GLSL
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 1); // Bind to 1
 
-	// Frame buffern stuff
+#pragma endregion
+#pragma region Framebuffers
+
+	//  ==== Native framebuffer for raster text rendering 
 
 	// Create framebuffer
-	GLuint framebuffer;
-	glGenFramebuffers(1, &framebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	GLuint nativeFBO;
+	glGenFramebuffers(1, &nativeFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, nativeFBO);
 
 	// Create texture for framebuffer attachment
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	GLuint nativeTex;
+	glGenTextures(1, &nativeTex);
+	glBindTexture(GL_TEXTURE_2D, nativeTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
@@ -293,13 +306,42 @@ int main() {
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &border_color[0]);
 
 	// Attach texture to the framebuffer
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, nativeTex, 0);
 
 	// Check framebuffer completeness
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		std::cerr << "ERROR: Framebuffer is not complete!" << std::endl;
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind framebuffer
+
+
+	// ==== Composite for vector lines and raster text
+
+	GLuint compositeFBO;
+	glGenFramebuffers(1, &compositeFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, compositeFBO);
+
+	GLuint compositeTex;
+	glGenTextures(1, &compositeTex);
+	glBindTexture(GL_TEXTURE_2D, compositeTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &border_color[0]);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, compositeTex, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		std::cerr << "ERROR: Composite framebuffer is not complete!" << std::endl;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+#pragma endregion
+#pragma region SSBOs
 
 	// Character grid buffer
 	// Holds CHAR_COLS by CHAR_ROWS characters
@@ -330,6 +372,8 @@ int main() {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 
+#pragma endregion
+
 	// Set this every frame how many lines were drawing this time
 	int num_lines = 0;
 
@@ -357,7 +401,7 @@ int main() {
 		draw_imgui();
 		set_uniforms();
 
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, nativeFBO);
 		glViewport(0, 0, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT); // Match the framebuffer size
 		glClear(GL_COLOR_BUFFER_BIT); // Clear the framebuffer
 
@@ -385,14 +429,14 @@ int main() {
 		glViewport(0, 0, window_width, window_height);	// Fullscreen viewport
 		glClear(GL_COLOR_BUFFER_BIT);					// Clear screen
 		// Set frambuffer generatred prev as screenTexture uniform
-		pass_shader.setInt("screenTexture", 0);
-		glBindTexture(GL_TEXTURE_2D, texture);			// Bind the framebuffer texture
+		scanline_shader.setInt("screenTexture", 0);
+		glBindTexture(GL_TEXTURE_2D, nativeTex);			// Bind the framebuffer texture
 
-		pass_shader.use();						       // Use passthrough shader
+		scanline_shader.use();						       // Use passthrough shader
 
 		// Set uniforms
-		pass_shader.setFloat("aspectRatio", aspect_ratio);
-		pass_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
+		scanline_shader.setFloat("aspectRatio", aspect_ratio);
+		scanline_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
 
 		glBindVertexArray(VAO);							// Fullscreen quad VAO
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct              // Draw the quad
