@@ -160,8 +160,11 @@
     <None Include="..\.gitignore" />
     <None Include="..\README.MD" />
     <None Include="fragment.glsl" />
+    <None Include="fragment_blur.glsl" />
+    <None Include="fragment_crt.glsl" />
     <None Include="fragment_lines.glsl" />
     <None Include="fragment_pass.glsl" />
+    <None Include="fragment_scanline.glsl" />
     <None Include="fragment_stencil.glsl" />
     <None Include="gamedata\maps\mesh_editor.json" />
     <None Include="gamedata\maps\none_map.json" />

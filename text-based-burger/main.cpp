@@ -28,6 +28,7 @@ int CHAR_RATIO = CHAR_HEIGHT / CHAR_WIDTH;
 int CHAR_COLS = 120;
 int CHAR_ROWS = 68;
 
+// 960 * 544
 int SMALL_WINDOW_WIDTH = CHAR_WIDTH * CHAR_COLS;
 int SMALL_WINDOW_HEIGHT = (CHAR_ROWS * CHAR_HEIGHT) / CHAR_RATIO;
 
@@ -49,8 +50,13 @@ unique_ptr<SystemsController> systems_controller;
 double last_time = 0;
 double frame_time = 0;
 
-float mapz = 0.8f;
-float map_z_fov = 90.0f;
+float hardScan = 6.0f;
+float hardPix = 12.0f;
+
+//GLuint fullTex;
+GLuint compositeTex;
+GLuint depthStencilRBO;
+//GLuint blurTex;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -59,6 +65,24 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	window_height = height;
 
 	aspect_ratio = (float)window_width / (float)window_height;
+
+	// Resize fbos that are not the native one
+	/*glBindTexture(GL_TEXTURE_2D, fullTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glBindTexture(GL_TEXTURE_2D, 0);*/
+
+	glBindTexture(GL_TEXTURE_2D, compositeTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Resize depth-stencil renderbuffer
+	glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, window_width, window_height);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	/*glBindTexture(GL_TEXTURE_2D, blurTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glBindTexture(GL_TEXTURE_2D, 0);*/
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -87,19 +111,21 @@ void draw_imgui() {
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
+	
 	ImGui::NewFrame();
+
+	// Because imgui hijacks things thanks imgui
+	ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+
+	return;
 
 	//ImGui::ShowDemoWindow(); // Show demo window! :)
 
 	// Map z height slider
-	ImGui::SliderFloat("map z", &mapz, -3.0f, 3.0f);
+	ImGui::SliderFloat("hardScan", &hardScan, 0.0f, 32.0f);
 
 	// Map z fov slider
-	ImGui::SliderFloat("map z fov", &map_z_fov, 30.0f, 150.0f);
-
-
-	// Because imgui hijacks things thanks imgui
-	ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+	ImGui::SliderFloat("hardPix", &hardPix, 0.0f, 12.0f);
 	
 	return;
 }
@@ -150,20 +176,24 @@ int main() {
 
 	glViewport(0, 0, window_width, window_height);
 
-	// Name            || Samples from   || Writes to
+	// Name            || Samples from   || Writes to    || Purpose
 	// 
-	// raster_shader   || ---			 || nativeFBO
-	// scanline_shader || nativeTex      || compositeFBO 
-	// stencil_shader  || ---            || compositeFBO
-	// line_shader     || ---		     || compositeFBO
-	// crt_shader	   || compositeFBO   || default
+	// raster_shader   || ---			 || nativeFBO    || Render text to native size
+	// pass_shader     || nativeFBO      || fullFBO      || Upscale text to full screen size
+	// scanline_shader || fullFBO        || compositeFBO || Draw scanlines to composite FBO
+	// stencil_shader  || ---            || compositeFBO || Draw stencil for lines
+	// line_shader     || ---		     || compositeFBO || Draw vector lines
+	// blur_shader     || compositeFBO   || blurFBO      || Blur intermediate step
+	// crt_shader	   || blurFBO        || default      || Final blur step, apply remaining CRT effects
 
 	// Compile shaders
-	Shader raster_shader = Shader("vertex.glsl", "fragment.glsl", std::vector<std::string>(), 460);
-	Shader scanline_shader = Shader("vertex.glsl", "fragment_pass.glsl", std::vector<std::string>(), 460);
-	Shader stencil_shader = Shader("vertex.glsl", "fragment_stencil.glsl", std::vector<std::string>(), 460);
-	Shader line_shader = Shader("vertex_lines.glsl", "fragment_lines.glsl", std::vector<std::string>(), 460);
-	// crt shader
+	Shader raster_shader   = Shader("vertex.glsl", "fragment.glsl",				std::vector<std::string>(), 460);
+	Shader pass_shader     = Shader("vertex.glsl", "fragment_pass.glsl",		std::vector<std::string>(), 460);
+	Shader scanline_shader = Shader("vertex.glsl", "fragment_scanline.glsl",	std::vector<std::string>(), 460);
+	Shader stencil_shader  = Shader("vertex.glsl", "fragment_stencil.glsl",		std::vector<std::string>(), 460);
+	Shader line_shader     = Shader("vertex_lines.glsl", "fragment_lines.glsl",	std::vector<std::string>(), 460);
+	//Shader blur_shader     = Shader("vertex.glsl", "fragment_blur.glsl",        std::vector<std::string>(), 460);
+	//Shader crt_shader      = Shader("vertex.glsl", "fragment_crt.glsl",         std::vector<std::string>(), 460);
 
 #pragma region General loading
 
@@ -314,6 +344,29 @@ int main() {
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind framebuffer
 
+	//// ==== Fullscreen framebuffer for upscaling text
+
+	//GLuint fullFBO;
+	//glGenFramebuffers(1, &fullFBO);
+	//glBindFramebuffer(GL_FRAMEBUFFER, fullFBO);
+
+	//glGenTextures(1, &fullTex);
+	//glBindTexture(GL_TEXTURE_2D, fullTex);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &border_color[0]);
+
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fullTex, 0);
+
+	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+	//	std::cerr << "ERROR: Fullscreen framebuffer is not complete!" << std::endl;
+	//}
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind framebuffer
 
 	// ==== Composite for vector lines and raster text
 
@@ -321,7 +374,6 @@ int main() {
 	glGenFramebuffers(1, &compositeFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, compositeFBO);
 
-	GLuint compositeTex;
 	glGenTextures(1, &compositeTex);
 	glBindTexture(GL_TEXTURE_2D, compositeTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
@@ -334,11 +386,41 @@ int main() {
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, compositeTex, 0);
 
+	// ----- Create Depth + Stencil Renderbuffer -----
+	glGenRenderbuffers(1, &depthStencilRBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, window_width, window_height);
+
+	// Attach renderbuffer to framebuffer
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRBO);
+
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		std::cerr << "ERROR: Composite framebuffer is not complete!" << std::endl;
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+
+	//// ==== Blur framebuffer for intermediate step
+	//GLuint blurFBO;
+	//glGenFramebuffers(1, &blurFBO);
+	//glBindFramebuffer(GL_FRAMEBUFFER, blurFBO);
+
+	//glGenTextures(1, &blurTex);
+	//glBindTexture(GL_TEXTURE_2D, blurTex);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &border_color[0]);
+
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurTex, 0);
+
+	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+	//	std::cerr << "ERROR: Blur framebuffer is not complete!" << std::endl;
+	//}
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind framebuffer
 
 #pragma endregion
 #pragma region SSBOs
@@ -397,10 +479,10 @@ int main() {
 		region_count = render_data.stencil_regions.size() / 2; // each region is two vec2s
 
 		// Rendering starts here
-
 		draw_imgui();
 		set_uniforms();
 
+#pragma region raster_shader
 		glBindFramebuffer(GL_FRAMEBUFFER, nativeFBO);
 		glViewport(0, 0, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT); // Match the framebuffer size
 		glClear(GL_COLOR_BUFFER_BIT); // Clear the framebuffer
@@ -419,29 +501,30 @@ int main() {
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct 		// Draw the quad
 
 
+#pragma endregion
+#pragma region pass_shader
 		// Finally unbind the small framebuffer
 		// ---- ALL IN SOFTWARE RASTER ELEMENTS MUST BE DRAWN ABOVE THIS LINE ----
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, compositeFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
 
-
-		// Second Pass: Render to the screen (nearest-neighbor upscale)
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);			// Default framebuffer (screen)
 		glViewport(0, 0, window_width, window_height);	// Fullscreen viewport
-		glClear(GL_COLOR_BUFFER_BIT);					// Clear screen
-		// Set frambuffer generatred prev as screenTexture uniform
-		scanline_shader.setInt("screenTexture", 0);
-		glBindTexture(GL_TEXTURE_2D, nativeTex);			// Bind the framebuffer texture
 
-		scanline_shader.use();						       // Use passthrough shader
+		pass_shader.use();							// Use shader first
+		glActiveTexture(GL_TEXTURE0);					// Activate texture unit 0
+		glBindTexture(GL_TEXTURE_2D, nativeTex);		// Bind texture to unit 0
+		pass_shader.setInt("screenTexture", 0);		// Set uniform to use unit 0
 
 		// Set uniforms
-		scanline_shader.setFloat("aspectRatio", aspect_ratio);
-		scanline_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
+		pass_shader.setFloat("aspectRatio", aspect_ratio);
+		pass_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
 
 		glBindVertexArray(VAO);							// Fullscreen quad VAO
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct              // Draw the quad
 
-
+#pragma endregion
+#pragma region stencil_shader
+		glBindFramebuffer(GL_FRAMEBUFFER, compositeFBO);
 		glEnable(GL_STENCIL_TEST); // Enable stencil test
 
 		// Draw to stencil buffer for lines
@@ -466,12 +549,14 @@ int main() {
 		// Step 2: Only allow drawing where stencil == 1
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Enable color writes
 		glStencilMask(0x00);                             // Disable writing to stencil
-		
+
+#pragma endregion
+#pragma region line_shader
 		// Draw electron beam lines, these are not rasterized so draw them at screen resolution
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		glEnable(GL_BLEND);
-		glLineWidth(2.0f); 
+		glLineWidth(4.0f); 
 		glEnable(GL_LINE_SMOOTH);
 
 		line_shader.use();
@@ -523,6 +608,28 @@ int main() {
 
 		glDisable(GL_BLEND); // Disable blending for next draw calls
 		glDisable(GL_STENCIL_TEST);
+
+#pragma endregion
+#pragma region scanline_shader
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		scanline_shader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, compositeTex); // Bind the composite texture
+		scanline_shader.setInt("buffer_texture", 0);
+
+		scanline_shader.setFloat("resy", window_height);
+		scanline_shader.setFloat("resx", window_width);
+
+		scanline_shader.setFloat("hardScan", -hardScan);
+		scanline_shader.setFloat("hardPix", -hardPix);
+
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+#pragma endregion
 
 		// Draw Dear ImGui
 		ImGui::Render();

@@ -140,7 +140,7 @@
     <None Include="fragment.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="fragment_pass.glsl">
+    <None Include="fragment_scanline.glsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="vertex.glsl">
@@ -184,6 +184,15 @@
     </None>
     <None Include="gamedata\ui\mesh_editor_ui.json">
       <Filter>Game data\ui</Filter>
+    </None>
+    <None Include="fragment_blur.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="fragment_crt.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="fragment_pass.glsl">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

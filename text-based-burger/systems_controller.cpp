@@ -31,7 +31,7 @@ SystemsController::SystemsController(RenderTargets render_targets, string ui_ent
 	line_colors = render_targets.line_colors;
 
 	// TEMP: for testing
-	load_metamap("mesh_editor");
+	//load_metamap("mesh_editor");
 }
 
 void SystemsController::handle_misc_inputs(GLFWwindow* window) {
