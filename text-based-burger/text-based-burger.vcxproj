@@ -106,10 +106,14 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\third-party\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkStatus>
+      </LinkStatus>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
