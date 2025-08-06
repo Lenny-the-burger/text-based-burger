@@ -50,8 +50,7 @@ unique_ptr<SystemsController> systems_controller;
 double last_time = 0;
 double frame_time = 0;
 
-float hardScan = 6.0f;
-float hardPix = 12.0f;
+float dval1 = 1.0f;
 
 //GLuint fullTex;
 GLuint compositeTex;
@@ -116,16 +115,13 @@ void draw_imgui() {
 
 	// Because imgui hijacks things thanks imgui
 	ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-
-	return;
+	
+	// return here to not draw imgui
+	//return;
 
 	//ImGui::ShowDemoWindow(); // Show demo window! :)
 
-	// Map z height slider
-	ImGui::SliderFloat("hardScan", &hardScan, 0.0f, 32.0f);
-
-	// Map z fov slider
-	ImGui::SliderFloat("hardPix", &hardPix, 0.0f, 12.0f);
+	ImGui::SliderFloat("dval1", &dval1, 0.0f, 1.0f);
 	
 	return;
 }
@@ -180,11 +176,11 @@ int main() {
 	// 
 	// raster_shader   || ---			 || nativeFBO    || Render text to native size
 	// pass_shader     || nativeFBO      || fullFBO      || Upscale text to full screen size
-	// scanline_shader || fullFBO        || compositeFBO || Draw scanlines to composite FBO
+	// scanline_shader || fullFBO        || compositeFBO || Draw scanlines to composite FBO 
 	// stencil_shader  || ---            || compositeFBO || Draw stencil for lines
 	// line_shader     || ---		     || compositeFBO || Draw vector lines
-	// blur_shader     || compositeFBO   || blurFBO      || Blur intermediate step
-	// crt_shader	   || blurFBO        || default      || Final blur step, apply remaining CRT effects
+
+	// the scanline shader could be done in the pass shader, but both 
 
 	// Compile shaders
 	Shader raster_shader   = Shader("vertex.glsl", "fragment.glsl",				std::vector<std::string>(), 460);
@@ -326,7 +322,7 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, nativeTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, SMALL_WINDOW_WIDTH, SMALL_WINDOW_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
@@ -500,6 +496,11 @@ int main() {
 		glBindVertexArray(VAO);							// Fullscreen quad VAO
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // Correct 		// Draw the quad
 
+		// bind texture and generate mipmaps
+		glBindTexture(GL_TEXTURE_2D, nativeTex);		// Bind texture to unit 0
+		glGenerateMipmap(GL_TEXTURE_2D);				// Generate mipmaps for the texture
+		glBindTexture(GL_TEXTURE_2D, 0);				// Unbind texture
+
 
 #pragma endregion
 #pragma region pass_shader
@@ -556,7 +557,7 @@ int main() {
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		glEnable(GL_BLEND);
-		glLineWidth(4.0f); 
+		glLineWidth(2.0f); 
 		glEnable(GL_LINE_SMOOTH);
 
 		line_shader.use();
@@ -620,14 +621,30 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, compositeTex); // Bind the composite texture
 		scanline_shader.setInt("buffer_texture", 0);
 
+		// bind native texture to unit 1
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, nativeTex);
+
+		// linear filtering for "blur"
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		scanline_shader.setInt("native_texture", 1);
+
 		scanline_shader.setFloat("resy", window_height);
 		scanline_shader.setFloat("resx", window_width);
 
-		scanline_shader.setFloat("hardScan", -hardScan);
-		scanline_shader.setFloat("hardPix", -hardPix);
+		scanline_shader.setFloat("dval1", dval1);
+
+		pass_shader.setFloat("aspectRatio", aspect_ratio);
+		pass_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		// reset filtering mode
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 #pragma endregion
 
