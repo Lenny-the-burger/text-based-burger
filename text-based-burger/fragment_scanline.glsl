@@ -65,7 +65,7 @@ void main() {
 
     glow = smoothstep(0.0, 1.0, glow);
 
-    FragColor.rgb += vec3(dval1 * glow);
+    FragColor.rgb += vec3(0.2 * glow);
 
     FragColor.a=1.0;
 }

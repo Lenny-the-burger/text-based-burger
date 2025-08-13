@@ -117,7 +117,7 @@ void draw_imgui() {
 	ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 	
 	// return here to not draw imgui
-	//return;
+	return;
 
 	//ImGui::ShowDemoWindow(); // Show demo window! :)
 
@@ -176,7 +176,7 @@ int main() {
 	// 
 	// raster_shader   || ---			 || nativeFBO    || Render text to native size
 	// pass_shader     || nativeFBO      || fullFBO      || Upscale text to full screen size
-	// scanline_shader || fullFBO        || compositeFBO || Draw scanlines to composite FBO 
+	// scanline_shader || fullFBO        || compositeFBO || Draw raster glow to composite FBO 
 	// stencil_shader  || ---            || compositeFBO || Draw stencil for lines
 	// line_shader     || ---		     || compositeFBO || Draw vector lines
 
@@ -634,7 +634,7 @@ int main() {
 		scanline_shader.setFloat("resy", window_height);
 		scanline_shader.setFloat("resx", window_width);
 
-		scanline_shader.setFloat("dval1", dval1);
+		//scanline_shader.setFloat("dval1", dval1);
 
 		pass_shader.setFloat("aspectRatio", aspect_ratio);
 		pass_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
