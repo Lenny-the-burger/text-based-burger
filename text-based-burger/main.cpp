@@ -50,7 +50,7 @@ unique_ptr<SystemsController> systems_controller;
 double last_time = 0;
 double frame_time = 0;
 
-float dval1 = 1.0f;
+float dval1 = 2.0f;
 
 //GLuint fullTex;
 GLuint compositeTex;
@@ -117,11 +117,11 @@ void draw_imgui() {
 	ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 	
 	// return here to not draw imgui
-	return;
+	//return;
 
 	//ImGui::ShowDemoWindow(); // Show demo window! :)
 
-	ImGui::SliderFloat("dval1", &dval1, 0.0f, 1.0f);
+	ImGui::SliderFloat("dval1", &dval1, 0.5f, 10.0f);
 	
 	return;
 }
@@ -279,19 +279,23 @@ int main() {
 	// object so no indeces, gldrawarrays(gl_lines)
 	// Color buffer is array of 32 bit uints.
 
-	// Create line vertex buffer
-	unsigned int line_VBO, line_VAO, line_color_SSBO;
+	// Quad drawing vertex buffer and color buffer
+	// Vertex buffer is just draw elements, unindexed. Monolithic buffer, so quads can be any random
+	// object so no indices, glDrawArrays(GL_TRIANGLES)
+	// Color buffer is array of 32 bit uints.
+	// Create quad vertex buffer
+	unsigned int quad_VBO, quad_VAO, quad_color_SSBO;
 
 	// Generate VAO
-	glGenVertexArrays(1, &line_VAO);
-	glBindVertexArray(line_VAO);
+	glGenVertexArrays(1, &quad_VAO);
+	glBindVertexArray(quad_VAO);
 
 	// Generate and bind VBO
-	glGenBuffers(1, &line_VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
-	glBufferData(GL_ARRAY_BUFFER, MAX_LINES * 4 * sizeof(float), nullptr, GL_STREAM_DRAW); // Orphaned initially
+	glGenBuffers(1, &quad_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, quad_VBO);
+	glBufferData(GL_ARRAY_BUFFER, MAX_LINES * 12 * sizeof(float), nullptr, GL_STREAM_DRAW); // Orphaned initially
 
-	// Vertex layout: vec2 per vertex (x, y), 2 vertices per line = 4 floats
+	// Vertex layout: vec2 per vertex (x, y), 6 vertices per quad = 12 floats
 	// Just treat it as a flat array of vec2s
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
@@ -300,10 +304,10 @@ int main() {
 	glBindVertexArray(0);
 
 	// Color buffer — SSBO
-	glGenBuffers(1, &line_color_SSBO);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, line_color_SSBO);
+	glGenBuffers(1, &quad_color_SSBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, quad_color_SSBO);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_LINES * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, line_color_SSBO); // Binding = 1, match in GLSL
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, quad_color_SSBO); // Binding = 1, match in GLSL
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 1); // Bind to 1
 
 #pragma endregion
@@ -552,63 +556,148 @@ int main() {
 		glStencilMask(0x00);                             // Disable writing to stencil
 
 #pragma endregion
-#pragma region line_shader
-		// Draw electron beam lines, these are not rasterized so draw them at screen resolution
+
+#pragma region line_shader 
+		// Draw electron beam lines as quads (two triangles each)
+		// Generate quad vertices from line data on CPU
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		glEnable(GL_BLEND);
-		glLineWidth(2.0f); 
-		glEnable(GL_LINE_SMOOTH);
+		glDisable(GL_CULL_FACE); // Important for quads
 
-		line_shader.use();
+		// Thickness parameter - adjust as needed
+		float thickness = dval1; // You can make this a uniform or parameter
 
-		// Set uniforms
+		line_shader.use(); // Renamed from line_shader
+
+		// Set uniforms 
 		line_shader.setFloat("aspectRatio", aspect_ratio);
 		line_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
-		
+		line_shader.setFloat("thickness", thickness); // Pass thickness to shader if needed
 
-		// Upload line vertex data
-		glBindBuffer(GL_ARRAY_BUFFER, line_VBO);
-		glBufferData(GL_ARRAY_BUFFER, MAX_LINES * 4 * sizeof(float), nullptr, GL_STREAM_DRAW); // Orphaning
-		glBufferSubData(GL_ARRAY_BUFFER, 0, num_lines * 4 * sizeof(float), line_verts);        // Upload only used
+		// Generate quad vertices from line data
+		std::vector<float> quad_verts;
+		quad_verts.reserve(num_lines * 12); // 6 vertices * 2 components per quad
 
-		// Upload line color data
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, line_color_SSBO);
+		// Calculate thickness scaling for NDC space
+		float thickness_x = thickness * 0.01f; // Scale down for NDC space
+		float thickness_y = thickness * 0.01f;
+
+		// Apply aspect ratio correction to thickness
+		thickness_x /= (aspect_ratio_small * aspect_ratio);
+
+		for (int i = 0; i < num_lines; i++) {
+			// Get line endpoints (assuming line_verts stores x1,y1,x2,y2 for each line)
+			float x1 = line_verts[i * 4 + 0];
+			float y1 = line_verts[i * 4 + 1];
+			float x2 = line_verts[i * 4 + 2];
+			float y2 = line_verts[i * 4 + 3];
+
+			// Calculate line direction and perpendicular
+			float dx = x2 - x1;
+			float dy = y2 - y1;
+			float len = sqrt(dx * dx + dy * dy);
+
+			if (len > 0.0f) {
+				// Normalize direction vector
+				dx /= len;
+				dy /= len;
+
+				// Perpendicular vector (rotated 90 degrees) with proper NDC scaling
+				float perp_x = -dy * thickness_x * 0.5f;
+				float perp_y = dx * thickness_y * 0.5f;
+
+				// Extend the line in both directions for glow effect
+				float extend_x = dx * thickness_x * 0.5f;
+				float extend_y = dy * thickness_y * 0.5f;
+
+				// Calculate extended endpoints
+				float x1_ext = x1 - extend_x;
+				float y1_ext = y1 - extend_y;
+				float x2_ext = x2 + extend_x;
+				float y2_ext = y2 + extend_y;
+
+				// Generate quad vertices (2 triangles = 6 vertices)
+				// Using extended endpoints for glow effect
+				// Triangle 1: v1, v2, v3
+				// Triangle 2: v1, v3, v4
+
+				// v1 (bottom-left)
+				quad_verts.push_back(x1_ext - perp_x);
+				quad_verts.push_back(y1_ext - perp_y);
+
+				// v2 (top-left) 
+				quad_verts.push_back(x1_ext + perp_x);
+				quad_verts.push_back(y1_ext + perp_y);
+
+				// v3 (top-right)
+				quad_verts.push_back(x2_ext + perp_x);
+				quad_verts.push_back(y2_ext + perp_y);
+
+				// Second triangle
+				// v1 (bottom-left) - repeat
+				quad_verts.push_back(x1_ext - perp_x);
+				quad_verts.push_back(y1_ext - perp_y);
+
+				// v3 (top-right) - repeat
+				quad_verts.push_back(x2_ext + perp_x);
+				quad_verts.push_back(y2_ext + perp_y);
+
+				// v4 (bottom-right)
+				quad_verts.push_back(x2_ext - perp_x);
+				quad_verts.push_back(y2_ext - perp_y);
+			}
+			else {
+				// Degenerate line (zero length) - create zero-area triangles
+				for (int j = 0; j < 12; j++) {
+					quad_verts.push_back(0.0f);
+				}
+			}
+		}
+
+		// Upload quad vertex data 
+		glBindBuffer(GL_ARRAY_BUFFER, quad_VBO); // Renamed from line_VBO
+		glBufferData(GL_ARRAY_BUFFER, MAX_LINES * 12 * sizeof(float), nullptr, GL_STREAM_DRAW); // 6 verts * 2 components
+		if (!quad_verts.empty()) {
+			glBufferSubData(GL_ARRAY_BUFFER, 0, quad_verts.size() * sizeof(float), quad_verts.data());
+		}
+
+		// Upload color data (same as before, but now each color applies to a quad)
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, quad_color_SSBO); // Renamed from line_color_SSBO
 		glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_LINES * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
 		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, num_lines * sizeof(uint32_t), line_colors);
 
-		// Bind the SSBO to binding point 1
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, line_color_SSBO);
+		// Bind the SSBO to binding point 1 
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, quad_color_SSBO);
 
-		// Setup VAO
-		glBindVertexArray(line_VAO);
+		// Setup VAO 
+		glBindVertexArray(quad_VAO); // Renamed from line_VAO
 
-		// Draw the first 25 lines that are reserved for the cursor without stencil
+		// Draw the first 25 quads that are reserved for the cursor without stencil
 		line_shader.setInt("prim_offset", 0);
-		glDrawArrays(GL_LINES, 0, 50);
+		glDrawArrays(GL_TRIANGLES, 0, 25 * 6); // 25 quads * 6 vertices each
 
-		// Turn on the stencil finally
+		// Turn on the stencil finally 
 		glStencilFunc(GL_EQUAL, render_data.stencil_state, 0xFF);
 
-		// Only bother drawing any other lines if we have more than 25 lines
-		// so we dont waste time dispatching a shader and random bugginess
+		// Only bother drawing any other quads if we have more than 25 lines 
 		if (num_lines > 25) {
 			line_shader.setInt("prim_offset", 25);
-			glDrawArrays(GL_LINES, 50, (num_lines * 2) - 50);
+			glDrawArrays(GL_TRIANGLES, 25 * 6, (num_lines - 25) * 6); // Remaining quads
 		}
 
-		// Clear the stencil right away (why doesnt it clear when you try to
-		// clear it at the same time as the color buffer?)
+		// Clear the stencil right away 
 		glStencilMask(0xFF);
 		glClear(GL_STENCIL_BUFFER_BIT);
 
-		// Unbind for cleanliness
+		// Unbind for cleanliness 
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-		glDisable(GL_BLEND); // Disable blending for next draw calls
+		glDisable(GL_BLEND);
 		glDisable(GL_STENCIL_TEST);
+		glEnable(GL_CULL_FACE); // Re-enable if it was on before
 
 #pragma endregion
 #pragma region scanline_shader
