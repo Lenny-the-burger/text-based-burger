@@ -58,11 +58,21 @@ void main() {
     uint hue_u = (color & 0xFFu);
     uint intentsity_u = (color >> 8u ) & 0xFFu;
     uint alpha_u = (color >> 16u) & 0xFFu;
+    uint thickness_u = (color >> 24u) & 0xFFu;
 
     float hue = float(hue_u) / 255.0;
     float intensity = float(intentsity_u) / 255.0;
     float alpha = float(alpha_u) / 255.0;
 
+    //thickness_u = uint(thickness_test);
+
+    // evil thickness scaling:
+    float is_negative = float(thickness_u >> 7);  // 0.0 or 1.0
+    float signed_val = float(thickness_u) - is_negative * 127.0;
+    float val_scaled = signed_val / 127.0; // Scale to -1.0 to 1.0 range
+    
+    //                  Lower bits 0 to 32                          Upper bits 0 to -8
+    float final_width = (0.5 * (1.0 - is_negative) * signed_val) + (-0.025 * is_negative * signed_val);
 
     float min_beam_size = 4.0;
 
@@ -73,12 +83,14 @@ void main() {
     vec2 lineEnd = vertices[lineID * 2 + 1];
     
     // Calculate distance to line segment
-    float sdf_dist = (udSegment(fragPosNDC, lineStart, lineEnd) * 1000.0) - 1.0;
+    float sdf_dist = (udSegment(fragPosNDC, lineStart, lineEnd) * 1000.0);
+
+    sdf_dist -= final_width;
 
     sdf_dist = max(sdf_dist, 0.001);
     
     //  who needs full screen blur when you have sdfs
-    float sdf_r = 1.0 / pow(sdf_dist, thickness_test);
+    float sdf_r = 1.0 / pow(sdf_dist, 1.75);
         
     sdf_r = clamp(sdf_r, 0.0, 1.0);
         

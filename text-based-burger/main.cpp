@@ -51,7 +51,7 @@ double last_time = 0;
 double frame_time = 0;
 
 float dval1 = 10.0f;
-float dval2 = 1.75f;
+float dval2 = 0.0f;
 
 //GLuint fullTex;
 GLuint compositeTex;
@@ -118,12 +118,12 @@ void draw_imgui() {
 	ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 	
 	// return here to not draw imgui
-	//return;
+	return;
 
 	//ImGui::ShowDemoWindow(); // Show demo window! :)
 
 	ImGui::SliderFloat("dval1", &dval1, 0.5f, 10.0f);
-	ImGui::SliderFloat("dval2", &dval2, 0.0f, 2.0f);
+	ImGui::SliderFloat("dval2", &dval2, 0.0f, 255.0f);
 	
 	return;
 }
