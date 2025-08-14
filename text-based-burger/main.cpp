@@ -38,7 +38,7 @@ int mouse_char_y = 0;
 
 float scroll_x = 0.0f, scroll_y = 0.0f;
 
-int native_x, native_y = 0;
+float native_x, native_y = 0;
 
 const char* WINDOW_TITLE = "Text based burger";
 
@@ -96,15 +96,19 @@ void processInput(GLFWwindow* window) {
 	glfwGetCursorPos(window, &xpos, &ypos);
 
 	// Convert from window space to native space
-	float scale = (float)window_height / 536.0f; // more hard coded numbers oh yeah
-	int offset_x = (window_width - 960 * scale) / 2;
+	float scale = (float)window_height / 536.0; // more hard coded numbers oh yeah
+	int offset_x = (window_width - 960.0 * scale) / 2.0;
 
 	native_x = (xpos - offset_x) / scale;
 	native_y = (ypos - 0)        / scale;
 
+	// i have no idea why this is needed but without it the cursor position desynchs with the character grid
+	// by half a character at the bottom of the screen why ???????????
+	float shader_scale = 1.01f + (1.0f / ((float)CHAR_ROWS) / (float)CHAR_RATIO);
+
 	// Convert to character space
 	mouse_char_x = (int)(native_x / CHAR_WIDTH);
-	mouse_char_y = (int)((native_y + 8) / CHAR_HEIGHT); // shader offset
+	mouse_char_y = (int)((native_y * shader_scale) / (CHAR_HEIGHT)); // shader offset
 }
 
 void draw_imgui() {
@@ -119,8 +123,6 @@ void draw_imgui() {
 	
 	// return here to not draw imgui
 	return;
-
-	//ImGui::ShowDemoWindow(); // Show demo window! :)
 
 	ImGui::SliderFloat("dval1", &dval1, 0.5f, 10.0f);
 	ImGui::SliderFloat("dval2", &dval2, 0.0f, 255.0f);
