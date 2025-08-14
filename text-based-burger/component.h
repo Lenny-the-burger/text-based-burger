@@ -122,6 +122,9 @@ protected:
 	bool have_already_fired;
 	bool is_click_start_inside;
 
+	int hover_color_fg = 0;
+	int hover_color_bg = 0;
+
 	std::pair<int, int> bbox;
 
 	std::string click_script_name;

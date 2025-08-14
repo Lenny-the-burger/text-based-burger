@@ -28,7 +28,9 @@
           "text": "File",
           "style": {
             "fg": 255,
-            "bg": 30
+            "bg": 30,
+            "hv_fg": 0,
+            "hv_bg": 100
           },
           "bbox": "text",
           "fire_only_once": true,
@@ -47,11 +49,34 @@
           "text": "Edit",
           "style": {
             "fg": 255,
-            "bg": 30
+            "bg": 30,
+            "hv_fg": 0,
+            "hv_bg": 100
           },
           "bbox": "text",
           "fire_only_once": true,
           "click_script": "edit_dropdown",
+          "click_script_args": {},
+          "hover_script": "",
+          "hover_args": {}
+        },
+        {
+          "targetname": "exit dropdown",
+          "type": "button",
+          "position": {
+            "x": 11,
+            "y": 0
+          },
+          "text": "Exit",
+          "style": {
+            "fg": 255,
+            "bg": 30,
+            "hv_fg": 0,
+            "hv_bg": 100
+          },
+          "bbox": "text",
+          "fire_only_once": true,
+          "click_script": "map_unloader",
           "click_script_args": {},
           "hover_script": "",
           "hover_args": {}
@@ -81,7 +106,9 @@
           "text": "Draw",
           "style": {
             "fg": 255,
-            "bg": 30
+            "bg": 30,
+            "hv_fg": 0,
+            "hv_bg": 100
           },
           "bbox": "text",
           "fire_only_once": true,

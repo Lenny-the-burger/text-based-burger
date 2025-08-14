@@ -307,7 +307,13 @@ Button::Button(json data, pair<int, int> offset, UIComponentIO& the_comp_io)
 	is_hovering = false;
 	is_clicking = false;
 
-
+	// if hv_fg/bg exist set them
+	if (data["style"].contains("hv_fg")) {
+		hover_color_fg = data["style"]["hv_fg"].get<int>();
+	}
+	if (data["style"].contains("hv_bg")) {
+		hover_color_bg = data["style"]["hv_bg"].get<int>();
+	}
 
 	return;
 }
@@ -382,6 +388,9 @@ void Button::on_hover() {
 	if (!hover_script_name.empty()) {
 		comp_io.call_script(hover_script_name, hover_script_args);
 	}
+	// Change colors
+	change_fg_color(hover_color_fg, true);
+	change_bg_color(hover_color_bg, true);
 	return;
 }
 
@@ -419,6 +428,10 @@ void Button::on_release() {
 
 void Button::on_exit() {
 	// Call the exit script
+
+	// Change colors back
+	change_fg_color(-hover_color_fg, true);
+	change_bg_color(-hover_color_bg, true);
 
 	return;
 }

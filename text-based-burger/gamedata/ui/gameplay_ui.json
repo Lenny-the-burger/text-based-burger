@@ -67,7 +67,9 @@
       "text": "Build BVH",
       "style": {
         "fg": 255,
-        "bg": 50
+        "bg": 50,
+        "hv_fg": 0,
+        "hv_bg": 100
       },
       "bbox": "text",
       "fire_only_once": true,
@@ -88,7 +90,9 @@
       "text": "Show bvh",
       "style": {
         "fg": 255,
-        "bg": 50
+        "bg": 50,
+        "hv_fg": 0,
+        "hv_bg": 100
       },
       "bbox": "text",
       "fire_only_once": true,
@@ -96,6 +100,27 @@
       "click_script_args": {
         "type": "cosmetic"
       },
+      "hover_script": "",
+      "hover_args": {}
+    },
+    {
+      "targetname": "exit",
+      "type": "button",
+      "position": {
+        "x": 100,
+        "y": 32
+      },
+      "text": "Exit",
+      "style": {
+        "fg": 255,
+        "bg": 50,
+        "hv_fg": 0,
+        "hv_bg": 100
+      },
+      "bbox": "text",
+      "fire_only_once": true,
+      "click_script": "map_unloader",
+      "click_script_args": {},
       "hover_script": "",
       "hover_args": {}
     },

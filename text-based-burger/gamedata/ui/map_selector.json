@@ -31,7 +31,9 @@
           "text": "testmap",
           "style": {
             "fg": 255,
-            "bg": 50
+            "bg": 50,
+            "hv_fg": 0,
+            "hv_bg": 100
           },
           "bbox": "text",
           "fire_only_once": true,
@@ -47,12 +49,14 @@
           "type": "button",
           "position": {
             "x": 0,
-            "y": 1
+            "y": 2
           },
           "text": "mesh editor",
           "style": {
             "fg": 255,
-            "bg": 50
+            "bg": 50,
+            "hv_fg": 0,
+            "hv_bg": 100
           },
           "bbox": "text",
           "fire_only_once": true,
