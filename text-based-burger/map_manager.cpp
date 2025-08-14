@@ -4,6 +4,8 @@
 #include <fstream> // Include this header to use ifstream 
 #include <iostream>
 
+#include "line_color_gen.hpp"
+
 using namespace std;
 using json = nlohmann::json; // for convenience
 
@@ -139,6 +141,8 @@ int MapManager::render(float* lines_list, uint32_t* colors, int offset) {
 	float camera_x = camera_pos.x;
 	float camera_y = camera_pos.y;
 
+	uint32_t map_col = generate_line_color(LINE_COLOR_PRESET_WALL_GENERIC);
+
 	for (int i = 0; i < num_lines; i++) {
 		// Get the line coordinates, these are in 32 bit ints
 		int x1 = lines[i * 4 + 0];
@@ -199,12 +203,12 @@ int MapManager::render(float* lines_list, uint32_t* colors, int offset) {
 		lines_list[lines_counter * 4 + 1] = f_y1; // y1
 		lines_list[lines_counter * 4 + 2] = f_x2; // x2
 		lines_list[lines_counter * 4 + 3] = f_y2; // y2
-		colors[lines_counter] = 200;
+		colors[lines_counter] = generate_line_color(LINE_COLOR_PRESET_WALL_GENERIC);
 		lines_counter++;
 
 		// if we are drawing bvh dont tesselate
 		if (draw_bvh) {
-			colors[lines_counter - 1] = 50;
+			colors[lines_counter - 1] = generate_line_color(LINE_COLOR_PRESET_WALL_SECONDARY);
 			continue; // Skip the rest of the lines
 		}
 
@@ -213,7 +217,7 @@ int MapManager::render(float* lines_list, uint32_t* colors, int offset) {
 		lines_list[lines_counter * 4 + 1] = z_y1; // y1
 		lines_list[lines_counter * 4 + 2] = z_x2; // x2
 		lines_list[lines_counter * 4 + 3] = z_y2; // y2
-		colors[lines_counter] = 127; // Color is always white for now
+		colors[lines_counter] = generate_line_color(LINE_COLOR_PRESET_WALL_SECONDARY); // Color is always white for now
 		lines_counter++;
 
 		// Side 1:
@@ -221,7 +225,7 @@ int MapManager::render(float* lines_list, uint32_t* colors, int offset) {
 		lines_list[lines_counter * 4 + 1] = f_y1; // y1
 		lines_list[lines_counter * 4 + 2] = z_x1; // x2
 		lines_list[lines_counter * 4 + 3] = z_y1; // y2
-		colors[lines_counter] = 127; // Color is always white for now
+		colors[lines_counter] = generate_line_color(LINE_COLOR_PRESET_WALL_SECONDARY); // Color is always white for now
 		lines_counter++;
 
 		//// Side 2:
@@ -278,7 +282,7 @@ int MapManager::render_bvh(float* lines_list, uint32_t* colors, int offset) {
 		from = (from * 2.0f) - 1.0f;
 		to = (to * 2.0f) - 1.0f;
 
-		int col = 70;
+		int col = generate_line_color(LINE_COLOR_PRESET_WALL_SECONDARY);
 
 		// Right vertical
 		lines_list[lines_counter * 4 + 0] = to.x; // x1

@@ -278,6 +278,9 @@
       <Filter>src\world\header</Filter>
     </ClInclude>
     <ClInclude Include="npc_behaviors.hpp" />
+    <ClInclude Include="line_color_gen.hpp">
+      <Filter>src\world</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="gamedata\fonts\font.txt">

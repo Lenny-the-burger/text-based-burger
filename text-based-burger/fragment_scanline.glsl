@@ -57,6 +57,8 @@ void main() {
 
     FragColor.rgb=texture(buffer_texture,pos.xy).rgb;
 
+    FragColor.rgb += vec3(0.06,0.06,0.06); // ambient
+
     // We have to scale textcoords up and down because gl fragcord for some reason 
     // doesnt update correctly with window size idk
 
@@ -66,6 +68,15 @@ void main() {
     glow = smoothstep(0.0, 1.0, glow);
 
     FragColor.rgb += vec3(0.2 * glow);
+
+    // vignette via https://www.shadertoy.com/view/lsKSWR
+    vec2 uv2 =  pos * (1.0 - pos.yx);
+    
+    float vig = uv2.x*uv2.y * 20.0; // multiply with sth for intensity
+    
+    vig = max(0.25, pow(vig, 0.25)); // change pow for modifying the extend of the  vignette
+
+    FragColor.rgb *= vig;
 
     FragColor.a=1.0;
 }

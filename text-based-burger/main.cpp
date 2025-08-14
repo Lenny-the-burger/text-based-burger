@@ -50,7 +50,8 @@ unique_ptr<SystemsController> systems_controller;
 double last_time = 0;
 double frame_time = 0;
 
-float dval1 = 2.0f;
+float dval1 = 10.0f;
+float dval2 = 1.75f;
 
 //GLuint fullTex;
 GLuint compositeTex;
@@ -122,6 +123,7 @@ void draw_imgui() {
 	//ImGui::ShowDemoWindow(); // Show demo window! :)
 
 	ImGui::SliderFloat("dval1", &dval1, 0.5f, 10.0f);
+	ImGui::SliderFloat("dval2", &dval2, 0.0f, 2.0f);
 	
 	return;
 }
@@ -284,7 +286,7 @@ int main() {
 	// object so no indices, glDrawArrays(GL_TRIANGLES)
 	// Color buffer is array of 32 bit uints.
 	// Create quad vertex buffer
-	unsigned int quad_VBO, quad_VAO, quad_color_SSBO;
+	unsigned int quad_VBO, quad_VAO;
 
 	// Generate VAO
 	glGenVertexArrays(1, &quad_VAO);
@@ -302,13 +304,6 @@ int main() {
 
 	// Unbind VAO
 	glBindVertexArray(0);
-
-	// Color buffer — SSBO
-	glGenBuffers(1, &quad_color_SSBO);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, quad_color_SSBO);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_LINES * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, quad_color_SSBO); // Binding = 1, match in GLSL
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 1); // Bind to 1
 
 #pragma endregion
 #pragma region Framebuffers
@@ -438,6 +433,15 @@ int main() {
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, char_grid_buffer);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
+	unsigned int quad_color_SSBO;
+
+	// Color buffer — SSBO
+	glGenBuffers(1, &quad_color_SSBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, quad_color_SSBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_LINES * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, quad_color_SSBO); // bind to 1
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // unbind
+
 #define MAX_STENCIL_REGIONS 16
 	// Stencil regions buffer
 	// Holds 4 * sizof(float) * MAX_STENCIL_REGIONS bytes
@@ -450,7 +454,18 @@ int main() {
 	glGenBuffers(1, &stencil_regions_buffer);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, stencil_regions_buffer);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_STENCIL_REGIONS * 4 * sizeof(float), stencil_regions, GL_DYNAMIC_COPY);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, stencil_regions_buffer);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, stencil_regions_buffer); // bind to 2
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+	// Raw line data buffer
+	float* line_data = new float[MAX_LINES * 4 * 2]; // 4 vertices per line, 2 floats per vertex
+
+	unsigned int line_data_buffer;
+
+	glGenBuffers(1, &line_data_buffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, line_data_buffer);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_LINES * 4 * 2 * sizeof(float), line_data, GL_DYNAMIC_COPY);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, line_data_buffer); // bind to 3
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 
@@ -556,7 +571,6 @@ int main() {
 		glStencilMask(0x00);                             // Disable writing to stencil
 
 #pragma endregion
-
 #pragma region line_shader 
 		// Draw electron beam lines as quads (two triangles each)
 		// Generate quad vertices from line data on CPU
@@ -573,7 +587,7 @@ int main() {
 		// Set uniforms 
 		line_shader.setFloat("aspectRatio", aspect_ratio);
 		line_shader.setFloat("aspectRatioSmall", aspect_ratio_small);
-		line_shader.setFloat("thickness", thickness); // Pass thickness to shader if needed
+		line_shader.setFloat("thickness_test", dval2);
 
 		// Generate quad vertices from line data
 		std::vector<float> quad_verts;
@@ -666,6 +680,11 @@ int main() {
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, quad_color_SSBO); // Renamed from line_color_SSBO
 		glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_LINES * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
 		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, num_lines * sizeof(uint32_t), line_colors);
+
+		// Raw upload raw line data
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, line_data_buffer);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_LINES * 4 * 2 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, num_lines * 4 * 2 * sizeof(float), line_verts); // just upload this directly
 
 		// Bind the SSBO to binding point 1 
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, quad_color_SSBO);

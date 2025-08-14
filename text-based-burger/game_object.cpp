@@ -2,6 +2,8 @@
 #include "scripts.h"
 #include <iostream>
 
+#include "line_color_gen.hpp"
+
 using namespace std;
 
 // GAME OBJECT
@@ -130,7 +132,7 @@ MouseRenderer::MouseRenderer(ObjectIO& io) : GameObject(json::object(
 		{"position", {0, 0}},
 		{"scale", {1, 1}},
 		{"mesh", "gen_props/pointers/point"},
-		{"color", 255},
+		{"color", generate_line_color(LINE_COLOR_PRESET_CURSOR)},
 		{"update_script", "none"}
 
 	}), io) {
@@ -172,7 +174,7 @@ PointViewControl::PointViewControl(json data, ObjectIO& io) : GameObject(json::o
 		{"position", {0, 0}},
 		{"scale", {1, 1}},
 		{"mesh", ""},
-		{"color", 255},
+		{"color", 0},
 		{"update_script", "none"}
 
 	}), io) {
@@ -324,7 +326,7 @@ Possessor::Possessor(json data, ObjectIO& io) : GameObject(json::object(
 		{"position", {0, 0}},
 		{"scale", {1, 1}},
 		{"mesh", ""},
-		{"color", 255},
+		{"color", 0},
 		{"update_script", "none"}
 
 	}), io) {
@@ -387,6 +389,9 @@ void Possessor::set_target(std::string targetname) {
 
 NPC::NPC(json data, ObjectIO& io) : GameObject(data, io) {
 
+	// TEMP
+	color = generate_line_color(LINE_COLOR_PRESET_NPC_FRIENDLY);
+
 	return;
 }
 
@@ -431,10 +436,11 @@ LineCanvas::LineCanvas(json data, ObjectIO& io) : GameObject(json::object(
 		{"position", {0, 0}},
 		{"scale", {1, 1}},
 		{"mesh", ""},
-		{"color", 255},
+		{"color", generate_line_color(LINE_COLOR_PRESET_WALL_GENERIC)},
 		{"update_script", "none"}
 	}), io) {
 	collision_type = COLLISION_TYPE_NONE;
+	active_color = generate_line_color(LINE_COLOR_PRESET_WALL_GENERIC);
 	return;
 }
 

@@ -47,7 +47,7 @@ public:
 	std::string targetname;
 
 	// This is the color of the object
-	int color;
+	uint32_t color;
 
 	// This is the object io instance. It is used to call scripts and report errors
 	ObjectIO& io;
@@ -278,7 +278,7 @@ protected:
 
 	// This is mostly used when editing for holding what line we are editing
 	int active_line = 0;
-	int active_color = 256;
+	int active_color = 0;
 	
 	CanvasTool tool = CANVAS_TOOL_DRAW_LINE;
 

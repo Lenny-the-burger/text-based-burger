@@ -192,6 +192,7 @@
     <ClInclude Include="game_object_handler.h" />
     <ClInclude Include="hash_fnv1a.h" />
     <ClInclude Include="json.hpp" />
+    <ClInclude Include="line_color_gen.hpp" />
     <ClInclude Include="map_manager.h" />
     <ClInclude Include="map_utils.h" />
     <ClInclude Include="math_utils.h" />
