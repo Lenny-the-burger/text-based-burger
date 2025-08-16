@@ -307,6 +307,9 @@ int main() {
 	// Unbind VAO
 	glBindVertexArray(0);
 
+	float* quad_verts = new float[MAX_LINES * 12]; // 6 vertices * 2 components per quad
+	int quad_index = 0;
+
 #pragma endregion
 #pragma region Framebuffers
 
@@ -592,8 +595,6 @@ int main() {
 		line_shader.setFloat("thickness_test", dval2);
 
 		// Generate quad vertices from line data
-		std::vector<float> quad_verts;
-		quad_verts.reserve(num_lines * 12); // 6 vertices * 2 components per quad
 
 		// Calculate thickness scaling for NDC space
 		float thickness_x = thickness * 0.01f; // Scale down for NDC space
@@ -601,6 +602,8 @@ int main() {
 
 		// Apply aspect ratio correction to thickness
 		thickness_x /= (aspect_ratio_small * aspect_ratio);
+
+		quad_index = 0; // Reset quad index for each frame
 
 		for (int i = 0; i < num_lines; i++) {
 			// Get line endpoints (assuming line_verts stores x1,y1,x2,y2 for each line)
@@ -639,34 +642,29 @@ int main() {
 				// Triangle 2: v1, v3, v4
 
 				// v1 (bottom-left)
-				quad_verts.push_back(x1_ext - perp_x);
-				quad_verts.push_back(y1_ext - perp_y);
-
+				quad_verts[quad_index++] = x1_ext - perp_x;
+				quad_verts[quad_index++] = y1_ext - perp_y;
 				// v2 (top-left) 
-				quad_verts.push_back(x1_ext + perp_x);
-				quad_verts.push_back(y1_ext + perp_y);
-
+				quad_verts[quad_index++] = x1_ext + perp_x;
+				quad_verts[quad_index++] = y1_ext + perp_y;
 				// v3 (top-right)
-				quad_verts.push_back(x2_ext + perp_x);
-				quad_verts.push_back(y2_ext + perp_y);
-
+				quad_verts[quad_index++] = x2_ext + perp_x;
+				quad_verts[quad_index++] = y2_ext + perp_y;
 				// Second triangle
 				// v1 (bottom-left) - repeat
-				quad_verts.push_back(x1_ext - perp_x);
-				quad_verts.push_back(y1_ext - perp_y);
-
+				quad_verts[quad_index++] = x1_ext - perp_x;
+				quad_verts[quad_index++] = y1_ext - perp_y;
 				// v3 (top-right) - repeat
-				quad_verts.push_back(x2_ext + perp_x);
-				quad_verts.push_back(y2_ext + perp_y);
-
+				quad_verts[quad_index++] = x2_ext + perp_x;
+				quad_verts[quad_index++] = y2_ext + perp_y;
 				// v4 (bottom-right)
-				quad_verts.push_back(x2_ext - perp_x);
-				quad_verts.push_back(y2_ext - perp_y);
+				quad_verts[quad_index++] = x2_ext - perp_x;
+				quad_verts[quad_index++] = y2_ext - perp_y;
 			}
 			else {
 				// Degenerate line (zero length) - create zero-area triangles
 				for (int j = 0; j < 12; j++) {
-					quad_verts.push_back(0.0f);
+					quad_verts[quad_index++] = 0.0f;
 				}
 			}
 		}
@@ -674,9 +672,7 @@ int main() {
 		// Upload quad vertex data 
 		glBindBuffer(GL_ARRAY_BUFFER, quad_VBO); // Renamed from line_VBO
 		glBufferData(GL_ARRAY_BUFFER, MAX_LINES * 12 * sizeof(float), nullptr, GL_STREAM_DRAW); // 6 verts * 2 components
-		if (!quad_verts.empty()) {
-			glBufferSubData(GL_ARRAY_BUFFER, 0, quad_verts.size() * sizeof(float), quad_verts.data());
-		}
+		glBufferSubData(GL_ARRAY_BUFFER, 0, num_lines * 2 * 6 * sizeof(float), quad_verts);
 
 		// Upload color data (same as before, but now each color applies to a quad)
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, quad_color_SSBO); // Renamed from line_color_SSBO
