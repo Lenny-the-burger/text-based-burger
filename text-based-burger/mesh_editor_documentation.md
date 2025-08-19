@@ -169,29 +169,31 @@ Meshes are stored in JSON format with the following structure:
 
 ```json
 {
-  "line_name": [x1, y1, x2, y2],
-  "another_line": [x1, y1, x2, y2],
-  ...
+  "mesh_name": [x1, y1, x2, y2, x3, y3, x4, y4, ...],
+  "another_mesh": [x1, y1, x2, y2, x3, y3, ...]
 }
 ```
 
 #### Format Details
-- **Keys**: Arbitrary string identifiers for each line (typically "line_0", "line_1", etc.)
-- **Values**: Arrays of four floating-point numbers representing [start_x, start_y, end_x, end_y]
+- **Keys**: Arbitrary string identifiers for each mesh (used to reference the mesh in the game engine)
+- **Values**: Arrays of floating-point numbers representing coordinates in sequence [x1, y1, x2, y2, ...] where each pair of coordinates represents a line endpoint
+- **Line Storage**: All lines within a mesh are stored in a single flat array, with every two coordinate pairs forming one line segment
 - **Coordinates**: 2D coordinates in the mesh coordinate space
 - **Global Scope**: Mesh names are globally scoped across all mesh files
 
 #### Example Mesh File
 ```json
 {
-  "line_0": [260.0, 420.0, 260.0, 140.0],
-  "line_1": [260.0, 420.0, 640.0, 420.0], 
-  "line_2": [640.0, 420.0, 640.0, 140.0],
-  "line_3": [260.0, 140.0, 640.0, 140.0]
+  "rectangle_mesh": [
+    260.0, 420.0, 260.0, 140.0,
+    260.0, 420.0, 640.0, 420.0, 
+    640.0, 420.0, 640.0, 140.0,
+    260.0, 140.0, 640.0, 140.0
+  ]
 }
 ```
 
-This example creates a rectangle with corners at (260,140), (640,140), (640,420), and (260,420).
+This example creates a mesh named "rectangle_mesh" containing four line segments that form a rectangle with corners at (260,140), (640,140), (640,420), and (260,420). Each set of four numbers represents one line: start_x, start_y, end_x, end_y.
 
 ### Storage Location
 - **Directory**: `gamedata/meshes/`
