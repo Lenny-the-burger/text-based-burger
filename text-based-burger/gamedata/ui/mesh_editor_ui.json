@@ -118,6 +118,73 @@
           },
           "hover_script": "",
           "hover_args": {}
+        },
+        {
+          "targetname": "tool button select",
+          "type": "button",
+          "position": {
+            "x": 0,
+            "y": 6
+          },
+          "text": "Select",
+          "style": {
+            "fg": 255,
+            "bg": 30,
+            "hv_fg": 0,
+            "hv_bg": 100
+          },
+          "bbox": "text",
+          "fire_only_once": true,
+          "click_script": "set_canvas_tool",
+          "click_script_args": {
+            "type": "select"
+          },
+          "hover_script": "",
+          "hover_args": {}
+        },
+        {
+          "targetname": "tool button edit",
+          "type": "button",
+          "position": {
+            "x": 0,
+            "y": 8
+          },
+          "text": "Edit",
+          "style": {
+            "fg": 255,
+            "bg": 30,
+            "hv_fg": 0,
+            "hv_bg": 100
+          },
+          "bbox": "text",
+          "fire_only_once": true,
+          "click_script": "set_canvas_tool",
+          "click_script_args": {
+            "type": "edit"
+          },
+          "hover_script": "",
+          "hover_args": {}
+        },
+        {
+          "targetname": "toggle snapping button",
+          "type": "button",
+          "position": {
+            "x": 0,
+            "y": 10
+          },
+          "text": "Snap: Off",
+          "style": {
+            "fg": 255,
+            "bg": 30,
+            "hv_fg": 0,
+            "hv_bg": 100
+          },
+          "bbox": "text",
+          "fire_only_once": true,
+          "click_script": "toggle_snapping",
+          "click_script_args": {},
+          "hover_script": "",
+          "hover_args": {}
         }
       ]
     }

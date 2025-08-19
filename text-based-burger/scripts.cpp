@@ -29,7 +29,9 @@ Script get_script(std::string name) {
 		{"build_bvh", build_bvh},
 		{"bvh_build_done", bvh_build_done},
 		{"toggle_show_bvh", toggle_show_bvh},
-		{"npc_move", npc_move}
+		{"npc_move", npc_move},
+		{"set_canvas_tool", set_canvas_tool},
+		{"toggle_snapping", toggle_snapping},
     };
 
     auto it = script_map.find(name);
@@ -243,4 +245,56 @@ void npc_move(json data, ScriptHandles handles) {
 
 	// Set new position
 	npc->position += move_vel;
+}
+
+void set_canvas_tool(json data, ScriptHandles handles) {
+	std::string tool_type = data["type"].get<std::string>();
+	
+	// Find the canvas object - look for the mesh viewer canvas
+	LineCanvas* canvas = dynamic_cast<LineCanvas*>(handles.obj_io->get_object("mesh viewer"));
+	if (canvas == nullptr) {
+		handles.obj_io->report_error("ERROR: set_canvas_tool could not find mesh viewer canvas object");
+		return;
+	}
+	
+	CanvasTool new_tool;
+	if (tool_type == "draw") {
+		new_tool = CANVAS_TOOL_DRAW_LINE;
+	}
+	else if (tool_type == "select") {
+		new_tool = CANVAS_TOOL_SELECT;
+	}
+	else if (tool_type == "edit") {
+		new_tool = CANVAS_TOOL_EDIT;
+	}
+	else {
+		handles.obj_io->report_error("ERROR: set_canvas_tool received invalid tool type: " + tool_type);
+		return;
+	}
+	
+	canvas->set_active_tool(new_tool);
+	
+	return;
+}
+
+void toggle_snapping(json data, ScriptHandles handles) {
+	// Find the canvas object
+	LineCanvas* canvas = dynamic_cast<LineCanvas*>(handles.obj_io->get_object("mesh viewer"));
+	if (canvas == nullptr) {
+		handles.obj_io->report_error("ERROR: toggle_snapping could not find mesh viewer canvas object");
+		return;
+	}
+	
+	// Toggle snapping state
+	canvas->toggle_snapping();
+	bool snapping_enabled = canvas->get_snapping_enabled();
+	
+	// Update button text to reflect current state
+	Button* snap_button = dynamic_cast<Button*>(handles.ui_io->get_component("toggle snapping button"));
+	if (snap_button != nullptr) {
+		std::string button_text = snapping_enabled ? "Snap: On" : "Snap: Off";
+		snap_button->update_text(button_text);
+	}
+	
+	return;
 }

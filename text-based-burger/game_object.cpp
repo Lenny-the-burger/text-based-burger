@@ -436,16 +436,34 @@ LineCanvas::LineCanvas(json data, ObjectIO& io) : GameObject(json::object(
 		{"position", {0, 0}},
 		{"scale", {1, 1}},
 		{"mesh", ""},
-		{"color", generate_line_color(LINE_COLOR_PRESET_WALL_GENERIC)},
+		{"color", generate_line_color(LINE_COLOR_PRESET_EDITOR_LINE)},
 		{"update_script", "none"}
 	}), io) {
 	collision_type = COLLISION_TYPE_NONE;
-	active_color = generate_line_color(LINE_COLOR_PRESET_WALL_GENERIC);
+	active_color = generate_line_color(LINE_COLOR_PRESET_EDITOR_LINE);
 	return;
 }
 
 void LineCanvas::update(ObjectUpdateData data) {
 	data.mouse_pos.y = 536.0f - data.mouse_pos.y;
+	
+	// Handle delete key for selected lines (works in both select and edit modes)
+	if ((tool == CANVAS_TOOL_SELECT || tool == CANVAS_TOOL_EDIT) && selected_line >= 0) {
+		if (glfwGetKey(data.window, GLFW_KEY_DELETE) == GLFW_PRESS) {
+			// Delete the selected line
+			int start_index = selected_line * 2;
+			if (start_index + 1 < canvas_lines.size() && selected_line < canvas_colors.size()) {
+				// Remove the two vertices for this line
+				canvas_lines.erase(canvas_lines.begin() + start_index, canvas_lines.begin() + start_index + 2);
+				// Remove the color for this line
+				canvas_colors.erase(canvas_colors.begin() + selected_line);
+				// Clear selection since the line is deleted
+				selected_line = -1;
+				selected_vertex = -1;
+				is_dragging = false;
+			}
+		}
+	}
 
 	// for now draw on the entire screen
 	bool within_bbox = true;
@@ -460,9 +478,29 @@ void LineCanvas::update(ObjectUpdateData data) {
 
 			on_press(data);
 		}
-		if (are_drawing) {
-			// if we are mid draw update the last element in the canvas_lines vector
-			canvas_lines[canvas_lines.size() - 1] = data.mouse_pos;
+		if (are_drawing && tool == CANVAS_TOOL_DRAW_LINE) {
+			// if we are mid draw update the last element in the canvas_lines vector (with snapping)
+			vec2 snapped_end_pos = find_snap_position(data.mouse_pos);
+			canvas_lines[canvas_lines.size() - 1] = snapped_end_pos;
+		}
+		else if (is_dragging && tool == CANVAS_TOOL_EDIT && selected_line >= 0 && selected_vertex >= 0) {
+			// Update vertex position while dragging (with snapping, excluding the current line)
+			int vertex_index = selected_line * 2 + selected_vertex;
+			if (vertex_index < canvas_lines.size()) {
+				vec2 snapped_pos;
+				if (snapping_enabled) {
+					// Find nearest vertex excluding the current line being edited
+					vec2 nearest_vertex = find_nearest_vertex(data.mouse_pos, selected_line);
+					if (mag(data.mouse_pos - nearest_vertex) <= snap_radius) {
+						snapped_pos = nearest_vertex;
+					} else {
+						snapped_pos = data.mouse_pos;
+					}
+				} else {
+					snapped_pos = data.mouse_pos;
+				}
+				canvas_lines[vertex_index] = snapped_pos;
+			}
 		}
 	}
 	else {
@@ -476,6 +514,11 @@ void LineCanvas::update(ObjectUpdateData data) {
 			}
 			is_clicking = false;
 			is_click_start_inside = false;
+			
+			// Stop dragging when mouse is released
+			if (is_dragging) {
+				is_dragging = false;
+			}
 		}
 	}
 	
@@ -483,20 +526,60 @@ void LineCanvas::update(ObjectUpdateData data) {
 }
 
 void LineCanvas::on_press(ObjectUpdateData data) {
+	vec2 snapped_start_pos;
+
 	switch (tool) {
-	case CANVAS_TOOL_DRAW_LINE:
+	case CANVAS_TOOL_DRAW_LINE: {
 		// Start drawing
 		are_drawing = true;
 
-		// add the initial points to the canvas
-		canvas_lines.push_back(data.mouse_pos);
-		canvas_lines.push_back(data.mouse_pos);
+		// add the initial points to the canvas (with snapping)
+		snapped_start_pos = find_snap_position(data.mouse_pos);
+		canvas_lines.push_back(snapped_start_pos);
+		canvas_lines.push_back(snapped_start_pos);
 
 		canvas_colors.push_back(active_color);
 
 		active_line = canvas_colors.size() - 1;
 
 		return;
+	}
+	case CANVAS_TOOL_SELECT:
+		// Make sure we're not in drawing mode
+		are_drawing = false;
+		active_line = -1;
+		
+		// Find line at click position
+		selected_line = find_line_at_position(data.mouse_pos);
+		selected_vertex = -1;
+		return;
+		
+	case CANVAS_TOOL_EDIT: {
+		// Make sure we're not in drawing mode
+		are_drawing = false;
+		active_line = -1;
+		
+		// First check if we're clicking near a vertex of the selected line
+		if (selected_line >= 0) {
+			selected_vertex = find_vertex_at_position(data.mouse_pos, selected_line, 15.0f);
+			if (selected_vertex >= 0) {
+				// Store original vertex position for potential revert
+				int vertex_index = selected_line * 2 + selected_vertex;
+				if (vertex_index < canvas_lines.size()) {
+					original_vertex_pos = canvas_lines[vertex_index];
+				}
+				// Start dragging the vertex
+				is_dragging = true;
+				drag_start_pos = data.mouse_pos;
+				return;
+			}
+		}
+		
+		// If not dragging a vertex, try to select a new line
+		selected_line = find_line_at_position(data.mouse_pos);
+		selected_vertex = -1;
+		return;
+	}
 	}
 }
 
@@ -506,6 +589,17 @@ void LineCanvas::on_click(ObjectUpdateData data) {
 		// We are done drawing
 		are_drawing = false;
 		active_line = -1;
+		return;
+		
+	case CANVAS_TOOL_SELECT:
+		// Selection is handled in on_press, nothing to do here
+		return;
+		
+	case CANVAS_TOOL_EDIT:
+		// If we were dragging, we're now done
+		if (is_dragging) {
+			is_dragging = false;
+		}
 		return;
 	}
 }
@@ -520,6 +614,12 @@ void LineCanvas::on_release(ObjectUpdateData data) {
 			canvas_colors.pop_back(); // Remove the last color
 			active_line = -1; // Reset the active line
 		}
+		return;
+		
+	case CANVAS_TOOL_SELECT:
+	case CANVAS_TOOL_EDIT:
+		// Clear any dragging state when releasing outside the canvas bounds
+		is_dragging = false;
 		return;
 	}
 }
@@ -559,9 +659,151 @@ int LineCanvas::render(float* lines_list, int offset, uint32_t* colors, vec2 cam
 
 		// Every 2nd nmuber is a complete line so add new color
 		if (i % 2 == 0) {
-			colors[offset / 4] = canvas_colors[i / 2];
+			int line_index = i / 2;
+			uint32_t line_color = canvas_colors[line_index];
+			
+			// Highlight selected line with preset color
+			if (line_index == selected_line) {
+				line_color = generate_line_color(LINE_COLOR_PRESET_EDITOR_SELECTED);
+			}
+			
+			colors[offset / 4] = line_color;
 		}
+	}
+	
+	// Add vertex markers in edit mode for selected line
+	if (tool == CANVAS_TOOL_EDIT && selected_line >= 0 && selected_line * 2 + 1 < canvas_lines.size()) {
+		vec2 start_vertex = canvas_lines[selected_line * 2];
+		vec2 end_vertex = canvas_lines[selected_line * 2 + 1];
+		
+		float marker_size = 10.0f;
+		uint32_t marker_color = generate_line_color(LINE_COLOR_PRESET_CURSOR);
+		
+		// Transform vertices to NDC
+		auto transform_vertex = [&](vec2 v) -> vec2 {
+			v = v * render_scale;
+			v = v / screen_size;
+			return (v * 2.0f) - 1.0f;
+		};
+		
+		vec2 start_ndc = transform_vertex(start_vertex);
+		vec2 end_ndc = transform_vertex(end_vertex);
+		
+		// Add cross markers for vertices
+
+		// Start vertex cross
+		lines_list[offset++] = start_ndc.x - marker_size / screen_size.x * 2.0f;
+		lines_list[offset++] = start_ndc.y;
+		lines_list[offset++] = start_ndc.x + marker_size / screen_size.x * 2.0f;
+		lines_list[offset++] = start_ndc.y;
+		colors[offset / 4 - 1] = marker_color;
+			
+		lines_list[offset++] = start_ndc.x;
+		lines_list[offset++] = start_ndc.y - marker_size / screen_size.y * 2.0f;
+		lines_list[offset++] = start_ndc.x;
+		lines_list[offset++] = start_ndc.y + marker_size / screen_size.y * 2.0f;
+		colors[offset / 4 - 1] = marker_color;
+			
+		// End vertex cross
+		lines_list[offset++] = end_ndc.x - marker_size / screen_size.x * 2.0f;
+		lines_list[offset++] = end_ndc.y;
+		lines_list[offset++] = end_ndc.x + marker_size / screen_size.x * 2.0f;
+		lines_list[offset++] = end_ndc.y;
+		colors[offset / 4 - 1] = marker_color;
+			
+		lines_list[offset++] = end_ndc.x;
+		lines_list[offset++] = end_ndc.y - marker_size / screen_size.y * 2.0f;
+		lines_list[offset++] = end_ndc.x;
+		lines_list[offset++] = end_ndc.y + marker_size / screen_size.y * 2.0f;
+		colors[offset / 4 - 1] = marker_color;
 	}
 
 	return offset; // Return the new offset
+}
+
+int LineCanvas::find_line_at_position(vec2 pos, float tolerance) {
+	for (int i = 0; i < canvas_lines.size(); i += 2) {
+		if (i + 1 >= canvas_lines.size()) break;
+		
+		vec2 line_start = canvas_lines[i];
+		vec2 line_end = canvas_lines[i + 1];
+		
+		float distance = distance_point_to_line(pos, line_start, line_end);
+		if (distance <= tolerance) {
+			return i / 2; // Return line index
+		}
+	}
+	return -1;
+}
+
+int LineCanvas::find_vertex_at_position(vec2 pos, int line_index, float tolerance) {
+	if (line_index < 0 || line_index * 2 + 1 >= canvas_lines.size()) {
+		return -1;
+	}
+	
+	vec2 start_vertex = canvas_lines[line_index * 2];
+	vec2 end_vertex = canvas_lines[line_index * 2 + 1];
+	
+	float dist_to_start = mag(pos - start_vertex);
+	float dist_to_end = mag(pos - end_vertex);
+	
+	if (dist_to_start <= tolerance && dist_to_start <= dist_to_end) {
+		return 0; // Start vertex
+	}
+	else if (dist_to_end <= tolerance) {
+		return 1; // End vertex
+	}
+	
+	return -1;
+}
+
+float LineCanvas::distance_point_to_line(vec2 point, vec2 line_start, vec2 line_end) {
+	vec2 line_vec = line_end - line_start;
+	vec2 point_vec = point - line_start;
+	
+	float line_len_squared = line_vec.x * line_vec.x + line_vec.y * line_vec.y;
+	if (line_len_squared == 0.0f) {
+		return mag(point - line_start);
+	}
+	
+	float t = std::max(0.0f, std::min(1.0f, (point_vec.x * line_vec.x + point_vec.y * line_vec.y) / line_len_squared));
+	vec2 projection = line_start + line_vec * t;
+	
+	return mag(point - projection);
+}
+
+vec2 LineCanvas::find_snap_position(vec2 pos) {
+	if (!snapping_enabled) {
+		return pos;
+	}
+	
+	vec2 nearest_vertex = find_nearest_vertex(pos);
+	if (mag(pos - nearest_vertex) <= snap_radius) {
+		return nearest_vertex;
+	}
+	
+	return pos;
+}
+
+vec2 LineCanvas::find_nearest_vertex(vec2 pos, int exclude_line) {
+	vec2 nearest_vertex = pos;
+	float min_distance = snap_radius + 1.0f; // Start with distance larger than snap radius
+	
+	for (int i = 0; i < canvas_lines.size(); i++) {
+		// Skip vertices from the excluded line
+		int line_index = i / 2;
+		if (line_index == exclude_line) {
+			continue;
+		}
+		
+		vec2 vertex = canvas_lines[i];
+		float distance = mag(pos - vertex);
+		
+		if (distance < min_distance) {
+			min_distance = distance;
+			nearest_vertex = vertex;
+		}
+	}
+	
+	return nearest_vertex;
 }

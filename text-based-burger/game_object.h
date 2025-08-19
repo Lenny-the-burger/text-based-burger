@@ -267,17 +267,40 @@ public:
 
 	void set_active_tool(CanvasTool new_tool) {
 		tool = new_tool;
+		// Clear all state when switching tools
+		selected_line = -1;
+		selected_vertex = -1;
+		is_dragging = false;
+		are_drawing = false;
+		active_line = -1;
+	}
+	
+	void toggle_snapping() {
+		snapping_enabled = !snapping_enabled;
+	}
+	
+	bool get_snapping_enabled() const {
+		return snapping_enabled;
 	}
 
 protected:
 	void on_press(ObjectUpdateData data);
 	void on_click(ObjectUpdateData data);
 	void on_release(ObjectUpdateData data);
+	
+	// Helper methods for selection and editing
+	int find_line_at_position(vec2 pos, float tolerance = 10.0f);
+	int find_vertex_at_position(vec2 pos, int line_index, float tolerance = 10.0f);
+	float distance_point_to_line(vec2 point, vec2 line_start, vec2 line_end);
+	
+	// Helper methods for snapping
+	vec2 find_snap_position(vec2 pos);
+	vec2 find_nearest_vertex(vec2 pos, int exclude_line = -1);
 
 	bool are_drawing = false;
 
 	// This is mostly used when editing for holding what line we are editing
-	int active_line = 0;
+	int active_line = -1;
 	int active_color = 0;
 	
 	CanvasTool tool = CANVAS_TOOL_DRAW_LINE;
@@ -294,4 +317,15 @@ protected:
 	bool is_clicking = false;
 	bool is_click_start_inside = false;
 	bool have_already_fired = false;
+	
+	// Selection and editing state
+	int selected_line = -1;
+	int selected_vertex = -1; // 0 for start vertex, 1 for end vertex
+	bool is_dragging = false;
+	vec2 drag_start_pos;
+	vec2 original_vertex_pos; // Store original position for revert
+	
+	// Snapping state
+	bool snapping_enabled = false;
+	float snap_radius = 15.0f;
 };

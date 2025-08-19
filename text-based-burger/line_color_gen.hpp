@@ -18,17 +18,24 @@ enum LineTypePreset {
 	LINE_COLOR_PRESET_NPC_FRIENDLY_SELECTED,
 	LINE_COLOR_PRESET_NPC_ENEMY,
 	LINE_COLOR_PRESET_WALL_GENERIC,
-	LINE_COLOR_PRESET_WALL_SECONDARY
+	LINE_COLOR_PRESET_WALL_SECONDARY,
+	LINE_COLOR_PRESET_EDITOR_LINE,
+	LINE_COLOR_PRESET_EDITOR_SELECTED
 };
 
 // Lookup table for presets - more efficient than switch statement
 static const std::unordered_map<LineTypePreset, uint32_t> preset_colors = {
 	{LINE_COLOR_PRESET_CURSOR,              64 | (0 << 8) | (255 << 16)}, // 255 hue, 127 intensity, 255 alpha
+
 	{LINE_COLOR_PRESET_NPC_FRIENDLY,        0x00FF7FFF}, // 255 hue, 127 intensity, 255 alpha
 	{LINE_COLOR_PRESET_NPC_FRIENDLY_SELECTED, 0x00FFFFFF}, // 255 hue, 255 intensity, 255 alpha
 	{LINE_COLOR_PRESET_NPC_ENEMY,           0x00FF7FFF}, // 255 hue, 127 intensity, 255 alpha
+
 	{LINE_COLOR_PRESET_WALL_GENERIC,        191 | (191 << 8) | (255 << 16)}, // 191 hue, 191 intensity, 255 alpha
-	{LINE_COLOR_PRESET_WALL_SECONDARY,      191 | (191 << 8) | (127 << 16) | ((127 + int(0.5 * 127.0)) << 24)}  // 191 hue, 191 intensity, 127 alpha, -0.5 width
+	{LINE_COLOR_PRESET_WALL_SECONDARY,      191 | (191 << 8) | (127 << 16) | ((127 + int(0.5 * 127.0)) << 24)}, // 191 hue, 191 intensity, 127 alpha, -0.5 width
+
+	{LINE_COLOR_PRESET_EDITOR_LINE,         191 | (191 << 8) | (255 << 16)}, // 191 hue, 191 intensity, 255 alpha - same as wall generic
+	{LINE_COLOR_PRESET_EDITOR_SELECTED,     191 | (255 << 8) | (255 << 16) | (5 << 24)} // 191 hue, 255 intensity, 255 alpha, thicker
 };
 
 // First 8 bits are hue, next are intensity, next are alpha. 8 unused.

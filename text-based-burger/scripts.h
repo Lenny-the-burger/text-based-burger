@@ -39,7 +39,7 @@ struct ScriptHandles {
 };
 
 // Scripts are statically registered C++ functions that act as generic, global subroutines.
-// They can be triggered from anywhere in the engine — typically from UI elements — and are
+// They can be triggered from anywhere in the engine â€” typically from UI elements â€” and are
 // used to interface with other systems such as game state, audio, rendering, or I/O.
 // 
 // Scripts are stateless, freely callable, and compiled directly into the binary,
@@ -90,3 +90,7 @@ void bvh_build_done(json data, ScriptHandles handles);
 void toggle_show_bvh(json data, ScriptHandles handles);
 
 void npc_move(json data, ScriptHandles handles);
+
+void set_canvas_tool(json data, ScriptHandles handles);
+void toggle_snapping(json data, ScriptHandles handles);
+void init_canvas_ui(json data, ScriptHandles handles);
