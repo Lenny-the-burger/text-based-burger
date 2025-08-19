@@ -194,6 +194,11 @@
     <None Include="fragment_pass.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\CLAUDE.md" />
+    <None Include="editor_blueprint.md" />
+    <None Include="gamedata\meshes\saved_mesh.json">
+      <Filter>Game data\meshes</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third-party\imgui\imconfig.h">
@@ -277,9 +282,11 @@
     <ClInclude Include="map_utils.h">
       <Filter>src\world\header</Filter>
     </ClInclude>
-    <ClInclude Include="npc_behaviors.hpp" />
     <ClInclude Include="line_color_gen.hpp">
       <Filter>src\world</Filter>
+    </ClInclude>
+    <ClInclude Include="npc_behaviors.hpp">
+      <Filter>src\world\header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -291,6 +298,7 @@
     </Text>
     <Text Include="thid_party_licenses.txt" />
     <Text Include="..\LICENSE.txt" />
+    <Text Include="temp.txt" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="engine.natvis" />

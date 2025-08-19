@@ -10,6 +10,7 @@ using json = nlohmann::json;
 #include <vector>
 #include <string>
 #include <map>
+#include <cfloat>
 
 // This is all the game objects. Game objects are responcible for their own
 // interaction and submitting their own rendering data to the handler.
@@ -272,19 +273,53 @@ public:
 		selected_vertex = -1;
 		is_dragging = false;
 		are_drawing = false;
-		active_line = -1;
 	}
 	
 	void toggle_snapping() {
 		snapping_enabled = !snapping_enabled;
 	}
 	
+	void toggle_grid_snapping() {
+		grid_snapping_enabled = !grid_snapping_enabled;
+	}
+	
 	bool get_snapping_enabled() const {
 		return snapping_enabled;
 	}
+	
+	bool get_grid_snapping_enabled() const {
+		return grid_snapping_enabled;
+	}
+	
+	// Color editing methods
+	void set_selected_line_hue(float hue);
+	void set_selected_line_intensity(float intensity);
+	void set_selected_line_alpha(float alpha);
+	void set_selected_line_thickness(float thickness);
+	
+	float get_selected_line_hue() const { return current_hue; }
+	float get_selected_line_intensity() const { return current_intensity; }
+	float get_selected_line_alpha() const { return current_alpha; }
+	float get_selected_line_thickness() const { return current_thickness; }
+	
+	void update_color_from_selected_line();
+	
+	// Undo/redo methods
+	void save_state_to_history();
+	void undo();
+	void redo();
+	bool can_undo() const { return current_history_index > 0; }
+	bool can_redo() const { return current_history_index < history_stack.size() - 1; }
+	
+	// Mesh save/load methods
+	bool save_mesh_to_file(const std::string& filename);
+	bool load_mesh_from_file(const std::string& filename);
+	json export_mesh_to_json() const;
+	bool import_mesh_from_json(const json& mesh_data);
 
 protected:
 	void on_press(ObjectUpdateData data);
+	void on_drag(ObjectUpdateData data);
 	void on_click(ObjectUpdateData data);
 	void on_release(ObjectUpdateData data);
 	
@@ -293,15 +328,29 @@ protected:
 	int find_vertex_at_position(vec2 pos, int line_index, float tolerance = 10.0f);
 	float distance_point_to_line(vec2 point, vec2 line_start, vec2 line_end);
 	
+	// Helper methods for multi-selection
+	void find_lines_in_box(vec2 box_min, vec2 box_max, std::vector<int>& lines_in_box);
+	bool is_line_in_box(int line_index, vec2 box_min, vec2 box_max);
+	void clear_selection();
+	void add_line_to_selection(int line_index);
+	void remove_line_from_selection(int line_index);
+	bool is_line_selected(int line_index) const;
+	
 	// Helper methods for snapping
-	vec2 find_snap_position(vec2 pos);
-	vec2 find_nearest_vertex(vec2 pos, int exclude_line = -1);
+	vec2 find_snap_position(vec2 pos, bool exclude_current_line = false);
+	vec2 find_nearest_vertex(vec2 pos, bool exclude_current_line = false);
+	vec2 snap_to_grid(vec2 pos);
 
 	bool are_drawing = false;
 
 	// This is mostly used when editing for holding what line we are editing
-	int active_line = -1;
 	int active_color = 0;
+	
+	// Color editing properties for current selection
+	float current_hue = 0.75f;        // Default to blue-ish
+	float current_intensity = 0.75f;  // Default intensity  
+	float current_alpha = 1.0f;       // Default fully opaque
+	float current_thickness = 0.0f;   // Default thickness
 	
 	CanvasTool tool = CANVAS_TOOL_DRAW_LINE;
 
@@ -325,7 +374,30 @@ protected:
 	vec2 drag_start_pos;
 	vec2 original_vertex_pos; // Store original position for revert
 	
+	// Multi-selection state
+	std::vector<int> selected_lines;
+	bool is_box_selecting = false;
+	vec2 box_selection_start;
+	vec2 box_selection_end;
+	
+	// Multi-line dragging state
+	bool is_multi_dragging = false;
+	vec2 multi_drag_start_pos;
+	std::vector<std::pair<vec2, vec2>> original_line_positions; // Store original positions for multi-drag
+	
 	// Snapping state
 	bool snapping_enabled = false;
+	bool grid_snapping_enabled = false;
 	float snap_radius = 15.0f;
+	float grid_size = 20.0f;
+	
+	// Undo/redo functionality
+	struct HistoryState {
+		std::vector<vec2> lines;
+		std::vector<int> colors;
+		std::vector<float> z_heights;
+	};
+	std::vector<HistoryState> history_stack;
+	size_t current_history_index = 0;
+	static const size_t max_history_size = 50;
 };

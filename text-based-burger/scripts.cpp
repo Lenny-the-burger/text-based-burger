@@ -32,6 +32,10 @@ Script get_script(std::string name) {
 		{"npc_move", npc_move},
 		{"set_canvas_tool", set_canvas_tool},
 		{"toggle_snapping", toggle_snapping},
+		{"toggle_grid_snapping", toggle_grid_snapping},
+		{"update_canvas_color_from_ui", update_canvas_color_from_ui},
+		{"save_mesh_file", save_mesh_file},
+		{"load_mesh_file", load_mesh_file},
     };
 
     auto it = script_map.find(name);
@@ -294,6 +298,103 @@ void toggle_snapping(json data, ScriptHandles handles) {
 	if (snap_button != nullptr) {
 		std::string button_text = snapping_enabled ? "Snap: On" : "Snap: Off";
 		snap_button->update_text(button_text);
+	}
+	
+	return;
+}
+
+void toggle_grid_snapping(json data, ScriptHandles handles) {
+	// Find the canvas object
+	LineCanvas* canvas = dynamic_cast<LineCanvas*>(handles.obj_io->get_object("mesh viewer"));
+	if (canvas == nullptr) {
+		handles.obj_io->report_error("ERROR: toggle_grid_snapping could not find mesh viewer canvas object");
+		return;
+	}
+	
+	// Toggle grid snapping state
+	canvas->toggle_grid_snapping();
+	bool grid_snapping_enabled = canvas->get_grid_snapping_enabled();
+	
+	// Update button text to reflect current state
+	Button* grid_button = dynamic_cast<Button*>(handles.ui_io->get_component("toggle grid snapping button"));
+	if (grid_button != nullptr) {
+		std::string button_text = grid_snapping_enabled ? "Grid: On" : "Grid: Off";
+		grid_button->update_text(button_text);
+	}
+	
+	return;
+}
+
+void update_canvas_color_from_ui(json data, ScriptHandles handles) {
+	// Find the canvas object
+	LineCanvas* canvas = dynamic_cast<LineCanvas*>(handles.obj_io->get_object("mesh viewer"));
+	if (canvas == nullptr) {
+		handles.obj_io->report_error("ERROR: update_canvas_color_from_ui could not find mesh viewer canvas object");
+		return;
+	}
+	
+	// Get the text field values
+	TextField* hue_field = dynamic_cast<TextField*>(handles.ui_io->get_component("hue field"));
+	TextField* intensity_field = dynamic_cast<TextField*>(handles.ui_io->get_component("intensity field"));
+	TextField* alpha_field = dynamic_cast<TextField*>(handles.ui_io->get_component("alpha field"));
+	TextField* thickness_field = dynamic_cast<TextField*>(handles.ui_io->get_component("thickness field"));
+	
+	if (hue_field != nullptr) {
+		canvas->set_selected_line_hue(hue_field->get_float_value());
+	}
+	
+	if (intensity_field != nullptr) {
+		canvas->set_selected_line_intensity(intensity_field->get_float_value());
+	}
+	
+	if (alpha_field != nullptr) {
+		canvas->set_selected_line_alpha(alpha_field->get_float_value());
+	}
+	
+	if (thickness_field != nullptr) {
+		canvas->set_selected_line_thickness(thickness_field->get_float_value());
+	}
+	
+	return;
+}
+
+void save_mesh_file(json data, ScriptHandles handles) {
+	// Find the canvas object
+	LineCanvas* canvas = dynamic_cast<LineCanvas*>(handles.obj_io->get_object("mesh viewer"));
+	if (canvas == nullptr) {
+		handles.obj_io->report_error("ERROR: save_mesh_file could not find mesh viewer canvas object");
+		return;
+	}
+	
+	// For now, save to a default location in gamedata/meshes/
+	// In a real implementation, this would use a file dialog
+	std::string filename = "gamedata/meshes/saved_mesh.json";
+	
+	if (canvas->save_mesh_to_file(filename)) {
+		std::cout << "Mesh saved successfully to " << filename << std::endl;
+	} else {
+		handles.obj_io->report_error("ERROR: Failed to save mesh to " + filename);
+	}
+	
+	return;
+}
+
+void load_mesh_file(json data, ScriptHandles handles) {
+	// Find the canvas object
+	LineCanvas* canvas = dynamic_cast<LineCanvas*>(handles.obj_io->get_object("mesh viewer"));
+	if (canvas == nullptr) {
+		handles.obj_io->report_error("ERROR: load_mesh_file could not find mesh viewer canvas object");
+		return;
+	}
+	
+	// For now, load from a default location in gamedata/meshes/
+	// In a real implementation, this would use a file dialog
+	std::string filename = "gamedata/meshes/saved_mesh.json";
+	
+	if (canvas->load_mesh_from_file(filename)) {
+		std::cout << "Mesh loaded successfully from " << filename << std::endl;
+	} else {
+		handles.obj_io->report_error("ERROR: Failed to load mesh from " + filename);
 	}
 	
 	return;

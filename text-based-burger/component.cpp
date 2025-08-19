@@ -109,6 +109,9 @@ std::unique_ptr<UIComponent> component_type_selector(json data, std::pair<int, i
 		}},
 		{"dynlabel", [](json d, std::pair<int, int> off, UIComponentIO& rep) {
 			return std::make_unique<DynLabel>(d, off, rep);
+		}},
+		{"textfield", [](json d, std::pair<int, int> off, UIComponentIO& rep) {
+			return std::make_unique<TextField>(d, off, rep);
 		}}
 	};
 
@@ -463,4 +466,122 @@ bool DynLabel::update(UIUpdateData data) {
 	// Call the script every frame
 	comp_io.call_script(script_name, data_json);
 	return true;
+}
+
+TextField::TextField(json data, pair<int, int> offset, UIComponentIO& the_comp_io)
+	: UIComponent(data, offset, the_comp_io) {
+	
+	current_text = data.value("text", "");
+	placeholder_text = data.value("placeholder", "");
+	is_focused = false;
+	is_hovering = false;
+	cursor_position = current_text.length();
+	
+	foreground_color = data["style"]["fg"].get<int>();
+	background_color = data["style"]["bg"].get<int>();
+	focused_bg_color = data["style"].value("focus_bg", 50);
+	hover_bg_color = data["style"].value("hv_bg", 40);
+	
+	is_numeric_only = data.value("numeric_only", false);
+	
+	// Calculate bbox based on width or text
+	if (data["bbox"] == "text") {
+		int text_width = std::max((int)current_text.length(), (int)placeholder_text.length());
+		bbox = {text_width, 1};
+	} else {
+		bbox = {data["bbox"][0].get<int>(), data["bbox"][1].get<int>()};
+	}
+}
+
+bool TextField::update(UIUpdateData data) {
+	bool was_hovering = is_hovering;
+	bool was_focused = is_focused;
+	
+	// Check if mouse is over this field
+	is_hovering = (data.mouse_char_x >= position.first && data.mouse_char_x < position.first + bbox.first &&
+				   data.mouse_char_y >= position.second && data.mouse_char_y < position.second + bbox.second);
+	
+	// Handle focus
+	if (data.is_clicking && is_hovering) {
+		is_focused = true;
+		cursor_position = std::min(cursor_position, current_text.length());
+	} else if (data.is_clicking && !is_hovering) {
+		is_focused = false;
+	}
+	
+	// For now, keyboard input is handled externally
+	// The text field will be updated via set_text() method from scripts
+	
+	// Return true if we need to rerender
+	return was_hovering != is_hovering || was_focused != is_focused || is_focused;
+}
+
+void TextField::render(std::vector<std::vector<uint32_t>>& screen) {
+	int bg_color = background_color;
+	if (is_focused) bg_color = focused_bg_color;
+	else if (is_hovering) bg_color = hover_bg_color;
+	
+	// Clear the field area
+	for (int y = position.second; y < position.second + bbox.second; y++) {
+		for (int x = position.first; x < position.first + bbox.first; x++) {
+			if (y >= 0 && y < screen.size() && x >= 0 && x < screen[0].size()) {
+				screen[y][x] = (bg_color << 8) | ' ';
+			}
+		}
+	}
+	
+	// Render text or placeholder
+	std::string display_text = current_text.empty() ? placeholder_text : current_text;
+	int text_color = current_text.empty() ? (foreground_color / 2) : foreground_color;
+	
+	for (size_t i = 0; i < display_text.length() && i < bbox.first; i++) {
+		int x = position.first + i;
+		int y = position.second;
+		if (y >= 0 && y < screen.size() && x >= 0 && x < screen[0].size()) {
+			screen[y][x] = (bg_color << 8) | (text_color << 16) | display_text[i];
+		}
+	}
+	
+	// Render cursor if focused
+	if (is_focused && cursor_position <= bbox.first - 1) {
+		int cursor_x = position.first + cursor_position;
+		int cursor_y = position.second;
+		if (cursor_y >= 0 && cursor_y < screen.size() && cursor_x >= 0 && cursor_x < screen[0].size()) {
+			// Invert colors for cursor
+			uint32_t& cell = screen[cursor_y][cursor_x];
+			uint32_t bg = (cell >> 8) & 0xFF;
+			uint32_t fg = (cell >> 16) & 0xFF;
+			cell = (fg << 8) | (bg << 16) | (cell & 0xFF);
+		}
+	}
+}
+
+void TextField::contains(std::unique_ptr<UIComponent>&& component) {
+	// TextFields cannot contain other components
+}
+
+void TextField::set_text(const std::string& text) {
+	current_text = text;
+	cursor_position = std::min(cursor_position, current_text.length());
+}
+
+float TextField::get_float_value() const {
+	try {
+		return std::stof(current_text);
+	} catch (...) {
+		return 0.0f;
+	}
+}
+
+void TextField::set_float_value(float value) {
+	current_text = std::to_string(value);
+	cursor_position = current_text.length();
+}
+
+void TextField::handle_key_input(int key, int action) {
+	// This method could be used for more sophisticated key handling if needed
+}
+
+bool TextField::is_valid_numeric_char(char c) const {
+	return (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '+';
 }

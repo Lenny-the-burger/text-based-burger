@@ -152,3 +152,33 @@ protected:
 
 	std::string script_name;
 };
+
+class TextField : public UIComponent {
+public:
+	TextField(json data, std::pair<int, int> offset, UIComponentIO& the_comp_io);
+
+	virtual bool update(UIUpdateData data) override;
+	virtual void render(std::vector<std::vector<uint32_t>>& screen) override;
+	virtual void contains(std::unique_ptr<UIComponent>&& component) override;
+
+	std::string get_text() const { return current_text; }
+	void set_text(const std::string& text);
+	float get_float_value() const;
+	void set_float_value(float value);
+
+protected:
+	std::string current_text;
+	std::string placeholder_text;
+	bool is_focused;
+	bool is_hovering;
+	size_t cursor_position;
+	int foreground_color;
+	int background_color;
+	int focused_bg_color;
+	int hover_bg_color;
+	std::pair<int, int> bbox;
+	bool is_numeric_only;
+	
+	void handle_key_input(int key, int action);
+	bool is_valid_numeric_char(char c) const;
+};

@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 # ImGui files we dont need
 text-based-burger/imgui.ini
+/CLAUDE.md

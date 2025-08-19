@@ -162,7 +162,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore" />
+    <None Include="..\CLAUDE.md" />
     <None Include="..\README.MD" />
+    <None Include="editor_blueprint.md" />
     <None Include="fragment.glsl" />
     <None Include="fragment_blur.glsl" />
     <None Include="fragment_crt.glsl" />
@@ -176,6 +178,7 @@
     <None Include="gamedata\maps\testmap.json" />
     <None Include="gamedata\maps\testmap_geo.json" />
     <None Include="gamedata\meshes\gen_props.json" />
+    <None Include="gamedata\meshes\saved_mesh.json" />
     <None Include="gamedata\ui\gameplay_ui.json" />
     <None Include="gamedata\ui\map_selector.json" />
     <None Include="gamedata\ui\mesh_editor_ui.json" />
@@ -219,6 +222,7 @@
     <Text Include="..\LICENSE.txt" />
     <Text Include="gamedata\fonts\font.txt" />
     <Text Include="gamedata\fonts\font2.txt" />
+    <Text Include="temp.txt" />
     <Text Include="thid_party_licenses.txt" />
   </ItemGroup>
   <ItemGroup>

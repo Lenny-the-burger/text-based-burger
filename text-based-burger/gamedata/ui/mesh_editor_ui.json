@@ -34,7 +34,7 @@
           },
           "bbox": "text",
           "fire_only_once": true,
-          "click_script": "file_dropdown",
+          "click_script": "save_mesh_file",
           "click_script_args": {},
           "hover_script": "",
           "hover_args": {}
@@ -55,7 +55,7 @@
           },
           "bbox": "text",
           "fire_only_once": true,
-          "click_script": "edit_dropdown",
+          "click_script": "load_mesh_file",
           "click_script_args": {},
           "hover_script": "",
           "hover_args": {}
@@ -182,6 +182,27 @@
           "bbox": "text",
           "fire_only_once": true,
           "click_script": "toggle_snapping",
+          "click_script_args": {},
+          "hover_script": "",
+          "hover_args": {}
+        },
+        {
+          "targetname": "toggle grid snapping button",
+          "type": "button",
+          "position": {
+            "x": 0,
+            "y": 12
+          },
+          "text": "Grid: Off",
+          "style": {
+            "fg": 255,
+            "bg": 30,
+            "hv_fg": 0,
+            "hv_bg": 100
+          },
+          "bbox": "text",
+          "fire_only_once": true,
+          "click_script": "toggle_grid_snapping",
           "click_script_args": {},
           "hover_script": "",
           "hover_args": {}

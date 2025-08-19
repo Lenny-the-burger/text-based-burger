@@ -1,6 +1,8 @@
 #include "game_object.h"
 #include "scripts.h"
 #include <iostream>
+#include <fstream>
+#include <algorithm>
 
 #include "line_color_gen.hpp"
 
@@ -441,6 +443,10 @@ LineCanvas::LineCanvas(json data, ObjectIO& io) : GameObject(json::object(
 	}), io) {
 	collision_type = COLLISION_TYPE_NONE;
 	active_color = generate_line_color(LINE_COLOR_PRESET_EDITOR_LINE);
+	
+	// Save initial state to history
+	save_state_to_history();
+	
 	return;
 }
 
@@ -448,59 +454,99 @@ void LineCanvas::update(ObjectUpdateData data) {
 	data.mouse_pos.y = 536.0f - data.mouse_pos.y;
 	
 	// Handle delete key for selected lines (works in both select and edit modes)
-	if ((tool == CANVAS_TOOL_SELECT || tool == CANVAS_TOOL_EDIT) && selected_line >= 0) {
-		if (glfwGetKey(data.window, GLFW_KEY_DELETE) == GLFW_PRESS) {
-			// Delete the selected line
-			int start_index = selected_line * 2;
-			if (start_index + 1 < canvas_lines.size() && selected_line < canvas_colors.size()) {
-				// Remove the two vertices for this line
-				canvas_lines.erase(canvas_lines.begin() + start_index, canvas_lines.begin() + start_index + 2);
-				// Remove the color for this line
-				canvas_colors.erase(canvas_colors.begin() + selected_line);
-				// Clear selection since the line is deleted
-				selected_line = -1;
+	if ((tool == CANVAS_TOOL_SELECT || tool == CANVAS_TOOL_EDIT) && 
+	    (selected_line >= 0 || !selected_lines.empty())) {
+		static bool delete_key_was_pressed = false;
+		bool delete_key_pressed = glfwGetKey(data.window, GLFW_KEY_DELETE) == GLFW_PRESS;
+		
+		if (delete_key_pressed && !delete_key_was_pressed) {
+			// Get all lines to delete (combine single selection and multi-selection)
+			std::vector<int> lines_to_delete = selected_lines;
+			if (selected_line >= 0) {
+				// Add single selected line if not already in multi-selection
+				if (std::find(lines_to_delete.begin(), lines_to_delete.end(), selected_line) == lines_to_delete.end()) {
+					lines_to_delete.push_back(selected_line);
+				}
+			}
+			
+			if (!lines_to_delete.empty()) {
+				// Sort lines in descending order to delete from highest index first
+				// This prevents index shifting issues
+				std::sort(lines_to_delete.begin(), lines_to_delete.end(), std::greater<int>());
+				
+				// Delete each line
+				for (int line_index : lines_to_delete) {
+					int start_index = line_index * 2;
+					if (start_index + 1 < canvas_lines.size() && line_index < canvas_colors.size()) {
+						// Remove the two vertices for this line
+						canvas_lines.erase(canvas_lines.begin() + start_index, canvas_lines.begin() + start_index + 2);
+						// Remove the color for this line  
+						canvas_colors.erase(canvas_colors.begin() + line_index);
+						
+						// Adjust indices in selected_lines that are higher than the deleted line
+						for (auto& sel_line : selected_lines) {
+							if (sel_line > line_index) {
+								sel_line--;
+							}
+						}
+						
+						// Adjust single selected line if it's higher than deleted line
+						if (selected_line > line_index) {
+							selected_line--;
+						}
+					}
+				}
+				
+				// Clear selection since lines are deleted
+				clear_selection();
 				selected_vertex = -1;
 				is_dragging = false;
+				
+				// Save state after deleting lines
+				save_state_to_history();
 			}
 		}
+		
+		delete_key_was_pressed = delete_key_pressed;
 	}
-
+	
+	// Handle undo/redo keyboard shortcuts (Ctrl+Z and Ctrl+Y)
+	bool ctrl_pressed = glfwGetKey(data.window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || 
+	                   glfwGetKey(data.window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS;
+	
+	static bool z_key_was_pressed = false;
+	static bool y_key_was_pressed = false;
+	
+	bool z_key_pressed = glfwGetKey(data.window, GLFW_KEY_Z) == GLFW_PRESS;
+	bool y_key_pressed = glfwGetKey(data.window, GLFW_KEY_Y) == GLFW_PRESS;
+	
+	if (ctrl_pressed) {
+		if (z_key_pressed && !z_key_was_pressed) {
+			undo();
+		}
+		else if (y_key_pressed && !y_key_was_pressed) {
+			redo();
+		}
+	}
+	
+	z_key_was_pressed = z_key_pressed;
+	y_key_was_pressed = y_key_pressed;
+	
 	// for now draw on the entire screen
 	bool within_bbox = true;
 
-	// Click tracking logic
+	// Click tracking logic - properly separated like UI button components
 	if (data.is_clicking) {
 		if (!is_clicking && within_bbox) {
 			is_clicking = true;
 			is_click_start_inside = true;
-
 			have_already_fired = false;
-
 			on_press(data);
 		}
-		if (are_drawing && tool == CANVAS_TOOL_DRAW_LINE) {
-			// if we are mid draw update the last element in the canvas_lines vector (with snapping)
-			vec2 snapped_end_pos = find_snap_position(data.mouse_pos);
-			canvas_lines[canvas_lines.size() - 1] = snapped_end_pos;
-		}
-		else if (is_dragging && tool == CANVAS_TOOL_EDIT && selected_line >= 0 && selected_vertex >= 0) {
-			// Update vertex position while dragging (with snapping, excluding the current line)
-			int vertex_index = selected_line * 2 + selected_vertex;
-			if (vertex_index < canvas_lines.size()) {
-				vec2 snapped_pos;
-				if (snapping_enabled) {
-					// Find nearest vertex excluding the current line being edited
-					vec2 nearest_vertex = find_nearest_vertex(data.mouse_pos, selected_line);
-					if (mag(data.mouse_pos - nearest_vertex) <= snap_radius) {
-						snapped_pos = nearest_vertex;
-					} else {
-						snapped_pos = data.mouse_pos;
-					}
-				} else {
-					snapped_pos = data.mouse_pos;
-				}
-				canvas_lines[vertex_index] = snapped_pos;
-			}
+		
+		// Handle continuous updates during click/drag - delegate to specific handlers
+		if (is_clicking) {
+			on_drag(data);
 		}
 	}
 	else {
@@ -514,11 +560,6 @@ void LineCanvas::update(ObjectUpdateData data) {
 			}
 			is_clicking = false;
 			is_click_start_inside = false;
-			
-			// Stop dragging when mouse is released
-			if (is_dragging) {
-				is_dragging = false;
-			}
 		}
 	}
 	
@@ -533,31 +574,80 @@ void LineCanvas::on_press(ObjectUpdateData data) {
 		// Start drawing
 		are_drawing = true;
 
-		// add the initial points to the canvas (with snapping)
-		snapped_start_pos = find_snap_position(data.mouse_pos);
+		// add the initial points to the canvas (with proper snapping, can snap to previous lines)
+		snapped_start_pos = find_snap_position(data.mouse_pos, false);
 		canvas_lines.push_back(snapped_start_pos);
 		canvas_lines.push_back(snapped_start_pos);
 
 		canvas_colors.push_back(active_color);
 
-		active_line = canvas_colors.size() - 1;
-
 		return;
 	}
-	case CANVAS_TOOL_SELECT:
+	case CANVAS_TOOL_SELECT: {
 		// Make sure we're not in drawing mode
 		are_drawing = false;
-		active_line = -1;
 		
 		// Find line at click position
-		selected_line = find_line_at_position(data.mouse_pos);
-		selected_vertex = -1;
+		int line_at_click = find_line_at_position(data.mouse_pos);
+		
+		if (line_at_click >= 0) {
+			// Clicking on a line
+			bool ctrl_pressed = glfwGetKey(data.window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || 
+			                   glfwGetKey(data.window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS;
+			
+			if (is_line_selected(line_at_click) && !selected_lines.empty()) {
+				// Clicking on an already selected line - start multi-line drag
+				is_multi_dragging = true;
+				multi_drag_start_pos = data.mouse_pos;
+				
+				// Store original positions of all selected lines
+				original_line_positions.clear();
+				for (int selected_line_index : selected_lines) {
+					if (selected_line_index * 2 + 1 < canvas_lines.size()) {
+						vec2 start = canvas_lines[selected_line_index * 2];
+						vec2 end = canvas_lines[selected_line_index * 2 + 1];
+						original_line_positions.push_back({start, end});
+					}
+				}
+			} else {
+				// Normal selection behavior
+				if (!ctrl_pressed) {
+					clear_selection();
+				}
+				
+				if (is_line_selected(line_at_click)) {
+					remove_line_from_selection(line_at_click);
+				} else {
+					add_line_to_selection(line_at_click);
+				}
+			}
+			
+			// Update legacy single selection for compatibility
+			selected_line = line_at_click;
+			selected_vertex = -1;
+			
+			// Update color properties when a line is selected
+			update_color_from_selected_line();
+		} else {
+			// Clicking in empty space - start box selection
+			is_box_selecting = true;
+			box_selection_start = data.mouse_pos;
+			box_selection_end = data.mouse_pos;
+			
+			// Clear selection unless Ctrl is held
+			bool ctrl_pressed = glfwGetKey(data.window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || 
+			                   glfwGetKey(data.window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS;
+			if (!ctrl_pressed) {
+				clear_selection();
+			}
+		}
+		
 		return;
+	}
 		
 	case CANVAS_TOOL_EDIT: {
 		// Make sure we're not in drawing mode
 		are_drawing = false;
-		active_line = -1;
 		
 		// First check if we're clicking near a vertex of the selected line
 		if (selected_line >= 0) {
@@ -578,6 +668,12 @@ void LineCanvas::on_press(ObjectUpdateData data) {
 		// If not dragging a vertex, try to select a new line
 		selected_line = find_line_at_position(data.mouse_pos);
 		selected_vertex = -1;
+		
+		// Update color properties when a line is selected
+		if (selected_line >= 0) {
+			update_color_from_selected_line();
+		}
+		
 		return;
 	}
 	}
@@ -588,17 +684,100 @@ void LineCanvas::on_click(ObjectUpdateData data) {
 	case CANVAS_TOOL_DRAW_LINE:
 		// We are done drawing
 		are_drawing = false;
-		active_line = -1;
+		
+		// Save state after completing a line
+		save_state_to_history();
+		
 		return;
 		
 	case CANVAS_TOOL_SELECT:
-		// Selection is handled in on_press, nothing to do here
+		// Complete box selection if we were box selecting
+		if (is_box_selecting) {
+			is_box_selecting = false;
+			
+			// Calculate box bounds
+			vec2 box_min = vec2(
+				std::min(box_selection_start.x, box_selection_end.x),
+				std::min(box_selection_start.y, box_selection_end.y)
+			);
+			vec2 box_max = vec2(
+				std::max(box_selection_start.x, box_selection_end.x),
+				std::max(box_selection_start.y, box_selection_end.y)
+			);
+			
+			// Find lines in box and add to selection
+			std::vector<int> lines_in_box;
+			find_lines_in_box(box_min, box_max, lines_in_box);
+			
+			for (int line_index : lines_in_box) {
+				add_line_to_selection(line_index);
+			}
+		}
+		
+		// Complete multi-line drag if we were dragging
+		if (is_multi_dragging) {
+			is_multi_dragging = false;
+			original_line_positions.clear();
+			
+			// Save state after moving multiple lines
+			save_state_to_history();
+		}
+		
 		return;
 		
 	case CANVAS_TOOL_EDIT:
 		// If we were dragging, we're now done
 		if (is_dragging) {
 			is_dragging = false;
+			
+			// Save state after editing a vertex
+			save_state_to_history();
+		}
+		return;
+	}
+}
+
+void LineCanvas::on_drag(ObjectUpdateData data) {
+	switch (tool) {
+	case CANVAS_TOOL_DRAW_LINE:
+		if (are_drawing) {
+			// Update the end point of the current line being drawn (with snapping, exclude current line)
+			vec2 snapped_end_pos = find_snap_position(data.mouse_pos, true);
+			if (!canvas_lines.empty()) {
+				canvas_lines[canvas_lines.size() - 1] = snapped_end_pos;
+			}
+		}
+		return;
+		
+	case CANVAS_TOOL_SELECT:
+		// Handle box selection updates during dragging
+		if (is_box_selecting) {
+			box_selection_end = data.mouse_pos;
+		}
+		// Handle multi-line dragging
+		else if (is_multi_dragging) {
+			vec2 drag_offset = data.mouse_pos - multi_drag_start_pos;
+			vec2 snapped_offset = find_snap_position(multi_drag_start_pos + drag_offset, false) - multi_drag_start_pos;
+			
+			// Apply offset to all selected lines
+			for (size_t i = 0; i < selected_lines.size() && i < original_line_positions.size(); i++) {
+				int line_index = selected_lines[i];
+				if (line_index * 2 + 1 < canvas_lines.size()) {
+					canvas_lines[line_index * 2] = original_line_positions[i].first + snapped_offset;
+					canvas_lines[line_index * 2 + 1] = original_line_positions[i].second + snapped_offset;
+				}
+			}
+		}
+		return;
+		
+	case CANVAS_TOOL_EDIT:
+		if (is_dragging && selected_line >= 0 && selected_vertex >= 0) {
+			// Update vertex position while dragging (with proper snapping, don't exclude current line in edit mode)
+			int vertex_index = selected_line * 2 + selected_vertex;
+			if (vertex_index < canvas_lines.size()) {
+				vec2 snapped_pos = find_snap_position(data.mouse_pos, false);
+				canvas_lines[vertex_index] = snapped_pos;
+			}
 		}
 		return;
 	}
@@ -612,7 +791,6 @@ void LineCanvas::on_release(ObjectUpdateData data) {
 			canvas_lines.pop_back(); // Remove the last point
 			canvas_lines.pop_back(); // Remove the second last point
 			canvas_colors.pop_back(); // Remove the last color
-			active_line = -1; // Reset the active line
 		}
 		return;
 		
@@ -662,8 +840,8 @@ int LineCanvas::render(float* lines_list, int offset, uint32_t* colors, vec2 cam
 			int line_index = i / 2;
 			uint32_t line_color = canvas_colors[line_index];
 			
-			// Highlight selected line with preset color
-			if (line_index == selected_line) {
+			// Highlight selected lines with preset color
+			if (line_index == selected_line || is_line_selected(line_index)) {
 				line_color = generate_line_color(LINE_COLOR_PRESET_EDITOR_SELECTED);
 			}
 			
@@ -716,6 +894,50 @@ int LineCanvas::render(float* lines_list, int offset, uint32_t* colors, vec2 cam
 		lines_list[offset++] = end_ndc.x;
 		lines_list[offset++] = end_ndc.y + marker_size / screen_size.y * 2.0f;
 		colors[offset / 4 - 1] = marker_color;
+	}
+	
+	// Render box selection rectangle if active
+	if (is_box_selecting && tool == CANVAS_TOOL_SELECT) {
+		// Transform box selection coordinates to NDC
+		auto transform_vertex = [&](vec2 v) -> vec2 {
+			v = v * render_scale;
+			v = v / screen_size;
+			return (v * 2.0f) - 1.0f;
+		};
+		
+		vec2 start_ndc = transform_vertex(box_selection_start);
+		vec2 end_ndc = transform_vertex(box_selection_end);
+		
+		uint32_t box_color = generate_line_color(LINE_COLOR_PRESET_CURSOR);
+		
+		// Draw box outline (4 lines)
+		// Top line
+		lines_list[offset++] = start_ndc.x;
+		lines_list[offset++] = start_ndc.y;
+		lines_list[offset++] = end_ndc.x;
+		lines_list[offset++] = start_ndc.y;
+		colors[offset / 4 - 1] = box_color;
+		
+		// Right line
+		lines_list[offset++] = end_ndc.x;
+		lines_list[offset++] = start_ndc.y;
+		lines_list[offset++] = end_ndc.x;
+		lines_list[offset++] = end_ndc.y;
+		colors[offset / 4 - 1] = box_color;
+		
+		// Bottom line
+		lines_list[offset++] = end_ndc.x;
+		lines_list[offset++] = end_ndc.y;
+		lines_list[offset++] = start_ndc.x;
+		lines_list[offset++] = end_ndc.y;
+		colors[offset / 4 - 1] = box_color;
+		
+		// Left line
+		lines_list[offset++] = start_ndc.x;
+		lines_list[offset++] = end_ndc.y;
+		lines_list[offset++] = start_ndc.x;
+		lines_list[offset++] = start_ndc.y;
+		colors[offset / 4 - 1] = box_color;
 	}
 
 	return offset; // Return the new offset
@@ -772,30 +994,44 @@ float LineCanvas::distance_point_to_line(vec2 point, vec2 line_start, vec2 line_
 	return mag(point - projection);
 }
 
-vec2 LineCanvas::find_snap_position(vec2 pos) {
-	if (!snapping_enabled) {
-		return pos;
+vec2 LineCanvas::find_snap_position(vec2 pos, bool exclude_current_line) {
+	vec2 final_pos = pos;
+	float best_distance = FLT_MAX;
+	
+	// Try vertex snapping if enabled
+	if (snapping_enabled) {
+		vec2 nearest_vertex = find_nearest_vertex(pos, exclude_current_line);
+		float vertex_distance = mag(pos - nearest_vertex);
+		if (vertex_distance <= snap_radius && vertex_distance < best_distance) {
+			final_pos = nearest_vertex;
+			best_distance = vertex_distance;
+		}
 	}
 	
-	vec2 nearest_vertex = find_nearest_vertex(pos);
-	if (mag(pos - nearest_vertex) <= snap_radius) {
-		return nearest_vertex;
+	// Try grid snapping if enabled
+	if (grid_snapping_enabled) {
+		vec2 grid_pos = snap_to_grid(pos);
+		float grid_distance = mag(pos - grid_pos);
+		if (grid_distance < best_distance) {
+			final_pos = grid_pos;
+			best_distance = grid_distance;
+		}
 	}
 	
-	return pos;
+	return final_pos;
 }
 
-vec2 LineCanvas::find_nearest_vertex(vec2 pos, int exclude_line) {
+vec2 LineCanvas::find_nearest_vertex(vec2 pos, bool exclude_current_line) {
 	vec2 nearest_vertex = pos;
 	float min_distance = snap_radius + 1.0f; // Start with distance larger than snap radius
 	
-	for (int i = 0; i < canvas_lines.size(); i++) {
-		// Skip vertices from the excluded line
-		int line_index = i / 2;
-		if (line_index == exclude_line) {
-			continue;
-		}
-		
+	// Exclude the last two vertices (current line) only when requested
+	int max_index = canvas_lines.size();
+	if (exclude_current_line && max_index >= 2) {
+		max_index -= 2;
+	}
+	
+	for (int i = 0; i < max_index; i++) {
 		vec2 vertex = canvas_lines[i];
 		float distance = mag(pos - vertex);
 		
@@ -806,4 +1042,251 @@ vec2 LineCanvas::find_nearest_vertex(vec2 pos, int exclude_line) {
 	}
 	
 	return nearest_vertex;
+}
+
+vec2 LineCanvas::snap_to_grid(vec2 pos) {
+	vec2 snapped;
+	snapped.x = round(pos.x / grid_size) * grid_size;
+	snapped.y = round(pos.y / grid_size) * grid_size;
+	return snapped;
+}
+
+void LineCanvas::set_selected_line_hue(float hue) {
+	current_hue = std::max(0.0f, std::min(1.0f, hue));
+	if (selected_line >= 0 && selected_line < canvas_colors.size()) {
+		canvas_colors[selected_line] = generate_line_color(current_hue, current_intensity, current_alpha, current_thickness);
+	}
+}
+
+void LineCanvas::set_selected_line_intensity(float intensity) {
+	current_intensity = std::max(0.0f, std::min(1.0f, intensity));
+	if (selected_line >= 0 && selected_line < canvas_colors.size()) {
+		canvas_colors[selected_line] = generate_line_color(current_hue, current_intensity, current_alpha, current_thickness);
+	}
+}
+
+void LineCanvas::set_selected_line_alpha(float alpha) {
+	current_alpha = std::max(0.0f, std::min(1.0f, alpha));
+	if (selected_line >= 0 && selected_line < canvas_colors.size()) {
+		canvas_colors[selected_line] = generate_line_color(current_hue, current_intensity, current_alpha, current_thickness);
+	}
+}
+
+void LineCanvas::set_selected_line_thickness(float thickness) {
+	current_thickness = std::max(-1.0f, std::min(1.0f, thickness));
+	if (selected_line >= 0 && selected_line < canvas_colors.size()) {
+		canvas_colors[selected_line] = generate_line_color(current_hue, current_intensity, current_alpha, current_thickness);
+	}
+}
+
+void LineCanvas::update_color_from_selected_line() {
+	if (selected_line >= 0 && selected_line < canvas_colors.size()) {
+		uint32_t color = canvas_colors[selected_line];
+		
+		// Extract color components from the uint32_t color
+		current_hue = ((color & 0xFF) / 255.0f);
+		current_intensity = (((color >> 8) & 0xFF) / 255.0f);
+		current_alpha = (((color >> 16) & 0xFF) / 255.0f);
+		
+		// Extract thickness and convert back to float
+		int thickness_raw = ((color >> 24) & 0xFF);
+		if (thickness_raw > 127) {
+			// This was a negative thickness
+			current_thickness = -1.0f * ((thickness_raw - 127) / 127.0f);
+		} else {
+			// This was a positive thickness
+			current_thickness = (thickness_raw / 127.0f);
+		}
+	}
+}
+
+void LineCanvas::save_state_to_history() {
+	// Remove any states after the current position (when we're in the middle of undo history)
+	if (history_stack.size() > 1 && current_history_index + 1 < history_stack.size()) {
+		history_stack.erase(history_stack.begin() + current_history_index + 1, history_stack.end());
+	}
+	
+	// Create new state
+	HistoryState state;
+	state.lines = canvas_lines;
+	state.colors = canvas_colors;
+	state.z_heights = canvas_z_height;
+	
+	// Add to history
+	history_stack.push_back(state);
+	current_history_index = history_stack.size() - 1;
+	
+	// Keep history size under limit
+	if (history_stack.size() > max_history_size) {
+		history_stack.erase(history_stack.begin());
+		if (current_history_index > 0) {
+			current_history_index--;
+		}
+	}
+}
+
+void LineCanvas::undo() {
+	if (!can_undo()) return;
+	
+	current_history_index--;
+	
+	// Restore state
+	const HistoryState& state = history_stack[current_history_index];
+	canvas_lines = state.lines;
+	canvas_colors = state.colors;
+	canvas_z_height = state.z_heights;
+	
+	// Clear selection since line indices might have changed
+	selected_line = -1;
+	selected_vertex = -1;
+	is_dragging = false;
+}
+
+void LineCanvas::redo() {
+	if (!can_redo()) return;
+	
+	current_history_index++;
+	
+	// Restore state
+	const HistoryState& state = history_stack[current_history_index];
+	canvas_lines = state.lines;
+	canvas_colors = state.colors;
+	canvas_z_height = state.z_heights;
+	
+	// Clear selection since line indices might have changed
+	selected_line = -1;
+	selected_vertex = -1;
+	is_dragging = false;
+}
+
+void LineCanvas::find_lines_in_box(vec2 box_min, vec2 box_max, std::vector<int>& lines_in_box) {
+	lines_in_box.clear();
+	
+	for (int i = 0; i < canvas_lines.size(); i += 2) {
+		int line_index = i / 2;
+		if (is_line_in_box(line_index, box_min, box_max)) {
+			lines_in_box.push_back(line_index);
+		}
+	}
+}
+
+bool LineCanvas::is_line_in_box(int line_index, vec2 box_min, vec2 box_max) {
+	if (line_index * 2 + 1 >= canvas_lines.size()) return false;
+	
+	vec2 start = canvas_lines[line_index * 2];
+	vec2 end = canvas_lines[line_index * 2 + 1];
+	
+	// Check if any part of the line is within the box
+	// For simplicity, check if either endpoint is in the box
+	bool start_in_box = (start.x >= box_min.x && start.x <= box_max.x && 
+	                     start.y >= box_min.y && start.y <= box_max.y);
+	bool end_in_box = (end.x >= box_min.x && end.x <= box_max.x && 
+	                   end.y >= box_min.y && end.y <= box_max.y);
+	
+	return start_in_box || end_in_box;
+}
+
+void LineCanvas::clear_selection() {
+	selected_lines.clear();
+	selected_line = -1;
+	selected_vertex = -1;
+}
+
+void LineCanvas::add_line_to_selection(int line_index) {
+	if (!is_line_selected(line_index)) {
+		selected_lines.push_back(line_index);
+	}
+}
+
+void LineCanvas::remove_line_from_selection(int line_index) {
+	auto it = std::find(selected_lines.begin(), selected_lines.end(), line_index);
+	if (it != selected_lines.end()) {
+		selected_lines.erase(it);
+	}
+}
+
+bool LineCanvas::is_line_selected(int line_index) const {
+	return std::find(selected_lines.begin(), selected_lines.end(), line_index) != selected_lines.end();
+}
+
+json LineCanvas::export_mesh_to_json() const {
+	json mesh_data = json::object();
+	
+	// Create arrays for each line in the format [x1, y1, x2, y2]
+	for (int i = 0; i < canvas_lines.size(); i += 2) {
+		if (i + 1 < canvas_lines.size()) {
+			vec2 start = canvas_lines[i];
+			vec2 end = canvas_lines[i + 1];
+			
+			std::string line_name = "line_" + std::to_string(i / 2);
+			mesh_data[line_name] = {start.x, start.y, end.x, end.y};
+		}
+	}
+	
+	return mesh_data;
+}
+
+bool LineCanvas::import_mesh_from_json(const json& mesh_data) {
+	try {
+		// Clear current mesh
+		canvas_lines.clear();
+		canvas_colors.clear();
+		canvas_z_height.clear();
+		clear_selection();
+		
+		// Import each line from JSON
+		for (auto& [name, coords] : mesh_data.items()) {
+			if (coords.is_array() && coords.size() >= 4) {
+				vec2 start = vec2(coords[0].get<float>(), coords[1].get<float>());
+				vec2 end = vec2(coords[2].get<float>(), coords[3].get<float>());
+				
+				canvas_lines.push_back(start);
+				canvas_lines.push_back(end);
+				canvas_colors.push_back(generate_line_color(LINE_COLOR_PRESET_EDITOR_LINE));
+				canvas_z_height.push_back(0.0f);
+			}
+		}
+		
+		// Save initial state to history
+		save_state_to_history();
+		
+		return true;
+	} catch (const json::exception& e) {
+		return false;
+	}
+}
+
+bool LineCanvas::save_mesh_to_file(const std::string& filename) {
+	try {
+		json mesh_data = export_mesh_to_json();
+		
+		std::ofstream file(filename);
+		if (!file.is_open()) {
+			return false;
+		}
+		
+		file << mesh_data.dump(4); // Pretty print with 4 spaces
+		file.close();
+		
+		return true;
+	} catch (const std::exception& e) {
+		return false;
+	}
+}
+
+bool LineCanvas::load_mesh_from_file(const std::string& filename) {
+	try {
+		std::ifstream file(filename);
+		if (!file.is_open()) {
+			return false;
+		}
+		
+		json mesh_data;
+		file >> mesh_data;
+		file.close();
+		
+		return import_mesh_from_json(mesh_data);
+	} catch (const std::exception& e) {
+		return false;
+	}
 }

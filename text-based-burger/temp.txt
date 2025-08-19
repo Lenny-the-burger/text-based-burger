@@ -1,0 +1,157 @@
+{
+      "targetname": "color editor panel",
+      "type": "container",
+      "position": {
+        "x": 100,
+        "y": 10
+      },
+      "bg_empty": 70,
+      "bbox": [
+        [ 0, 0 ],
+        [ 9, 25 ]
+      ],
+      "children": [
+        {
+          "targetname": "color label",
+          "type": "label",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "text": "Color:",
+          "style": {
+            "fg": 255,
+            "bg": 70
+          },
+          "bbox": "text"
+        },
+        {
+          "targetname": "hue field",
+          "type": "textfield",
+          "position": {
+            "x": 0,
+            "y": 2
+          },
+          "text": "0.75",
+          "placeholder": "0.0-1.0",
+          "numeric_only": true,
+          "style": {
+            "fg": 255,
+            "bg": 40,
+            "focus_bg": 50,
+            "hv_bg": 45
+          },
+          "bbox": [8, 1]
+        },
+        {
+          "targetname": "hue label",
+          "type": "label",
+          "position": {
+            "x": 0,
+            "y": 1
+          },
+          "text": "Hue:",
+          "style": {
+            "fg": 255,
+            "bg": 70
+          },
+          "bbox": "text"
+        },
+        {
+          "targetname": "intensity field",
+          "type": "textfield",
+          "position": {
+            "x": 0,
+            "y": 4
+          },
+          "text": "0.75",
+          "placeholder": "0.0-1.0",
+          "numeric_only": true,
+          "style": {
+            "fg": 255,
+            "bg": 40,
+            "focus_bg": 50,
+            "hv_bg": 45
+          },
+          "bbox": [8, 1]
+        },
+        {
+          "targetname": "intensity label",
+          "type": "label",
+          "position": {
+            "x": 0,
+            "y": 3
+          },
+          "text": "Intensity:",
+          "style": {
+            "fg": 255,
+            "bg": 70
+          },
+          "bbox": "text"
+        },
+        {
+          "targetname": "alpha field",
+          "type": "textfield",
+          "position": {
+            "x": 0,
+            "y": 6
+          },
+          "text": "1.0",
+          "placeholder": "0.0-1.0",
+          "numeric_only": true,
+          "style": {
+            "fg": 255,
+            "bg": 40,
+            "focus_bg": 50,
+            "hv_bg": 45
+          },
+          "bbox": [8, 1]
+        },
+        {
+          "targetname": "alpha label",
+          "type": "label",
+          "position": {
+            "x": 0,
+            "y": 5
+          },
+          "text": "Alpha:",
+          "style": {
+            "fg": 255,
+            "bg": 70
+          },
+          "bbox": "text"
+        },
+        {
+          "targetname": "thickness field",
+          "type": "textfield",
+          "position": {
+            "x": 0,
+            "y": 8
+          },
+          "text": "0.0",
+          "placeholder": "-1.0-1.0",
+          "numeric_only": true,
+          "style": {
+            "fg": 255,
+            "bg": 40,
+            "focus_bg": 50,
+            "hv_bg": 45
+          },
+          "bbox": [8, 1]
+        },
+        {
+          "targetname": "thickness label",
+          "type": "label",
+          "position": {
+            "x": 0,
+            "y": 7
+          },
+          "text": "Thick:",
+          "style": {
+            "fg": 255,
+            "bg": 70
+          },
+          "bbox": "text"
+        }
+      ]
+    }

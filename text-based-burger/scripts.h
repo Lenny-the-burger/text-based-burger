@@ -93,4 +93,8 @@ void npc_move(json data, ScriptHandles handles);
 
 void set_canvas_tool(json data, ScriptHandles handles);
 void toggle_snapping(json data, ScriptHandles handles);
+void toggle_grid_snapping(json data, ScriptHandles handles);
+void update_canvas_color_from_ui(json data, ScriptHandles handles);
+void save_mesh_file(json data, ScriptHandles handles);
+void load_mesh_file(json data, ScriptHandles handles);
 void init_canvas_ui(json data, ScriptHandles handles);
