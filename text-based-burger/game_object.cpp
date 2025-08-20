@@ -1022,7 +1022,7 @@ vec2 LineCanvas::find_snap_position(vec2 pos, bool exclude_current_line) {
 }
 
 vec2 LineCanvas::find_nearest_vertex(vec2 pos, bool exclude_current_line) {
-	vec2 nearest_vertex = pos;
+	vec2 nearest_vertex = vec2(999999999, 99999999); // if no candidate return this
 	float min_distance = snap_radius + 1.0f; // Start with distance larger than snap radius
 	
 	// Exclude the last two vertices (current line) only when requested
